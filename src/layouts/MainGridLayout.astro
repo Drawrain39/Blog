@@ -123,7 +123,6 @@ const mainPanelTop = siteConfig.banner.enable
     </div>
 </div>
 <style is:global>
-  /* 1. 全局背景优化 */
   body::before {
     content: "";
     position: fixed;
@@ -141,9 +140,7 @@ const mainPanelTop = siteConfig.banner.enable
     filter: brightness(0.4); 
   }
 
-  /* 2. 卡片颜色调整 */
   .card-base {
-    /* 让卡片稍微黑一点，不要太透，增强可读性 */
     --tw-bg-opacity: 0.8 !important; 
     background-color: rgba(var(--color-card), 0.8) !important;
     backdrop-filter: blur(10px); 
