@@ -1,10 +1,20 @@
-# About
-This is the demo site for [Fuwari](https://github.com/saicaca/fuwari).
+# 关于个人
 
-::github{repo="saicaca/fuwari"}
+ **目前在苏北某大学计算机专业本科大一在读**
 
-> ### Sources of images used in this site
-> - [Unsplash](https://unsplash.com/)
-> - [星と少女](https://www.pixiv.net/artworks/108916539) by [Stella](https://www.pixiv.net/users/93273965)
-> - [Rabbit - v1.4 Showcase](https://civitai.com/posts/586908) by [Rabbit_YourMajesty](https://civitai.com/user/Rabbit_YourMajesty)
-> 还没想好写啥呢......先放一放 因为报错了我再想想怎么改
+个人博客主要写一下平时比赛的wp以及一些学习相关知识点，偶尔会写别的一些杂碎东西...
+
+
+### 联系方式
+
+欢迎一起交流~~~聊聊什么都可以，只要人还活着随时都在
+
+有什么对于博客改进的建议也可以直接联系我
+
+（平时真的好清静.....）
+
+在搞友链建设了，还没完工
+
+- **qq**: 858617595
+
+> "即使迷茫 也要前行"
