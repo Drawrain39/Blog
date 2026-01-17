@@ -7,7 +7,7 @@ category: C++
 draft: false
 ---
 作为大一开始学c++的记录，纯基础
-## 一些会用到的代码
+## 一些代码练习
 记录一下一些基础的代码
 ### 小写字母转大写
 ```c++
@@ -128,7 +128,7 @@ signed main()
 }
 ```
 v体积一定要是double 用int就把小数截断了
-## iomanip头文件控制输出精度
+### iomanip头文件控制输出精度
 例<https://www.luogu.com.cn/problem/P5706>
 
 主要是用来控制输出小数点后几位数字
@@ -152,3 +152,87 @@ signed main()
 std::cout << std::fixed << std::setprecision()
 ```
 来控制小数点后面输出，设置宽度setw暂不展示
+### 猴子吃桃递归
+> 猴子第一天采摘了一些桃子，第二天吃了第一天的一半多一个，第三天吃了第二天的一半多一个…直到第n天就剩下一个。问：猴子第一天摘了多少桃子？
+
+递归公式：f(n+1) = 0.5 * f(n) - 1 逆过来 f(n) = 2( f(n+1) + 1)
+
+于是写出下列代码
+
+```c++
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+int peach(int day,int n)
+{
+    if(day == n) {
+        return 1;
+    }else {
+        return ( peach(day + 1,n) + 1 ) * 2;
+    }
+}
+signed main()
+{
+    int n;
+    cin >> n;
+    int total = peach(1,n);
+    cout << total;
+    return 0;
+}
+```
+还有一种写法是直接暴力算出数学公式...
+```c++
+//......
+int total = 3 * pow(2, n - 1) - 2;
+```
+能用递归还是练递归
+
+
+### switch分支练习
+使用switch语句可以替代一大坨的if else，更直观
+
+比如这样....
+```c++
+#include <bits/stdc++.h>
+using namespace std;
+signed main() 
+{
+    int T;
+    cin >> T;
+    if (T == 1) {
+        //......
+    } else if (T == 2) {
+        //......
+    } else if (T == 3) {
+        //......
+        
+    } else if (T == 4) //...........省略余下
+}
+```
+完全可以写成如下
+```c++
+#include <bits/stdc++.h>
+using namespace std;
+signed main()
+{
+    int n;
+    cin >> n;
+    switch (n) {
+        case 1 :
+        //.....
+        break;
+        case 2 :
+        //.....
+        break;
+        case 3 : {
+            int m{10};//等价于int m = 10，建议花括号初始化
+            //....记得大括号，创建局部作用域，因为定义并初始化了新变量
+        }
+    }
+}
+```
+break用来跳出switch，当然可以也不加，直接贯穿继续往下执行下一个case
+
+default可选写，处理全都不匹配的情况
+
+char类型同理 case 'A' 如此
