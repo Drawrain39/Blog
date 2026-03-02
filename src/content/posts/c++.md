@@ -1,12 +1,12 @@
 ---
 title: 高级语言程序设计C++基础
 published: 2025-09-29
-description: 大一C++学习记录
+description: C++学习记录
 tags: [C++]
 category: C++
 draft: false
 ---
-作为大一开始学c++的记录，纯基础
+作为c++的记录，纯基础
 ## 一些代码练习
 记录一下一些基础的代码
 ### 小写字母转大写

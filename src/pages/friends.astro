@@ -1,0 +1,28 @@
+---
+import { getEntry, render } from "astro:content";
+import FriendLinkCard from "@components/FriendLinkCard.astro";
+import Markdown from "@components/misc/Markdown.astro";
+import { friendLinks } from "../constants/friends";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+const friendsPost = await getEntry("spec", "friends");
+
+if (!friendsPost) {
+	throw new Error("Friends page content not found");
+}
+
+const { Content } = await render(friendsPost);
+---
+
+<MainGridLayout title="友链" description="友情链接">
+	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32 mb-4">
+		<div class="card-base z-10 px-9 py-6 relative w-full">
+			<Markdown class="mt-2">
+				<Content />
+			</Markdown>
+		</div>
+	</div>
+	<section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+		{friendLinks.map((friend) => <FriendLinkCard friend={friend} />)}
+	</section>
+</MainGridLayout>

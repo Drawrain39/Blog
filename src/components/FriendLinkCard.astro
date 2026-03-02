@@ -1,0 +1,48 @@
+---
+import { Icon } from "astro-icon/components";
+import type { FriendLinkItem } from "../constants/friends";
+import ImageWrapper from "./misc/ImageWrapper.astro";
+
+interface Props {
+	friend: FriendLinkItem;
+}
+
+const { friend } = Astro.props;
+---
+
+<article class="card-base rounded-[var(--radius-large)] p-4 md:p-5">
+	<div class="flex items-start gap-4">
+		<a
+			href={friend.url}
+			target="_blank"
+			rel="noopener noreferrer"
+			aria-label={`Visit ${friend.name}`}
+			class="w-14 h-14 rounded-xl overflow-hidden shrink-0 active:scale-95"
+		>
+			<ImageWrapper src={friend.avatar} alt={`${friend.name} avatar`} class="w-full h-full" />
+		</a>
+		<div class="min-w-0 flex-1">
+			<a
+				href={friend.url}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="font-bold text-lg text-90 hover:text-[var(--primary)] transition"
+			>
+				{friend.name}
+			</a>
+			{friend.siteName && <div class="text-sm text-50 mt-0.5">{friend.siteName}</div>}
+			<p class="text-75 mt-2 line-clamp-2">{friend.description}</p>
+		</div>
+	</div>
+	<div class="mt-4">
+		<a
+			href={friend.url}
+			target="_blank"
+			rel="noopener noreferrer"
+			class="btn-regular rounded-lg h-10 px-3 inline-flex items-center gap-1.5 font-semibold active:scale-95"
+		>
+			It's MyGO!!!!!
+			<Icon name="fa6-solid:arrow-up-right-from-square" class="text-sm" />
+		</a>
+	</div>
+</article>
