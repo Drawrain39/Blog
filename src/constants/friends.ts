@@ -12,7 +12,7 @@ export const friendLinks: FriendLinkItem[] = [
 		siteName: "astro.build",
 		url: "https://astro.build/",
 		avatar: "https://astro.build/assets/press/astro-icon-light-gradient.png",
-		description: "Astro框架",
+		description: " ",
 	},
     {
         name: "pig8086",
@@ -21,5 +21,12 @@ export const friendLinks: FriendLinkItem[] = [
         avatar: "/images/pig8086.jpg",
         description: " "
     },
+	{
+        name: "bobsers",
+        siteName: "我喜欢你",
+        url: "https://bobsers.top/",
+        avatar: "/images/bobsers.jpg",
+        description: " "
+    }
 
 ];
