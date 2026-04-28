@@ -7,13 +7,6 @@ export interface FriendLinkItem {
 }
 
 export const friendLinks: FriendLinkItem[] = [
-	{
-		name: "Astro",
-		siteName: "astro.build",
-		url: "https://astro.build/",
-		avatar: "https://astro.build/assets/press/astro-icon-light-gradient.png",
-		description: " ",
-	},
     {
         name: "pig8086",
         siteName: "猪猪博客",
