@@ -20,6 +20,13 @@ export const friendLinks: FriendLinkItem[] = [
         url: "https://bobsers.top/",
         avatar: "/images/bobsers.jpg",
         description: " "
+    },
+	{
+        name: "joker233",
+        siteName: "Joker233's Blog",
+        url: "https://joker233.top/",
+        avatar: "/images/joker233.webp",
+        description: "Aspiring to master the art of pwn."
     }
 
 ];
