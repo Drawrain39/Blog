@@ -404,6 +404,14 @@ YES
 #include <iostream>
 #include <string>
 using namespace std;
+void print(char c){
+    if(c == '(' || c == ')')
+        cout << "NO1" << endl;
+    else if(c == '[' || c == ']')
+        cout << "NO2" << endl;
+    else
+        cout << "NO3" << endl;
+}
 int main(){
     string s;
     getline(cin, s);
@@ -414,22 +422,34 @@ int main(){
         if(s[i] == '(' || s[i] == '[' || s[i] == '{')
             st[++top] = s[i];
         else if(s[i] == ')'){
-            if(top == -1 || st[top] != '('){
-                cout << "NO1" << endl;
+            if(top == -1){
+                print(s[i]);
+                return 0;
+            }
+            if(st[top] != '('){
+                print(st[top]);
                 return 0;
             }
             top--;
         }
         else if(s[i] == ']'){
-            if(top == -1 || st[top] != '['){
-                cout << "NO2" << endl;
+            if(top == -1){
+                print(s[i]);
+                return 0;
+            }
+            if(st[top] != '['){
+                print(st[top]);
                 return 0;
             }
             top--;
         }
         else if(s[i] == '}'){
-            if(top == -1 || st[top] != '{'){
-                cout << "NO3" << endl;
+            if(top == -1){
+                print(s[i]);
+                return 0;
+            }
+            if(st[top] != '{'){
+                print(st[top]);
                 return 0;
             }
             top--;
@@ -437,12 +457,8 @@ int main(){
     }
     if(top == -1)
         cout << "YES" << endl;
-    else if(st[top] == '(')
-        cout << "NO1" << endl;
-    else if(st[top] == '[')
-        cout << "NO2" << endl;
     else
-        cout << "NO3" << endl;
+        print(st[top]);
     return 0;
 }
 ```
