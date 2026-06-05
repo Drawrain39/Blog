@@ -2,6 +2,7 @@ import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { getCategoryUrl } from "@utils/url-utils.ts";
+import getReadingTime from "reading-time";
 
 // // Retrieve posts and sort them by publication date
 async function getRawSortedPosts() {
@@ -34,7 +35,39 @@ export async function getSortedPosts() {
 export type PostForList = {
 	slug: string;
 	data: CollectionEntry<"posts">["data"];
+	wordCount: number;
 };
+
+export type SeriesPost = {
+	slug: string;
+	title: string;
+	published: Date;
+	seriesOrder?: number;
+};
+
+export function getSeriesPostsForEntry(
+	entry: CollectionEntry<"posts">,
+	posts: CollectionEntry<"posts">[],
+): SeriesPost[] {
+	const series = entry.data.series?.trim();
+	if (!series) return [];
+
+	return posts
+		.filter((post) => post.data.series?.trim() === series)
+		.sort((a, b) => {
+			const orderA = a.data.seriesOrder ?? Number.MAX_SAFE_INTEGER;
+			const orderB = b.data.seriesOrder ?? Number.MAX_SAFE_INTEGER;
+			if (orderA !== orderB) return orderA - orderB;
+			return a.data.published.getTime() - b.data.published.getTime();
+		})
+		.map((post) => ({
+			slug: post.slug,
+			title: post.data.title,
+			published: post.data.published,
+			seriesOrder: post.data.seriesOrder,
+		}));
+}
+
 export async function getSortedPostsList(): Promise<PostForList[]> {
 	const sortedFullPosts = await getRawSortedPosts();
 
@@ -42,6 +75,7 @@ export async function getSortedPostsList(): Promise<PostForList[]> {
 	const sortedPostsList = sortedFullPosts.map((post) => ({
 		slug: post.slug,
 		data: post.data,
+		wordCount: getReadingTime(post.body ?? "").words,
 	}));
 
 	return sortedPostsList;

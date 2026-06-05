@@ -1,0 +1,982 @@
+---
+import "@fontsource-variable/jetbrains-mono";
+
+const codeRows = [
+	"boot://drawrain.blog",
+	"load VOCALOAD.dll",
+	"compile dream.cpp",
+	"trace danmaku_pattern.ts",
+	"pray 少女祈祷中.....",
+	"我们将永远沉溺于深夜中",
+	"stack overflow",
+];
+
+const particles = Array.from({ length: 28 }, (_, index) => index);
+const shards = Array.from({ length: 12 }, (_, index) => index);
+const charms = ["祈", "夢", "♪", "01"];
+---
+
+<script is:inline>
+	try {
+		if (sessionStorage.getItem("drawrain-opening-splash") === "done") {
+			document.documentElement.classList.add("opening-splash-seen");
+		}
+	} catch {
+		// Session storage may be blocked.
+	}
+</script>
+
+<noscript>
+	<style>
+		.opening-splash {
+			display: none !important;
+		}
+	</style>
+</noscript>
+
+<opening-splash class="opening-splash" aria-label="Opening loading animation" role="status">
+	<div class="splash-noise" aria-hidden="true"></div>
+	<div class="splash-scanline" aria-hidden="true"></div>
+	<div class="splash-grid" aria-hidden="true"></div>
+	<div class="splash-spell-ring" aria-hidden="true">
+		<span></span>
+		<span></span>
+		<span></span>
+	</div>
+
+	<div class="splash-charms" aria-hidden="true">
+		{charms.map((charm, index) => <span style={`--i:${index};`}>{charm}</span>)}
+	</div>
+
+	<div class="splash-shards" aria-hidden="true">
+		{shards.map((shard) => <span style={`--i:${shard};`}></span>)}
+	</div>
+
+	<div class="splash-notes" aria-hidden="true">
+		{particles.map((particle) => <span style={`--i:${particle}; --x:${(particle % 7) - 3}; --y:${Math.floor(particle / 7) - 1.5};`}></span>)}
+	</div>
+
+	<section class="splash-panel">
+		<div class="splash-terminal" aria-hidden="true">
+			<div class="terminal-top">
+				<span></span>
+				<span></span>
+				<span></span>
+				<strong>VOCAL_CODE:BOOT</strong>
+			</div>
+			<div class="terminal-body">
+				{codeRows.map((row) => <div><span>&gt;</span> {row}</div>)}
+			</div>
+		</div>
+
+		<div class="splash-main">
+			<div class="splash-kicker">DRAWRAIN-BLOG</div>
+			<div class="splash-title glitch-text" data-text="少女祈祷中.....">少女祈祷中.....</div>
+			<div class="splash-subtitle">幻想郷前往中....</div>
+
+			<div class="splash-progress" aria-label="Loading progress">
+				<div class="progress-meta">
+					<span>LOADING</span>
+					<strong class="progress-percent">0%</strong>
+				</div>
+				<div class="progress-track">
+					<div class="progress-fill"></div>
+					<div class="progress-breaks" aria-hidden="true">
+						<span></span>
+						<span></span>
+						<span></span>
+						<span></span>
+						<span></span>
+					</div>
+				</div>
+			</div>
+
+			<div class="splash-welcome glitch-text" data-text="Welcome to my blog!">Welcome to my blog!!!!!</div>
+		</div>
+	</section>
+</opening-splash>
+
+<style is:global>
+	html.opening-splash-seen .opening-splash {
+		display: none;
+	}
+
+	body.opening-splash-lock {
+		overflow: hidden;
+	}
+</style>
+
+<style>
+	.opening-splash {
+		position: fixed;
+		inset: 0;
+		z-index: 9999;
+		display: grid;
+		place-items: center;
+		overflow: hidden;
+		background:
+			radial-gradient(circle at 20% 12%, rgba(57, 255, 182, 0.2), transparent 20rem),
+			radial-gradient(circle at 82% 20%, rgba(0, 229, 212, 0.18), transparent 18rem),
+			linear-gradient(135deg, rgba(4, 8, 18, 0.98), rgba(13, 18, 38, 0.96) 48%, rgba(8, 4, 18, 0.98));
+		color: #f8fafc;
+		opacity: 1;
+		transition:
+			background 620ms ease,
+			opacity 820ms ease,
+			visibility 820ms ease;
+		will-change: opacity, background;
+	}
+
+	.opening-splash.is-revealing {
+		background: transparent;
+		pointer-events: none;
+	}
+
+	.opening-splash.is-leaving {
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+	}
+
+	.splash-noise,
+	.splash-scanline,
+	.splash-grid,
+	.splash-spell-ring,
+	.splash-charms,
+	.splash-shards,
+	.splash-notes {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	.splash-noise {
+		opacity: 0.12;
+		background-image:
+			repeating-radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.8) 0 1px, transparent 1px 4px),
+			linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+		mix-blend-mode: overlay;
+		animation: splash-noise 600ms steps(2) infinite;
+	}
+
+	.splash-scanline {
+		background: repeating-linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.08) 0 1px,
+			transparent 1px 4px
+		);
+		opacity: 0.18;
+	}
+
+	.splash-grid {
+		inset: -20%;
+		background:
+			linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+		background-size: 4.2rem 4.2rem;
+		transform: perspective(32rem) rotateX(62deg) translateY(22%);
+		transform-origin: center bottom;
+		opacity: 0.18;
+		animation: splash-grid 2.4s linear infinite;
+	}
+
+	.splash-spell-ring {
+		display: grid;
+		place-items: center;
+		opacity: 0.46;
+		filter: drop-shadow(0 0 2rem rgba(0, 229, 212, 0.16));
+	}
+
+	.splash-spell-ring span {
+		position: absolute;
+		width: min(78vw, 44rem);
+		aspect-ratio: 1;
+		border: 1px solid rgba(0, 229, 212, 0.16);
+		border-radius: 999px;
+		background:
+			conic-gradient(
+				from 20deg,
+				transparent 0 8deg,
+				rgba(57, 255, 182, 0.36) 8deg 10deg,
+				transparent 10deg 24deg,
+				rgba(0, 229, 212, 0.28) 24deg 26deg,
+				transparent 26deg 40deg
+			);
+		mask: radial-gradient(circle, transparent 58%, #000 58.5% 60.5%, transparent 61%);
+		-webkit-mask: radial-gradient(circle, transparent 58%, #000 58.5% 60.5%, transparent 61%);
+		animation: spell-ring-spin 8s linear infinite;
+	}
+
+	.splash-spell-ring span:nth-child(2) {
+		width: min(64vw, 34rem);
+		border-color: rgba(57, 255, 182, 0.14);
+		animation-duration: 6.4s;
+		animation-direction: reverse;
+	}
+
+	.splash-spell-ring span:nth-child(3) {
+		width: min(48vw, 24rem);
+		border-style: dashed;
+		animation-duration: 5.2s;
+	}
+
+	.splash-charms span {
+		position: absolute;
+		top: calc(16% + var(--i) * 16%);
+		left: calc(8% + var(--i) * 20%);
+		display: grid;
+		width: 2.5rem;
+		height: 4.4rem;
+		place-items: center;
+		border: 1px solid rgba(255, 255, 255, 0.18);
+		border-radius: 0.45rem 0.45rem 0.9rem 0.9rem;
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 32%),
+			rgba(226, 232, 240, 0.08);
+		color: rgba(248, 250, 252, 0.52);
+		font-family: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.82rem;
+		font-weight: 950;
+		letter-spacing: 0.12em;
+		box-shadow: 0 0 1.5rem rgba(0, 229, 212, 0.08);
+		transform: rotate(calc(var(--i) * 9deg - 14deg));
+		animation: charm-drift 2.6s ease-in-out calc(var(--i) * 180ms) infinite alternate;
+	}
+
+	.splash-charms span::before,
+	.splash-charms span::after {
+		content: "";
+		position: absolute;
+		background: rgba(57, 255, 182, 0.34);
+	}
+
+	.splash-charms span::before {
+		top: 0.55rem;
+		width: 1rem;
+		height: 1px;
+	}
+
+	.splash-charms span::after {
+		bottom: 0.65rem;
+		width: 1.1rem;
+		height: 1px;
+	}
+
+	.splash-panel {
+		position: relative;
+		display: grid;
+		width: min(92vw, 58rem);
+		min-height: 25rem;
+		grid-template-columns: minmax(13rem, 0.85fr) minmax(0, 1.15fr);
+		overflow: hidden;
+		border: 1px solid rgba(255, 255, 255, 0.16);
+		border-radius: 1.4rem;
+		background:
+			linear-gradient(135deg, rgba(15, 23, 42, 0.68), rgba(6, 10, 22, 0.82)),
+			rgba(15, 23, 42, 0.6);
+		box-shadow:
+			0 2.2rem 7rem rgba(0, 0, 0, 0.48),
+			0 0 4rem rgba(57, 255, 182, 0.12),
+			inset 0 1px 0 rgba(255, 255, 255, 0.08);
+		backdrop-filter: blur(24px) saturate(1.05);
+		-webkit-backdrop-filter: blur(24px) saturate(1.05);
+		transform: translateY(0.8rem) scale(0.985);
+		animation: splash-panel-in 900ms cubic-bezier(0.2, 0.9, 0.18, 1) both;
+	}
+
+	.splash-panel::before,
+	.splash-panel::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	.splash-panel::before {
+		background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+		transform: translateX(-120%);
+		animation: splash-sweep 1.2s ease 420ms both;
+	}
+
+	.splash-panel::after {
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: inherit;
+		clip-path: polygon(0 0, 100% 0, 100% 1px, 0 1px, 0 100%, 1px 100%, 1px 0);
+	}
+
+	.splash-terminal {
+		position: relative;
+		z-index: 1;
+		margin: 1rem;
+		overflow: hidden;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 1rem;
+		background:
+			radial-gradient(circle at 30% 20%, rgba(57, 255, 182, 0.13), transparent 12rem),
+			rgba(2, 6, 23, 0.54);
+		font-family: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	}
+
+	.terminal-top {
+		display: flex;
+		align-items: center;
+		gap: 0.38rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		padding: 0.7rem 0.8rem;
+		color: rgba(226, 232, 240, 0.55);
+		font-size: 0.66rem;
+		font-weight: 900;
+		letter-spacing: 0.12em;
+	}
+
+	.terminal-top span {
+		width: 0.48rem;
+		height: 0.48rem;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.26);
+	}
+
+	.terminal-top span:nth-child(1) {
+		background: #39ffb6;
+	}
+
+	.terminal-top span:nth-child(2) {
+		background: #00e5d4;
+	}
+
+	.terminal-top span:nth-child(3) {
+		background: #facc15;
+	}
+
+	.terminal-top strong {
+		margin-left: 0.35rem;
+	}
+
+	.terminal-body {
+		display: grid;
+		gap: 0.6rem;
+		padding: 1rem 0.95rem;
+		color: rgba(203, 213, 225, 0.72);
+		font-size: 0.78rem;
+		line-height: 1.5;
+	}
+
+	.terminal-body div {
+		opacity: 0;
+		transform: translateX(-0.6rem);
+		animation: terminal-line 360ms ease both;
+	}
+
+	.terminal-body div:nth-child(1) {
+		animation-delay: 140ms;
+	}
+
+	.terminal-body div:nth-child(2) {
+		animation-delay: 240ms;
+	}
+
+	.terminal-body div:nth-child(3) {
+		animation-delay: 340ms;
+	}
+
+	.terminal-body div:nth-child(4) {
+		animation-delay: 440ms;
+	}
+
+	.terminal-body div:nth-child(5) {
+		animation-delay: 540ms;
+	}
+
+	.terminal-body div:nth-child(6) {
+		animation-delay: 640ms;
+	}
+
+	.terminal-body span {
+		color: #39ffb6;
+	}
+
+	.splash-main {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		min-width: 0;
+		flex-direction: column;
+		justify-content: center;
+		padding: 2rem clamp(1.3rem, 4vw, 3rem);
+	}
+
+	.splash-kicker {
+		color: rgba(226, 232, 240, 0.58);
+		font-size: 0.72rem;
+		font-weight: 950;
+		letter-spacing: 0.18em;
+	}
+
+	.splash-title,
+	.splash-welcome {
+		position: relative;
+		margin-top: 0.75rem;
+		font-weight: 1000;
+		letter-spacing: 0;
+		line-height: 1;
+	}
+
+	.splash-title {
+		color: rgba(248, 250, 252, 0.94);
+		font-size: clamp(2rem, 7vw, 4.2rem);
+		text-shadow:
+			0 0 1.6rem rgba(57, 255, 182, 0.34),
+			0 0 4rem rgba(0, 229, 212, 0.18);
+	}
+
+	.splash-subtitle {
+		margin-top: 0.75rem;
+		color: rgba(203, 213, 225, 0.6);
+		font-size: 0.9rem;
+		font-weight: 700;
+	}
+
+	.splash-progress {
+		margin-top: 1.65rem;
+	}
+
+	.progress-meta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 0.55rem;
+		color: rgba(226, 232, 240, 0.58);
+		font-family: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.72rem;
+		font-weight: 900;
+		letter-spacing: 0.12em;
+	}
+
+	.progress-percent {
+		color: #39ffb6;
+	}
+
+	.progress-track {
+		position: relative;
+		overflow: hidden;
+		height: 1rem;
+		border: 1px solid rgba(255, 255, 255, 0.16);
+		border-radius: 999px;
+		background:
+			linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent),
+			rgba(2, 6, 23, 0.62);
+		box-shadow:
+			inset 0 0 1rem rgba(0, 0, 0, 0.42),
+			0 0 1.4rem rgba(57, 255, 182, 0.15);
+	}
+
+	.progress-fill {
+		position: relative;
+		overflow: hidden;
+		width: var(--splash-progress, 0%);
+		height: 100%;
+		border-radius: inherit;
+		background:
+			linear-gradient(90deg, #39ffb6, #00e5d4 54%, #e7ff6b),
+			#39ffb6;
+		box-shadow:
+			0 0 1rem rgba(57, 255, 182, 0.52),
+			0 0 2.2rem rgba(0, 229, 212, 0.22);
+		transition: width 130ms steps(2);
+	}
+
+	.progress-fill::before,
+	.progress-fill::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+	}
+
+	.progress-fill::before {
+		background: repeating-linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.72) 0 0.35rem,
+			transparent 0.35rem 0.9rem
+		);
+		mix-blend-mode: overlay;
+		opacity: 0.28;
+		animation: progress-fracture 420ms steps(2) infinite;
+	}
+
+	.progress-fill::after {
+		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+		transform: translateX(-120%);
+		animation: progress-flash 900ms ease-in-out infinite;
+	}
+
+	.progress-breaks {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		justify-content: space-around;
+		pointer-events: none;
+	}
+
+	.progress-breaks span {
+		width: 0.28rem;
+		height: 100%;
+		background: rgba(2, 6, 23, 0.8);
+		transform: skewX(-22deg);
+		box-shadow: 0 0 0.8rem rgba(2, 6, 23, 0.8);
+	}
+
+	.splash-welcome {
+		display: none;
+		background: linear-gradient(90deg, #f8fff9, #39ffb6 38%, #00e5d4 74%, #f8fff9);
+		background-size: 220% 100%;
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+		font-size: clamp(1.75rem, 3.2vw, 3rem);
+		white-space: nowrap;
+		text-shadow: 0 0 2rem rgba(57, 255, 182, 0.32);
+	}
+
+	.opening-splash.is-complete .splash-title,
+	.opening-splash.is-complete .splash-subtitle,
+	.opening-splash.is-complete .splash-progress {
+		display: none;
+	}
+
+	.opening-splash.is-complete .splash-welcome {
+		display: block;
+		animation: welcome-pop 720ms cubic-bezier(0.2, 1.2, 0.24, 1) both, welcome-shine 1.8s linear 260ms infinite;
+	}
+
+	.opening-splash.is-revealing .splash-panel {
+		animation: splash-panel-out 360ms cubic-bezier(0.2, 0.9, 0.18, 1) both;
+	}
+
+	.opening-splash.is-revealing .splash-grid,
+	.opening-splash.is-revealing .splash-spell-ring,
+	.opening-splash.is-revealing .splash-charms {
+		opacity: 0;
+		transition: opacity 480ms ease;
+	}
+
+	.opening-splash.is-revealing .splash-noise {
+		opacity: 0.18;
+		mix-blend-mode: screen;
+		animation: reveal-noise 1.32s steps(3) both;
+	}
+
+	.opening-splash.is-revealing .splash-scanline {
+		opacity: 0.16;
+		mix-blend-mode: screen;
+		animation: reveal-scanline 1.32s steps(4) both;
+	}
+
+	.opening-splash.is-revealing .splash-shards span {
+		background:
+			linear-gradient(90deg, transparent, rgba(57, 255, 182, 0.74), rgba(0, 229, 212, 0.72), transparent);
+		opacity: 0;
+		animation: afterglitch-shard 1.38s cubic-bezier(0.16, 0.92, 0.22, 1) calc(var(--i) * 26ms) both;
+	}
+
+	.opening-splash.is-revealing .splash-notes span {
+		animation: afterglitch-pixel 1.46s cubic-bezier(0.16, 0.92, 0.22, 1) calc(var(--i) * 18ms) both;
+	}
+
+	.glitch-text::before,
+	.glitch-text::after {
+		content: attr(data-text);
+		position: absolute;
+		inset: 0;
+		opacity: 0.62;
+		pointer-events: none;
+	}
+
+	.glitch-text::before {
+		color: #00e5d4;
+		transform: translate(0.06em, -0.02em);
+		clip-path: inset(0 0 55% 0);
+		animation: glitch-slice 960ms steps(2) infinite;
+	}
+
+	.glitch-text::after {
+		color: #39ffb6;
+		transform: translate(-0.05em, 0.03em);
+		clip-path: inset(45% 0 0 0);
+		animation: glitch-slice 1120ms steps(2) infinite reverse;
+	}
+
+	.splash-notes span,
+	.splash-shards span {
+		position: absolute;
+		pointer-events: none;
+	}
+
+	.splash-notes span {
+		top: 50%;
+		left: 50%;
+		width: 0.38rem;
+		height: 0.38rem;
+		border-radius: 999px;
+		background: #39ffb6;
+		color: #39ffb6;
+		box-shadow: 0 0 0.8rem currentColor;
+		opacity: 0;
+		animation: note-float 1.25s cubic-bezier(0.18, 0.86, 0.32, 1) calc(var(--i) * 24ms) infinite;
+	}
+
+	.splash-notes span:nth-child(3n) {
+		background: #00e5d4;
+		color: #00e5d4;
+	}
+
+	.splash-notes span:nth-child(4n) {
+		background: #e7ff6b;
+		color: #e7ff6b;
+	}
+
+	.splash-notes span:nth-child(5n) {
+		background: #9dffcb;
+		color: #9dffcb;
+	}
+
+	.splash-shards span {
+		width: 7rem;
+		height: 0.2rem;
+		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.46), transparent);
+		transform: translateX(-120vw) rotate(calc(var(--i) * 7deg - 30deg));
+		top: calc(var(--i) * 7.7%);
+		left: calc(var(--i) * 8%);
+		opacity: 0.16;
+		animation: shard-slide 1.3s cubic-bezier(0.2, 0.8, 0.25, 1) calc(var(--i) * 38ms) infinite;
+	}
+
+	@keyframes splash-panel-in {
+		from {
+			opacity: 0;
+			transform: translateY(1.8rem) scale(0.96);
+			filter: blur(0.4rem);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+			filter: blur(0);
+		}
+	}
+
+	@keyframes splash-sweep {
+		to {
+			transform: translateX(120%);
+		}
+	}
+
+	@keyframes splash-panel-out {
+		to {
+			opacity: 0;
+			transform: translateY(-0.8rem) scale(0.97);
+			filter: blur(0.7rem);
+		}
+	}
+
+	@keyframes terminal-line {
+		to {
+			opacity: 1;
+			transform: translateX(0);
+		}
+	}
+
+	@keyframes splash-grid {
+		to {
+			background-position: 0 4.2rem, 4.2rem 0;
+		}
+	}
+
+	@keyframes spell-ring-spin {
+		to {
+			transform: rotate(1turn);
+		}
+	}
+
+	@keyframes charm-drift {
+		to {
+			transform: translate3d(0.45rem, -0.7rem, 0) rotate(calc(var(--i) * 9deg - 8deg));
+			color: rgba(255, 255, 255, 0.68);
+		}
+	}
+
+	@keyframes splash-noise {
+		50% {
+			transform: translate(1%, -1%);
+		}
+	}
+
+	@keyframes glitch-slice {
+		0%,
+		100% {
+			transform: translate(0, 0);
+		}
+		30% {
+			transform: translate(0.08em, -0.03em);
+		}
+		62% {
+			transform: translate(-0.06em, 0.03em);
+		}
+	}
+
+	@keyframes note-float {
+		0% {
+			opacity: 0;
+			transform: translate(-50%, -50%) scale(0.4);
+		}
+		24% {
+			opacity: 0.95;
+		}
+		100% {
+			opacity: 0;
+			transform: translate(
+				calc(-50% + var(--x) * 8rem),
+				calc(-50% + var(--y) * 5.5rem - 3rem)
+			) scale(1.05);
+		}
+	}
+
+	@keyframes shard-slide {
+		45% {
+			opacity: 0.3;
+		}
+		to {
+			transform: translateX(120vw) rotate(calc(var(--i) * 7deg - 30deg));
+			opacity: 0;
+		}
+	}
+
+	@keyframes progress-fracture {
+		50% {
+			transform: translateX(0.55rem) skewX(-12deg);
+		}
+	}
+
+	@keyframes progress-flash {
+		65%,
+		100% {
+			transform: translateX(120%);
+		}
+	}
+
+	@keyframes welcome-pop {
+		from {
+			opacity: 0;
+			transform: translateY(0.8rem) scale(0.9);
+			filter: blur(0.4rem);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+			filter: blur(0);
+		}
+	}
+
+	@keyframes welcome-shine {
+		to {
+			background-position: 220% 0;
+		}
+	}
+
+	@keyframes reveal-noise {
+		0%,
+		35% {
+			opacity: 0.2;
+			transform: translate(0, 0);
+		}
+		55% {
+			opacity: 0.16;
+			transform: translate(-1.2%, 0.8%);
+		}
+		100% {
+			opacity: 0;
+			transform: translate(1.4%, -1%);
+		}
+	}
+
+	@keyframes reveal-scanline {
+		0%,
+		48% {
+			opacity: 0.16;
+			transform: translateY(0);
+		}
+		100% {
+			opacity: 0;
+			transform: translateY(1.5rem);
+		}
+	}
+
+	@keyframes afterglitch-shard {
+		0% {
+			opacity: 0.72;
+			filter: blur(0);
+			transform: translateX(calc(-12vw + var(--i) * 1.4vw)) skewX(-18deg) rotate(calc(var(--i) * 7deg - 30deg)) scaleX(0.5);
+		}
+		42% {
+			opacity: 0.86;
+			filter: blur(0.05rem);
+			transform: translateX(calc(8vw + var(--i) * 2.2vw)) skewX(16deg) rotate(calc(var(--i) * 7deg - 26deg)) scaleX(1.25);
+		}
+		100% {
+			opacity: 0;
+			filter: blur(0.45rem);
+			transform: translateX(calc(34vw + var(--i) * 3vw)) translateY(calc(var(--i) * 0.25rem - 1.2rem)) skewX(-24deg) rotate(calc(var(--i) * 7deg - 20deg)) scaleX(1.75);
+		}
+	}
+
+	@keyframes afterglitch-pixel {
+		0% {
+			opacity: 0;
+			transform: translate(-50%, -50%) scale(0.45);
+		}
+		15% {
+			opacity: 0.95;
+		}
+		58% {
+			opacity: 0.72;
+			transform: translate(
+				calc(-50% + var(--x) * 7.5rem),
+				calc(-50% + var(--y) * 5rem)
+			) scale(1);
+		}
+		100% {
+			opacity: 0;
+			transform: translate(
+				calc(-50% + var(--x) * 11rem),
+				calc(-50% + var(--y) * 7rem - 2.2rem)
+			) scale(0.25);
+		}
+	}
+
+	@media (max-width: 780px) {
+		.splash-charms span {
+			opacity: 0.42;
+			transform: scale(0.82) rotate(calc(var(--i) * 9deg - 14deg));
+		}
+
+		.splash-panel {
+			min-height: 0;
+			grid-template-columns: 1fr;
+		}
+
+		.splash-terminal {
+			display: none;
+		}
+
+		.splash-main {
+			min-height: 21rem;
+			padding: 2rem 1.35rem;
+		}
+
+		.splash-welcome {
+			font-size: clamp(2rem, 11vw, 3rem);
+			white-space: normal;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.opening-splash,
+		.opening-splash *,
+		.opening-splash *::before,
+		.opening-splash *::after {
+			animation: none !important;
+			transition: none !important;
+		}
+	}
+</style>
+
+<script>
+	class OpeningSplash extends HTMLElement {
+		private percent = 0;
+		private timer?: number;
+
+		connectedCallback() {
+			const seen = this.hasSeenSplash();
+			if (seen) {
+				this.remove();
+				return;
+			}
+
+			document.body.classList.add("opening-splash-lock");
+
+			if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+				this.finishReducedMotion();
+				return;
+			}
+
+			this.tick();
+		}
+
+		disconnectedCallback() {
+			document.body.classList.remove("opening-splash-lock");
+			if (this.timer) window.clearTimeout(this.timer);
+		}
+
+		private hasSeenSplash() {
+			try {
+				return sessionStorage.getItem("drawrain-opening-splash") === "done";
+			} catch {
+				return false;
+			}
+		}
+
+		private markSeen() {
+			try {
+				sessionStorage.setItem("drawrain-opening-splash", "done");
+			} catch {
+				// Session storage may be blocked. The animation still works for this page view.
+			}
+		}
+
+		private finishReducedMotion() {
+			this.markSeen();
+			document.documentElement.classList.add("opening-splash-seen");
+			document.body.classList.remove("opening-splash-lock");
+			this.remove();
+		}
+
+		private tick() {
+			const jump = Math.ceil(4 + Math.random() * 11);
+			this.percent = Math.min(100, this.percent + jump);
+			this.style.setProperty("--splash-progress", `${this.percent}%`);
+
+			const percentEl = this.querySelector<HTMLElement>(".progress-percent");
+			if (percentEl) percentEl.textContent = `${this.percent}%`;
+
+			if (this.percent >= 100) {
+				this.completeSoon(720);
+				return;
+			}
+
+			this.timer = window.setTimeout(() => this.tick(), 82 + Math.random() * 108);
+		}
+
+		private completeSoon(delay: number) {
+			this.style.setProperty("--splash-progress", "100%");
+			const percentEl = this.querySelector<HTMLElement>(".progress-percent");
+			if (percentEl) percentEl.textContent = "100%";
+			this.timer = window.setTimeout(() => {
+				this.classList.add("is-complete");
+				this.markSeen();
+				this.timer = window.setTimeout(() => {
+					this.classList.add("is-revealing");
+					document.body.classList.remove("opening-splash-lock");
+					this.timer = window.setTimeout(() => {
+						this.classList.add("is-leaving");
+						this.timer = window.setTimeout(() => {
+							document.documentElement.classList.add("opening-splash-seen");
+							this.remove();
+						}, 860);
+					}, 1380);
+				}, 960);
+			}, delay);
+		}
+	}
+
+	if (!customElements.get("opening-splash")) {
+		customElements.define("opening-splash", OpeningSplash);
+	}
+</script>

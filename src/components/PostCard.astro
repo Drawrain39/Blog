@@ -42,8 +42,8 @@ const coverWidth = "28%";
 
 const { remarkPluginFrontmatter } = await entry.render();
 ---
-<div class:list={["card-base flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative", className]} style={style}>
-    <div class:list={["pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full md:w-[calc(100%_-_52px_-_12px)]": !hasCover, "w-full md:w-[calc(100%_-_var(--coverWidth)_-_12px)]": hasCover}]}>
+<div class:list={["card-base home-post-card flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative", className]} style={style}>
+    <div class:list={["pl-6 md:pl-9 pr-6 pt-6 md:pt-7 pb-6 relative", {"w-full md:pr-20": !hasCover, "w-full md:w-[calc(100%_-_var(--coverWidth)_-_12px)] md:pr-2": hasCover}]}>
         <a href={url}
            class="transition group w-full block font-bold mb-3 text-3xl text-90
         hover:text-[var(--primary)] dark:hover:text-[var(--primary)]
@@ -94,17 +94,52 @@ const { remarkPluginFrontmatter } = await entry.render();
     </a>}
 
     {!hasCover &&
-        <a href={url} aria-label={title} class="!hidden md:!flex btn-regular w-[3.25rem]
-         absolute right-3 top-3 bottom-3 rounded-xl bg-[var(--enter-btn-bg)]
-         hover:bg-[var(--enter-btn-bg-hover)] active:bg-[var(--enter-btn-bg-active)] active:scale-95
+        <a href={url} aria-label={title} class="!hidden md:!flex btn-regular h-10 w-10
+         absolute right-5 top-1/2 -translate-y-1/2 rounded-xl bg-[var(--enter-btn-bg)] opacity-65
+         hover:opacity-100 hover:bg-[var(--enter-btn-bg-hover)] active:bg-[var(--enter-btn-bg-active)] active:scale-95
         ">
             <Icon name="material-symbols:chevron-right-rounded"
-                  class="transition text-[var(--primary)] text-4xl mx-auto">
+                  class="transition text-[var(--primary)] text-2xl mx-auto">
             </Icon>
         </a>
     }
 </div>
-<div class="transition border-t-[1px] border-dashed mx-6 border-black/10 dark:border-white/[0.15] last:border-t-0 md:hidden"></div>
-
 <style define:vars={{coverWidth}}>
+    .home-post-card {
+        border: 1px solid rgba(226, 232, 240, 0.12);
+        background:
+            radial-gradient(circle at 12% 8%, rgba(148, 163, 184, 0.12), transparent 18rem),
+            linear-gradient(135deg, rgba(15, 23, 42, 0.62), rgba(8, 13, 25, 0.5)),
+            rgba(15, 23, 42, 0.42) !important;
+        box-shadow:
+            0 18px 54px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(18px) saturate(0.98);
+        -webkit-backdrop-filter: blur(18px) saturate(0.98);
+        transition:
+            transform 160ms ease,
+            border-color 160ms ease,
+            box-shadow 160ms ease,
+            background 160ms ease;
+    }
+
+    .home-post-card:hover {
+        border-color: rgba(251, 146, 60, 0.26);
+        box-shadow:
+            0 24px 68px rgba(0, 0, 0, 0.26),
+            0 0 26px rgba(251, 146, 60, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        transform: translateY(-1px);
+    }
+
+    :global(:root:not(.dark)) .home-post-card {
+        background:
+            radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.5), transparent 18rem),
+            linear-gradient(135deg, rgba(248, 250, 252, 0.86), rgba(226, 232, 240, 0.68)),
+            rgba(248, 250, 252, 0.76) !important;
+        border-color: rgba(15, 23, 42, 0.1);
+        box-shadow:
+            0 18px 52px rgba(15, 23, 42, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
 </style>

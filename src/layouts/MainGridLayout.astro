@@ -22,6 +22,7 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	headings?: MarkdownHeading[];
+	articleLayout?: boolean;
 }
 
 const {
@@ -31,6 +32,7 @@ const {
 	lang,
 	setOGTypeArticle,
 	headings = [],
+	articleLayout = false,
 } = Astro.props;
 const hasBannerCredit =
 	siteConfig.banner.enable && siteConfig.banner.credit.enable;
@@ -63,8 +65,10 @@ const mainPanelTop = siteConfig.banner.enable
 <div class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto">
-        <div id="main-grid" class="transition duration-700 w-full left-0 right-0 grid grid-cols-[17.5rem_auto] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto]
-    mx-auto gap-4 px-0 md:px-4"
+        <div id="main-grid" class:list={[
+            "transition duration-700 w-full left-0 right-0 grid grid-cols-[17.5rem_auto] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto] mx-auto gap-4 px-0 md:px-4",
+            {"article-grid": articleLayout},
+        ]}
         >
             <!-- Banner image credit -->
             {hasBannerCredit && <a href={siteConfig.banner.credit.url} id="banner-credit" target="_blank" rel="noopener" aria-label="Visit image source"
@@ -80,10 +84,10 @@ const mainPanelTop = siteConfig.banner.enable
             </a>}
 
 
-            <SideBar class="mb-4 row-start-2 row-end-3 col-span-2 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-[17.5rem] onload-animation" headings={headings}></SideBar>
+            {!articleLayout && <SideBar class="mb-4 row-start-2 row-end-3 col-span-2 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-[17.5rem] onload-animation" headings={headings}></SideBar>}
 
             <main id="swup-container" class="transition-swup-fade col-span-2 lg:col-span-1 overflow-hidden">
-                <div id="content-wrapper" class="onload-animation">
+                <div id="content-wrapper" class:list={["onload-animation", {"article-content-wrapper": articleLayout}]}>
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
                     <slot></slot>
@@ -107,7 +111,7 @@ const mainPanelTop = siteConfig.banner.enable
     <div class="relative max-w-[var(--page-width)] mx-auto">
         <!-- TOC component -->
         {siteConfig.toc.enable && <div id="toc-wrapper" class:list={["hidden lg:block transition absolute top-0 -right-[var(--toc-width)] w-[var(--toc-width)] items-center",
-            {"toc-hide": siteConfig.banner.enable}]}
+            {"toc-hide": siteConfig.banner.enable, "toc-article": articleLayout}]}
         >
             <div id="toc-inner-wrapper" class="fixed top-14 w-[var(--toc-width)] h-[calc(100vh_-_20rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar">
                 <div id="toc" class="w-full h-full transition-swup-fade ">
@@ -145,6 +149,283 @@ const mainPanelTop = siteConfig.banner.enable
     background-color: rgba(var(--color-card), 0.8) !important;
     backdrop-filter: blur(10px); 
     -webkit-backdrop-filter: blur(10px);
+  }
+
+  .content-glass-card {
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(226, 232, 240, 0.14);
+    background:
+      radial-gradient(circle at 12% 4%, rgba(148, 163, 184, 0.14), transparent 22rem),
+      linear-gradient(135deg, rgba(15, 23, 42, 0.84), rgba(8, 13, 25, 0.78)),
+      rgba(15, 23, 42, 0.76) !important;
+    box-shadow:
+      0 28px 90px rgba(0, 0, 0, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+    backdrop-filter: blur(24px) saturate(0.95);
+    -webkit-backdrop-filter: blur(24px) saturate(0.95);
+  }
+
+  :root:not(.dark) .content-glass-card {
+    background:
+      radial-gradient(circle at 12% 4%, rgba(255, 255, 255, 0.58), transparent 22rem),
+      linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(226, 232, 240, 0.78)),
+      rgba(248, 250, 252, 0.82) !important;
+    border-color: rgba(15, 23, 42, 0.1);
+    color: #334155;
+  }
+
+  .content-glass-card .custom-md {
+    --tw-prose-body: #cbd5e1;
+    --tw-prose-headings: #f8fafc;
+    --tw-prose-links: var(--primary);
+    --tw-prose-bold: #eef4fb;
+    --tw-prose-quotes: #dbe4ef;
+    --tw-prose-hr: rgba(226, 232, 240, 0.14);
+    color: #cbd5e1;
+    line-height: 1.74;
+  }
+
+  :root:not(.dark) .content-glass-card .custom-md {
+    --tw-prose-body: #334155;
+    --tw-prose-headings: #0f172a;
+    --tw-prose-bold: #0f172a;
+    --tw-prose-quotes: #1e293b;
+    --tw-prose-hr: rgba(15, 23, 42, 0.12);
+    color: #334155;
+  }
+
+  .content-glass-card .custom-md h1,
+  .content-glass-card .custom-md h2,
+  .content-glass-card .custom-md h3 {
+    color: var(--tw-prose-headings);
+    letter-spacing: 0;
+  }
+
+  #main-grid.article-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    max-width: min(100%, 68rem);
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+
+  #main-grid.article-grid #swup-container,
+  #main-grid.article-grid .footer {
+    grid-column: 1 / -1 !important;
+  }
+
+  #main-grid.article-grid #swup-container {
+    overflow: visible;
+  }
+
+  #content-wrapper.article-content-wrapper {
+    width: 100%;
+  }
+
+  @media (min-width: 768px) {
+    #main-grid.article-grid {
+      padding-right: 1rem;
+      padding-left: 1rem;
+    }
+  }
+
+  .article-frame {
+    isolation: isolate;
+  }
+
+  #post-container.reading-card {
+    overflow: hidden;
+  }
+
+  #post-container.reading-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.045;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.38) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.32) 1px, transparent 1px);
+    background-size: 4rem 4rem;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 88%);
+    pointer-events: none;
+  }
+
+  :root.dark #post-container.reading-card {
+    background:
+      radial-gradient(circle at 12% 4%, rgba(148, 163, 184, 0.14), transparent 22rem),
+      linear-gradient(135deg, rgba(15, 23, 42, 0.84), rgba(8, 13, 25, 0.78)),
+      rgba(15, 23, 42, 0.76) !important;
+  }
+
+  :root:not(.dark) #post-container.reading-card {
+    color: #334155;
+  }
+
+  #post-container.reading-card [data-pagefind-meta="title"] {
+    color: rgba(248, 250, 252, 0.96) !important;
+    font-size: clamp(2.05rem, 4vw, 3.05rem);
+    line-height: 1.16;
+    letter-spacing: 0;
+  }
+
+  :root:not(.dark) #post-container.reading-card [data-pagefind-meta="title"] {
+    color: rgba(15, 23, 42, 0.94) !important;
+  }
+
+  #post-container.reading-card .markdown-content {
+    color: #cbd5e1;
+    font-size: 1.02rem;
+    line-height: 1.78;
+  }
+
+  :root:not(.dark) #post-container.reading-card .markdown-content {
+    color: #334155;
+  }
+
+  #post-container.reading-card .custom-md {
+    --tw-prose-body: #cbd5e1;
+    --tw-prose-headings: #f8fafc;
+    --tw-prose-lead: #dbe4ef;
+    --tw-prose-links: var(--primary);
+    --tw-prose-bold: #eef4fb;
+    --tw-prose-counters: #94a3b8;
+    --tw-prose-bullets: #94a3b8;
+    --tw-prose-hr: rgba(226, 232, 240, 0.14);
+    --tw-prose-quotes: #dbe4ef;
+    --tw-prose-quote-borders: rgba(251, 146, 60, 0.55);
+    --tw-prose-captions: #94a3b8;
+    --tw-prose-code: #f1f5f9;
+    --tw-prose-pre-code: #dbeafe;
+    --tw-prose-pre-bg: rgba(2, 6, 23, 0.86);
+    --tw-prose-th-borders: rgba(226, 232, 240, 0.2);
+    --tw-prose-td-borders: rgba(226, 232, 240, 0.12);
+  }
+
+  :root:not(.dark) #post-container.reading-card .custom-md {
+    --tw-prose-body: #334155;
+    --tw-prose-headings: #0f172a;
+    --tw-prose-lead: #475569;
+    --tw-prose-bold: #0f172a;
+    --tw-prose-counters: #64748b;
+    --tw-prose-bullets: #64748b;
+    --tw-prose-hr: rgba(15, 23, 42, 0.12);
+    --tw-prose-quotes: #1e293b;
+    --tw-prose-quote-borders: rgba(249, 115, 22, 0.58);
+    --tw-prose-captions: #64748b;
+    --tw-prose-code: #0f172a;
+    --tw-prose-pre-code: #dbeafe;
+    --tw-prose-pre-bg: rgba(15, 23, 42, 0.94);
+    --tw-prose-th-borders: rgba(15, 23, 42, 0.16);
+    --tw-prose-td-borders: rgba(15, 23, 42, 0.1);
+  }
+
+  #post-container.reading-card .custom-md p,
+  #post-container.reading-card .custom-md ul,
+  #post-container.reading-card .custom-md ol {
+    margin-top: 1.05em;
+    margin-bottom: 1.05em;
+  }
+
+  #post-container.reading-card .custom-md li {
+    margin-top: 0.35em;
+    margin-bottom: 0.35em;
+  }
+
+  #post-container.reading-card .custom-md h1,
+  #post-container.reading-card .custom-md h2,
+  #post-container.reading-card .custom-md h3,
+  #post-container.reading-card .custom-md h4 {
+    line-height: 1.32;
+    letter-spacing: 0;
+  }
+
+  #post-container.reading-card .custom-md h2 {
+    color: #f8fafc;
+    font-size: 1.62rem;
+    margin-top: 2.4em;
+    padding-top: 0.2rem;
+  }
+
+  #post-container.reading-card .custom-md h3 {
+    color: #e2e8f0;
+    font-size: 1.28rem;
+    margin-top: 2em;
+  }
+
+  #post-container.reading-card .custom-md h4 {
+    color: #cbd5e1;
+    font-size: 1.06rem;
+  }
+
+  :root:not(.dark) #post-container.reading-card .custom-md h2 {
+    color: #0f172a;
+  }
+
+  :root:not(.dark) #post-container.reading-card .custom-md h3 {
+    color: #1e293b;
+  }
+
+  :root:not(.dark) #post-container.reading-card .custom-md h4 {
+    color: #334155;
+  }
+
+  #post-container.reading-card .custom-md blockquote {
+    margin: 1.5rem 0;
+    border-radius: 1rem;
+    background: rgba(15, 23, 42, 0.38);
+    padding: 1rem 1.1rem 1rem 1.35rem;
+  }
+
+  :root:not(.dark) #post-container.reading-card .custom-md blockquote {
+    background: rgba(255, 255, 255, 0.52);
+  }
+
+  #post-container.reading-card .custom-md .katex-display-container,
+  #post-container.reading-card .custom-md .expressive-code,
+  #post-container.reading-card .custom-md pre,
+  #post-container.reading-card .custom-md table {
+    max-width: 100%;
+  }
+
+  #post-container.reading-card .custom-md .katex-display-container {
+    margin: 1.35rem 0;
+    border: 1px solid rgba(226, 232, 240, 0.12);
+    border-radius: 1rem;
+    background: rgba(2, 6, 23, 0.34);
+    padding: 0.8rem 1rem;
+  }
+
+  :root:not(.dark) #post-container.reading-card .custom-md .katex-display-container {
+    border-color: rgba(15, 23, 42, 0.1);
+    background: rgba(255, 255, 255, 0.52);
+  }
+
+  #post-container.reading-card .custom-md .expressive-code {
+    margin: 1.55rem 0;
+  }
+
+  #post-container.reading-card .custom-md pre {
+    border: 1px solid rgba(226, 232, 240, 0.12);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.2);
+  }
+
+  #post-container.reading-card .custom-md table {
+    display: block;
+    overflow-x: auto;
+    border-radius: 0.9rem;
+  }
+
+  #toc-wrapper.toc-article #toc-inner-wrapper {
+    top: 5.35rem;
+    height: calc(100vh - 11.5rem);
+    border-radius: 1rem;
+    background: rgba(15, 23, 42, 0.46);
+    padding: 0.7rem;
+    box-shadow: 0 18px 54px rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(18px) saturate(0.95);
+    -webkit-backdrop-filter: blur(18px) saturate(0.95);
   }
   
   .sidebar-content {

@@ -1,0 +1,341 @@
+---
+interface Props {
+	words: number;
+	minutes: number;
+}
+
+const { words, minutes } = Astro.props;
+const isFullCombo = words >= 3000;
+const clearTitle = isFullCombo ? "FULL COMBO!" : "LIVE CLEAR!";
+const clearRank = isFullCombo ? "ALL NOTES HIT" : "STAGE CLEAR";
+const particles = Array.from({ length: 24 }, (_, index) => index);
+---
+
+<post-clear-stage class="clear-stage onload-animation" aria-label={`Reading result: ${clearTitle}`}>
+	<div class="clear-stage-bg" aria-hidden="true"></div>
+	<div class="clear-lanes" aria-hidden="true">
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+	</div>
+	<div class="clear-particles" aria-hidden="true">
+		{particles.map((particle) => (
+			<span style={`--i:${particle}; --x:${(particle % 8) - 3.5}; --y:${Math.floor(particle / 8) - 1};`}></span>
+		))}
+	</div>
+
+	<div class="clear-content">
+		<div class="clear-kicker">READING RESULT</div>
+		<div class="clear-title" data-text={clearTitle}>{clearTitle}</div>
+		<div class="clear-rank">{clearRank}</div>
+
+		<div class="clear-stats" aria-label="Reading stats">
+			<div>
+				<span>COMBO</span>
+				<strong>{words}</strong>
+			</div>
+			<div>
+				<span>TIME</span>
+				<strong>{minutes} MIN</strong>
+			</div>
+			<div>
+				<span>MISS</span>
+				<strong>0</strong>
+			</div>
+		</div>
+	</div>
+</post-clear-stage>
+
+<style>
+	.clear-stage {
+		position: relative;
+		display: block;
+		overflow: hidden;
+		margin: 0 0 1.6rem;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 1.35rem;
+		background:
+			radial-gradient(circle at 18% 20%, rgba(255, 125, 210, 0.16), transparent 15rem),
+			radial-gradient(circle at 82% 28%, rgba(99, 179, 255, 0.14), transparent 15rem),
+			linear-gradient(135deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 25, 0.86));
+		box-shadow:
+			0 22px 64px rgba(0, 0, 0, 0.26),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		color: #f8fafc;
+		isolation: isolate;
+		opacity: 0.78;
+		transform: translateY(0.8rem) scale(0.985);
+		transition:
+			opacity 420ms ease,
+			transform 520ms cubic-bezier(0.2, 0.9, 0.2, 1);
+	}
+
+	.clear-stage.is-visible {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+
+	.clear-stage-bg {
+		position: absolute;
+		inset: 0;
+		z-index: -2;
+		background:
+			linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent),
+			repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 5.4rem);
+		opacity: 0.35;
+		transform: skewY(-4deg) scale(1.1);
+	}
+
+	.clear-lanes {
+		position: absolute;
+		inset: auto -4rem -2.8rem -4rem;
+		z-index: -1;
+		height: 8rem;
+		transform: perspective(26rem) rotateX(58deg);
+		transform-origin: center bottom;
+		opacity: 0.42;
+	}
+
+	.clear-lanes span {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 1px;
+		background: linear-gradient(180deg, transparent, rgba(255, 132, 214, 0.9), transparent);
+		box-shadow: 0 0 1rem rgba(255, 132, 214, 0.28);
+	}
+
+	.clear-lanes span:nth-child(1) {
+		left: 22%;
+	}
+
+	.clear-lanes span:nth-child(2) {
+		left: 40%;
+	}
+
+	.clear-lanes span:nth-child(3) {
+		left: 60%;
+	}
+
+	.clear-lanes span:nth-child(4) {
+		left: 78%;
+	}
+
+	.clear-content {
+		position: relative;
+		padding: 1.4rem 1.25rem 1.25rem;
+		text-align: center;
+	}
+
+	.clear-kicker {
+		color: rgba(226, 232, 240, 0.62);
+		font-size: 0.72rem;
+		font-weight: 900;
+		letter-spacing: 0.18em;
+	}
+
+	.clear-title {
+		position: relative;
+		margin-top: 0.35rem;
+		background: linear-gradient(90deg, #fff, #ff8bd8 38%, #7dd3fc 74%, #fff);
+		background-size: 220% 100%;
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+		font-size: clamp(2rem, 8vw, 4.2rem);
+		font-weight: 1000;
+		letter-spacing: 0;
+		line-height: 0.95;
+		text-shadow: 0 0 2rem rgba(255, 132, 214, 0.34);
+		transform: translateY(0.45rem) scale(0.96);
+	}
+
+	.clear-title::before {
+		content: attr(data-text);
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		color: rgba(255, 126, 214, 0.38);
+		filter: blur(0.8rem);
+		transform: scale(1.04);
+	}
+
+	.clear-rank {
+		margin-top: 0.55rem;
+		color: rgba(248, 250, 252, 0.76);
+		font-size: 0.82rem;
+		font-weight: 900;
+		letter-spacing: 0.18em;
+	}
+
+	.clear-stats {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.7rem;
+		margin-top: 1.2rem;
+	}
+
+	.clear-stats div {
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 0.9rem;
+		background: rgba(255, 255, 255, 0.055);
+		padding: 0.7rem 0.55rem;
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+	}
+
+	.clear-stats span {
+		display: block;
+		color: rgba(226, 232, 240, 0.48);
+		font-size: 0.65rem;
+		font-weight: 900;
+		letter-spacing: 0.12em;
+	}
+
+	.clear-stats strong {
+		display: block;
+		margin-top: 0.2rem;
+		color: rgba(255, 255, 255, 0.9);
+		font-size: 0.98rem;
+		font-weight: 950;
+	}
+
+	.clear-particles span {
+		position: absolute;
+		top: 46%;
+		left: 50%;
+		width: 0.42rem;
+		height: 0.42rem;
+		border-radius: 999px;
+		background: hsl(calc(var(--i) * 37deg), 92%, 72%);
+		box-shadow: 0 0 0.7rem currentColor;
+		opacity: 0;
+	}
+
+	.clear-stage.is-visible .clear-title {
+		animation: clear-title-pop 820ms cubic-bezier(0.2, 1.35, 0.28, 1) both, clear-title-shine 2.6s linear 480ms infinite;
+	}
+
+	.clear-stage.is-visible .clear-particles span {
+		animation: clear-particle-burst 900ms cubic-bezier(0.18, 0.86, 0.32, 1) calc(var(--i) * 18ms) both;
+	}
+
+	.clear-stage.is-visible .clear-stage-bg {
+		animation: clear-scan 2.8s linear infinite;
+	}
+
+	@keyframes clear-title-pop {
+		0% {
+			opacity: 0;
+			transform: translateY(1rem) scale(0.78);
+			filter: blur(0.4rem);
+		}
+		55% {
+			opacity: 1;
+			transform: translateY(-0.14rem) scale(1.06);
+			filter: blur(0);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+			filter: blur(0);
+		}
+	}
+
+	@keyframes clear-title-shine {
+		to {
+			background-position: 220% 0;
+		}
+	}
+
+	@keyframes clear-particle-burst {
+		0% {
+			opacity: 0;
+			transform: translate(-50%, -50%) scale(0.4);
+		}
+		22% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+			transform: translate(
+				calc(-50% + var(--x) * 2.6rem),
+				calc(-50% + var(--y) * 2.5rem - 2.2rem)
+			) scale(1.1);
+		}
+	}
+
+	@keyframes clear-scan {
+		to {
+			transform: translateX(4rem) skewY(-4deg) scale(1.1);
+		}
+	}
+
+	@media (min-width: 768px) {
+		.clear-content {
+			padding: 1.65rem 1.65rem 1.45rem;
+		}
+
+		.clear-stats {
+			width: min(100%, 34rem);
+			margin-right: auto;
+			margin-left: auto;
+		}
+	}
+
+	@media (max-width: 520px) {
+		.clear-stats {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.clear-stage,
+		.clear-title,
+		.clear-stage-bg,
+		.clear-particles span {
+			animation: none !important;
+			transition: none !important;
+		}
+
+		.clear-stage {
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>
+
+<script>
+	class PostClearStage extends HTMLElement {
+		observer?: IntersectionObserver;
+
+		connectedCallback() {
+			if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+				this.classList.add("is-visible");
+				return;
+			}
+
+			this.observer = new IntersectionObserver(
+				(entries) => {
+					for (const entry of entries) {
+						if (!entry.isIntersecting) continue;
+						this.classList.add("is-visible");
+						this.observer?.disconnect();
+					}
+				},
+				{ threshold: 0.35 },
+			);
+
+			this.observer.observe(this);
+		}
+
+		disconnectedCallback() {
+			this.observer?.disconnect();
+		}
+	}
+
+	if (!customElements.get("post-clear-stage")) {
+		customElements.define("post-clear-stage", PostClearStage);
+	}
+</script>

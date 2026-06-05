@@ -4,6 +4,8 @@ published: 2026-04-19
 description: Reverse方向个人题解
 tags: [CTF, Writeup, Reverse]
 category: CTF
+series: CTF Writeup
+seriesOrder: 3
 draft: false
 ---
 > 国外小众简单赛事罢了，最后ban完后结榜个人打了第二，还不错，AK except 3\(包括一个过本地但是远程靶机坏了的pwn\.\.\.）
@@ -16,7 +18,7 @@ draft: false
 
 Question Source Code
 
-```Python
+```python
 #!/usr/bin/env python3
 T = bytes.fromhex("7066444d5033220a5b08d6a2fcc38ca7a788c2a17b6a15554d78341b")
 
@@ -32,7 +34,7 @@ else:
 
 There's nothing much to say, just directly reverse one step back, so easy 
 
-```Python
+```python
 #!/usr/bin/env python3
 T = bytes.fromhex("7066444d5033220a5b08d6a2fcc38ca7a788c2a17b6a15554d78341b")
 
@@ -74,7 +76,7 @@ Most operations are clearly reversible
 
 What is truly less straightforward is `_A` and `_B`
 
-```Python
+```python
 c = bytes(x[i:i + 3])
 d = hash(c).digest()[:3]
 x[i:i + 3] = bytes(p ^ q for p, q in zip(c, d))
@@ -82,7 +84,7 @@ x[i:i + 3] = bytes(p ^ q for p, q in zip(c, d))
 
 They only affect 3 consecutive ByteDance, so when reaching the corresponding position during the reverse process, all `2^24` possible inputs can be enumerated for the current target 3 ByteDance to find the ones that satisfy 
 
-```Python
+```python
 chunk ^ hash(chunk)[:3] == target
 ```
 
@@ -102,7 +104,7 @@ There are two key pieces of information here
 
 Bringing these three candidates back to the entire inverse chain respectively, only `e28388` can ultimately restore a valid flag that satisfies `_c()`\.
 
-```Python
+```python
 #!/usr/bin/env python3
 import hashlib
 import random
@@ -381,7 +383,7 @@ The input length must be ` 39 `\.
 
 The end does not involve byte\-by\-byte comparison; instead, it first runs a large segment of arithmetic/XOR obfuscation, and finally checks several sets of 32\-bit states: 
 
-```C
+```c
 if ( v16 != -2103969039 )
   goto LABEL_55;
 
@@ -427,7 +429,7 @@ It has changed from a messy goto obfuscation to a fixed single path, and then co
 
 Request the remaining 33 characters 
 
-```Python
+```python
 from __future__ import annotations
 
 import json
@@ -763,4 +765,3 @@ if __name__ == "__main__":
 ```
 
 wreck\{n0w\_h34d3d\_t0\_3xtr4\_h3ll\_8b2f4e9\}
-

@@ -34,30 +34,113 @@ const maxLevel = siteConfig.toc.depth;
 {isPostsRoute &&
 <table-of-contents class:list={[className, "group"]}>
     {headings.filter((heading) => heading.depth < minDepth + maxLevel).map((heading) =>
-            <a href={`#${heading.slug}`} class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl
-        hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2
-    ">
-                <div class:list={["transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
+            <a href={`#${heading.slug}`} class:list={["toc-link px-3 flex gap-2 relative transition w-full min-h-9 rounded-xl py-2",
                     {
-                        "bg-[var(--toc-badge-bg)] text-[var(--btn-content)]": heading.depth == minDepth,
+                        "toc-depth-root": heading.depth == minDepth,
+                        "toc-depth-child": heading.depth == minDepth + 1,
+                        "toc-depth-grandchild": heading.depth == minDepth + 2,
+                    }
+                ]}
+            >
+                <div class:list={["toc-marker transition w-5 h-5 shrink-0 text-xs flex items-center justify-center font-bold",
+                    {
                         "ml-4": heading.depth == minDepth + 1,
                         "ml-8": heading.depth == minDepth + 2,
                     }
                 ]}
                 >
-                    {heading.depth == minDepth && heading1Count++}
-                    {heading.depth == minDepth + 1 && <div class="transition w-2 h-2 rounded-[0.1875rem] bg-[var(--toc-badge-bg)]"></div>}
-                    {heading.depth == minDepth + 2 && <div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>}
+                    {heading.depth == minDepth && <span>{heading1Count++}</span>}
+                    {heading.depth == minDepth + 1 && <span class="toc-dot toc-dot-child"></span>}
+                    {heading.depth == minDepth + 2 && <span class="toc-dot toc-dot-grandchild"></span>}
                 </div>
-                <div class:list={["transition text-sm", {
+                <div class:list={["toc-label transition text-sm", {
                     "text-50": heading.depth == minDepth || heading.depth == minDepth + 1,
                     "text-30": heading.depth == minDepth + 2,
                 }]}>{removeTailingHash(heading.text)}</div>
             </a>
     )}
-    <div id="active-indicator" style="opacity: 0" class:list={[{'hidden': headings.length == 0}, "-z-10 absolute bg-[var(--toc-btn-hover)] left-0 right-0 rounded-xl transition-all " +
-        "group-hover:bg-transparent border-2 border-[var(--toc-btn-hover)] group-hover:border-[var(--toc-btn-active)] border-dashed"]}></div>
 </table-of-contents>}
+
+<style>
+    table-of-contents {
+        display: block;
+        position: relative;
+    }
+
+    .toc-link {
+        color: inherit;
+        outline: 0;
+    }
+
+    .toc-link::before {
+        content: "";
+        position: absolute;
+        top: 0.55rem;
+        bottom: 0.55rem;
+        left: 0.2rem;
+        width: 2px;
+        border-radius: 999px;
+        background: var(--primary);
+        opacity: 0;
+        transform: scaleY(0.45);
+        transition:
+            opacity 150ms ease,
+            transform 150ms ease;
+    }
+
+    .toc-link:hover {
+        background: var(--toc-btn-hover);
+    }
+
+    .toc-link:active {
+        background: var(--toc-btn-active);
+    }
+
+    .toc-link.visible::before {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+
+    .toc-link.visible .toc-label,
+    .toc-link.visible .toc-marker {
+        color: var(--primary);
+    }
+
+    .toc-link.visible .toc-label {
+        font-weight: 800;
+    }
+
+    .toc-marker {
+        color: var(--btn-content);
+        opacity: 0.62;
+    }
+
+    .toc-label {
+        line-height: 1.45;
+    }
+
+    .toc-dot {
+        display: block;
+        border-radius: 999px;
+        background: var(--toc-badge-bg);
+    }
+
+    .toc-dot-child {
+        width: 0.4rem;
+        height: 0.4rem;
+    }
+
+    .toc-dot-grandchild {
+        width: 0.32rem;
+        height: 0.32rem;
+        opacity: 0.7;
+    }
+
+    .toc-link.visible .toc-dot {
+        background: var(--primary);
+        opacity: 1;
+    }
+</style>
 
 <script>
 class TableOfContents extends HTMLElement {

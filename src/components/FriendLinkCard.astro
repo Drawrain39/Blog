@@ -10,39 +10,129 @@ interface Props {
 const { friend } = Astro.props;
 ---
 
-<article class="card-base rounded-[var(--radius-large)] p-4 md:p-5">
-	<div class="flex items-start gap-4">
-		<a
-			href={friend.url}
-			target="_blank"
-			rel="noopener noreferrer"
-			aria-label={`Visit ${friend.name}`}
-			class="w-14 h-14 rounded-xl overflow-hidden shrink-0 active:scale-95"
-		>
-			<ImageWrapper src={friend.avatar} alt={`${friend.name} avatar`} class="w-full h-full" />
-		</a>
-		<div class="min-w-0 flex-1">
-			<a
-				href={friend.url}
-				target="_blank"
-				rel="noopener noreferrer"
-				class="font-bold text-lg text-90 hover:text-[var(--primary)] transition"
-			>
+<a
+	href={friend.url}
+	target="_blank"
+	rel="noopener noreferrer"
+	aria-label={`Visit ${friend.name}`}
+	class="friend-card content-glass-card group relative flex min-h-[7.25rem] items-center gap-4 p-4 md:p-5 active:scale-[0.985]"
+>
+	<div class="friend-avatar h-16 w-16 shrink-0 overflow-hidden rounded-xl">
+		<ImageWrapper src={friend.avatar} alt={`${friend.name} avatar`} class="h-full w-full" />
+	</div>
+	<div class="min-w-0 flex-1 pr-8">
+		<div class="flex min-w-0 items-center gap-2">
+			<div class="friend-name truncate text-lg font-black transition">
 				{friend.name}
-			</a>
-			{friend.siteName && <div class="text-sm text-50 mt-0.5">{friend.siteName}</div>}
-			<p class="text-75 mt-2 line-clamp-2">{friend.description}</p>
+			</div>
+			<Icon
+				name="fa6-solid:arrow-up-right-from-square"
+				class="friend-arrow shrink-0 text-xs text-white/38 transition"
+			/>
 		</div>
+		{friend.siteName && <div class="friend-site mt-0.5 truncate text-sm font-semibold">{friend.siteName}</div>}
+		{friend.description?.trim() && <p class="friend-desc mt-2 line-clamp-2 text-sm leading-6">{friend.description}</p>}
 	</div>
-	<div class="mt-4">
-		<a
-			href={friend.url}
-			target="_blank"
-			rel="noopener noreferrer"
-			class="btn-regular rounded-lg h-10 px-3 inline-flex items-center gap-1.5 font-semibold active:scale-95"
-		>
-			It's MyGO!!!!!
-			<Icon name="fa6-solid:arrow-up-right-from-square" class="text-sm" />
-		</a>
-	</div>
-</article>
+	<div class="friend-badge">It's MyGO!!!!!</div>
+</a>
+
+<style>
+	.friend-card {
+		text-decoration: none;
+		transform: translateY(0);
+		transition:
+			transform 160ms ease,
+			border-color 160ms ease,
+			box-shadow 160ms ease,
+			background 160ms ease;
+	}
+
+	.friend-card:hover {
+		border-color: rgba(251, 146, 60, 0.34);
+		box-shadow:
+			0 24px 64px rgba(0, 0, 0, 0.28),
+			0 0 26px rgba(251, 146, 60, 0.1),
+			inset 0 1px 0 rgba(255, 255, 255, 0.07);
+		transform: translateY(-2px);
+	}
+
+	.friend-avatar {
+		box-shadow:
+			0 12px 28px rgba(0, 0, 0, 0.22),
+			inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+	}
+
+	.friend-name {
+		color: rgba(255, 255, 255, 0.95);
+	}
+
+	.friend-card:hover .friend-name {
+		color: #fff;
+	}
+
+	.friend-site {
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.friend-desc {
+		color: rgba(255, 255, 255, 0.68);
+	}
+
+	.friend-arrow {
+		opacity: 0.75;
+		transform: translate(-0.1rem, 0.1rem);
+	}
+
+	.friend-card:hover .friend-arrow {
+		color: var(--primary);
+		opacity: 1;
+		transform: translate(0, 0);
+	}
+
+	.friend-badge {
+		position: absolute;
+		top: 0.8rem;
+		right: 0.85rem;
+		border: 1px solid rgba(251, 146, 60, 0.34);
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.08);
+		padding: 0.18rem 0.5rem;
+		color: rgba(255, 218, 185, 0.88);
+		font-size: 0.66rem;
+		font-weight: 800;
+		letter-spacing: 0.04em;
+		line-height: 1;
+		opacity: 0.86;
+		transition:
+			opacity 160ms ease,
+			color 160ms ease,
+			border-color 160ms ease;
+	}
+
+	.friend-card:hover .friend-badge {
+		border-color: rgba(251, 146, 60, 0.42);
+		color: rgba(255, 225, 198, 0.95);
+		opacity: 1;
+	}
+
+	:global(:root:not(.dark)) .friend-name {
+		color: rgba(15, 23, 42, 0.92);
+	}
+
+	:global(:root:not(.dark)) .friend-card:hover .friend-name {
+		color: rgba(15, 23, 42, 1);
+	}
+
+	:global(:root:not(.dark)) .friend-site {
+		color: rgba(51, 65, 85, 0.58);
+	}
+
+	:global(:root:not(.dark)) .friend-desc {
+		color: rgba(51, 65, 85, 0.72);
+	}
+
+	:global(:root:not(.dark)) .friend-badge {
+		background: rgba(255, 255, 255, 0.5);
+		color: rgba(154, 83, 25, 0.88);
+	}
+</style>

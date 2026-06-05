@@ -2,6 +2,7 @@
 
 import { getEntry, render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
+import { Icon } from "astro-icon/components";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
@@ -13,13 +14,459 @@ if (!aboutPost) {
 }
 
 const { Content } = await render(aboutPost);
+
+const neteaseSongId = "557581315";
+const neteasePlayerUrl = `https://music.163.com/outchain/player?type=2&id=${neteaseSongId}&auto=0&height=66`;
+const neteaseSongUrl = `https://music.163.com/#/song?id=${neteaseSongId}`;
 ---
 <MainGridLayout title={i18n(I18nKey.about)} description={i18n(I18nKey.about)}>
-    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
-        <div class="card-base z-10 px-9 py-6 relative w-full ">
+    <div class="flex w-full relative min-h-32">
+        <div class="card-base content-glass-card z-10 px-7 py-7 md:px-10 md:py-8 relative w-full">
             <Markdown class="mt-2">
                 <Content />
             </Markdown>
+            <div class="mt-8 border-t border-[var(--line-divider)] pt-6">
+                <div class="about-link-grid">
+                <a
+                    href="https://music.163.com/#/user/home?id=1704265550"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="social-card music-card group flex items-center gap-4 rounded-xl p-4 active:scale-[0.99]"
+                    aria-label="打开 Drawrain 的网易云音乐主页"
+                >
+                    <div class="social-card-icon flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                        <Icon name="material-symbols:music-note-rounded" class="text-[1.75rem]" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex min-w-0 items-center gap-2">
+                            <div class="truncate text-lg font-black text-white">网易云音乐</div>
+                            <Icon
+                                name="fa6-solid:arrow-up-right-from-square"
+                                class="shrink-0 text-xs text-white/55 transition group-hover:text-white/90"
+                            />
+                        </div>
+                        <div class="mt-1 truncate text-sm font-semibold text-white/70">
+                            Drawrain 的听歌主页
+                        </div>
+                    </div>
+                </a>
+                <a
+                    href="https://b23.tv/JE7bvKR"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="social-card bilibili-card group flex items-center gap-4 rounded-xl p-4 active:scale-[0.99]"
+                    aria-label="打开 Drawrain 的哔哩哔哩主页"
+                >
+                    <div class="social-card-icon flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                        <Icon name="material-symbols:smart-display-rounded" class="text-[1.75rem]" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex min-w-0 items-center gap-2">
+                            <div class="truncate text-lg font-black text-white">哔哩哔哩</div>
+                            <Icon
+                                name="fa6-solid:arrow-up-right-from-square"
+                                class="shrink-0 text-xs text-white/55 transition group-hover:text-white/90"
+                            />
+                        </div>
+                        <div class="mt-1 truncate text-sm font-semibold text-white/70">
+                            Drawrain 的 B 站主页
+                        </div>
+                    </div>
+                </a>
+                </div>
+                <div class="netease-player-card mt-5">
+                    <div class="song-stamp">生きてるだけで痛いんですよ</div>
+                    <div class="song-hero">
+                        <div class="song-art" aria-hidden="true">
+                            <div class="song-art-disc"></div>
+                            <div class="song-art-line"></div>
+                        </div>
+
+                        <div class="song-copy">
+                            <div class="song-kicker">希区柯克 Hitchcock</div>
+                            <div class="mt-2 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                                <div class="min-w-0">
+                                    <h2 class="song-title">ヒッチコック</h2>
+                                    <div class="mt-1 text-sm font-semibold text-[#d6ddd7]/70">ヨルシカ · Yorushika</div>
+                                </div>
+                                <a
+                                    href={neteaseSongUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="song-action inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-bold"
+                                >
+                                    Hitchcock
+                                    <Icon name="fa6-solid:arrow-up-right-from-square" class="text-xs" />
+                                </a>
+                            </div>
+
+                            <div class="lyric-note">
+                                <div class="lyric-line"></div>
+                                <div class="lyric-groups">
+                                    <p> 先生、人生相談です。</p>
+                                    <p> 老师、关于人生 我有不明白的地方</p>
+                                    <p> この先どうなら楽ですか。</p>
+                                    <p> 今后该怎么样 才能活的轻松呢</p>
+                                    <p> 涙が人を強くするなんて全部詭弁でした。</p>
+                                    <p> 所谓泪水能让人更加强大 统统都是诡辩啊</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="official-player">
+                        <div class="official-player-label">
+                            <Icon name="material-symbols:graphic-eq-rounded" class="text-[1.2rem]" />
+                            一键逃离现实
+                        </div>
+                        <iframe
+                            title="网易云音乐播放器"
+                            src={neteasePlayerUrl}
+                            frameborder="0"
+                            loading="lazy"
+                            class="block h-[86px] w-full"
+                        ></iframe>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </MainGridLayout>
+
+<style>
+    .about-link-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+        gap: 0.75rem;
+    }
+
+    .social-card {
+        border: 1px solid rgba(226, 232, 226, 0.12);
+        box-shadow: 0 16px 42px rgba(0, 0, 0, 0.16);
+        backdrop-filter: blur(14px) saturate(1.08);
+        -webkit-backdrop-filter: blur(14px) saturate(1.08);
+        transition:
+            transform 150ms ease,
+            border-color 150ms ease,
+            box-shadow 150ms ease;
+    }
+
+    .music-card {
+        background:
+            linear-gradient(135deg, rgba(45, 58, 68, 0.68), rgba(10, 16, 24, 0.58)),
+            linear-gradient(90deg, rgba(225, 42, 61, 0.13), transparent 64%),
+            rgba(15, 22, 30, 0.52);
+    }
+
+    .bilibili-card {
+        background:
+            linear-gradient(135deg, rgba(45, 58, 68, 0.68), rgba(10, 16, 24, 0.58)),
+            linear-gradient(90deg, rgba(0, 174, 236, 0.14), transparent 64%),
+            rgba(15, 22, 30, 0.52);
+    }
+
+    .social-card:hover {
+        border-color: rgba(255, 255, 255, 0.26);
+        transform: translateY(-1px);
+    }
+
+    .music-card:hover {
+        box-shadow: 0 20px 48px rgba(11, 18, 26, 0.24), 0 0 24px rgba(225, 42, 61, 0.08);
+    }
+
+    .bilibili-card:hover {
+        box-shadow: 0 20px 48px rgba(11, 18, 26, 0.24), 0 0 24px rgba(0, 174, 236, 0.08);
+    }
+
+    .social-card-icon {
+        background: rgba(237, 241, 236, 0.09);
+        color: rgba(237, 241, 236, 0.88);
+    }
+
+    .music-card .social-card-icon {
+        box-shadow: inset 0 0 0 1px rgba(225, 42, 61, 0.16);
+        color: rgba(255, 218, 223, 0.9);
+    }
+
+    .bilibili-card .social-card-icon {
+        box-shadow: inset 0 0 0 1px rgba(0, 174, 236, 0.16);
+        color: rgba(202, 239, 255, 0.9);
+    }
+
+    .netease-player-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 1.25rem;
+        border: 1px solid rgba(226, 232, 226, 0.13);
+        background:
+            radial-gradient(circle at 14% 12%, rgba(214, 221, 215, 0.13), transparent 16rem),
+            linear-gradient(135deg, rgba(30, 45, 58, 0.78), rgba(12, 17, 24, 0.74)),
+            rgba(18, 24, 30, 0.68);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+        color: #edf1ec;
+        isolation: isolate;
+        backdrop-filter: blur(18px) saturate(0.95);
+        -webkit-backdrop-filter: blur(18px) saturate(0.95);
+    }
+
+    .netease-player-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        opacity: 0.16;
+        background-image:
+            repeating-radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.9) 0 1px, transparent 1px 4px),
+            linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        mix-blend-mode: soft-light;
+        pointer-events: none;
+    }
+
+    .netease-player-card::after {
+        content: "";
+        position: absolute;
+        inset: 1rem;
+        z-index: -1;
+        border: 1px solid rgba(226, 232, 226, 0.08);
+        border-radius: 1rem;
+        pointer-events: none;
+    }
+
+    .song-stamp {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 2;
+        transform: rotate(-3deg);
+        border: 1px dashed rgba(226, 232, 226, 0.26);
+        border-radius: 999px;
+        padding: 0.22rem 0.68rem;
+        background: rgba(237, 241, 236, 0.035);
+        color: rgba(237, 241, 236, 0.5);
+        font-size: 0.62rem;
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        box-shadow: 0 0.5rem 1.4rem rgba(0, 0, 0, 0.16);
+        text-transform: uppercase;
+    }
+
+    .song-hero {
+        display: grid;
+        gap: 1.25rem;
+        padding: 1.25rem;
+    }
+
+    .song-art {
+        position: relative;
+        min-height: 11rem;
+        border-radius: 1rem;
+        background:
+            linear-gradient(rgba(222, 226, 218, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(222, 226, 218, 0.04) 1px, transparent 1px),
+            radial-gradient(circle at 42% 34%, rgba(235, 236, 226, 0.16), transparent 4rem),
+            linear-gradient(145deg, rgba(214, 221, 215, 0.12), rgba(4, 8, 12, 0.34));
+        background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+        overflow: hidden;
+    }
+
+    .song-art::before {
+        content: "";
+        position: absolute;
+        inset: 1.1rem;
+        border: 1px solid rgba(237, 241, 236, 0.12);
+        border-radius: 0.7rem;
+    }
+
+    .song-art::after {
+        content: "ヒッチコック";
+        position: absolute;
+        left: 1.3rem;
+        bottom: 1.1rem;
+        color: rgba(237, 241, 236, 0.38);
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        writing-mode: vertical-rl;
+    }
+
+    .song-art-disc {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        display: flex;
+        width: 7.25rem;
+        height: 7.25rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background:
+            radial-gradient(circle, rgba(6, 9, 12, 0.98) 0 0.46rem, rgba(74, 84, 86, 0.46) 0.48rem 0.7rem, transparent 0.72rem),
+            repeating-radial-gradient(circle, rgba(237, 241, 236, 0.14) 0 1px, transparent 1px 7px),
+            radial-gradient(circle at 42% 36%, rgba(63, 76, 86, 0.94), rgba(8, 12, 17, 0.98));
+        transform: translate(-50%, -50%);
+        box-shadow:
+            inset 0 0 2.4rem rgba(0, 0, 0, 0.48),
+            inset 0 0 0 1px rgba(237, 241, 236, 0.06),
+            0 1.4rem 3rem rgba(0, 0, 0, 0.3),
+            0 0 2.2rem rgba(180, 198, 210, 0.08);
+    }
+
+    .song-art-disc::after {
+        content: "";
+        width: 0.96rem;
+        height: 0.96rem;
+        border-radius: 999px;
+        background: rgba(7, 10, 13, 0.98);
+        box-shadow:
+            inset 0 0 0 0.18rem rgba(237, 241, 236, 0.035),
+            0 0 1.2rem rgba(237, 241, 236, 0.12);
+    }
+
+    .song-art-line {
+        position: absolute;
+        right: 1.2rem;
+        bottom: 2rem;
+        width: 42%;
+        height: 1px;
+        background: rgba(237, 241, 236, 0.3);
+        transform: rotate(-8deg);
+        transform-origin: right;
+    }
+
+    .song-copy {
+        min-width: 0;
+        padding-right: 0.25rem;
+    }
+
+    .song-kicker {
+        color: rgba(214, 221, 215, 0.58);
+        font-size: 0.66rem;
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+    }
+
+    .song-title {
+        margin: 0;
+        color: #f4f5ef;
+        font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", "Songti SC", serif;
+        font-size: clamp(2rem, 3.4vw, 2.95rem);
+        font-weight: 800;
+        letter-spacing: 0;
+        line-height: 0.95;
+        overflow-wrap: normal;
+        white-space: nowrap;
+        word-break: keep-all;
+    }
+
+    .song-action {
+        background: rgba(237, 241, 236, 0.11);
+        color: rgba(237, 241, 236, 0.82);
+        transition:
+            background 150ms ease,
+            color 150ms ease,
+            transform 150ms ease;
+    }
+
+    .song-action:hover {
+        background: rgba(237, 241, 236, 0.18);
+        color: #f4f5ef;
+        transform: translateY(-1px);
+    }
+
+    .lyric-note {
+        position: relative;
+        margin-top: 1.4rem;
+        max-width: 36rem;
+        padding-left: 1.35rem;
+        color: rgba(237, 241, 236, 0.8);
+        line-height: 1.72;
+    }
+
+    .lyric-line {
+        position: absolute;
+        top: 0.16rem;
+        bottom: 0.16rem;
+        left: 0;
+        width: 1px;
+        background: linear-gradient(180deg, rgba(237, 241, 236, 0.34), rgba(237, 241, 236, 0.06));
+    }
+
+    .lyric-groups {
+        display: grid;
+        gap: 0;
+    }
+
+    .lyric-groups p {
+        margin: 0;
+    }
+
+    .lyric-groups p:nth-child(odd) {
+        color: rgba(246, 247, 241, 0.88);
+        font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", "Songti SC", serif;
+        font-size: 1rem;
+        font-weight: 650;
+    }
+
+    .lyric-groups p:nth-child(even) {
+        margin-top: 0.08rem;
+        color: rgba(214, 221, 215, 0.58);
+        font-family: "Noto Serif SC", "Songti SC", "Microsoft YaHei", serif;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .lyric-groups p:nth-child(2n + 3) {
+        margin-top: 1rem;
+    }
+
+    .official-player {
+        margin: 0 1.25rem 1.25rem;
+        border-top: 1px solid rgba(237, 241, 236, 0.1);
+        padding-top: 0.85rem;
+    }
+
+    .official-player-label {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-bottom: 0.45rem;
+        color: rgba(237, 241, 236, 0.52);
+        font-size: 0.74rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+    }
+
+    .official-player iframe {
+        overflow: hidden;
+        border-radius: 0.75rem;
+        opacity: 0.72;
+        filter: grayscale(1) invert(0.9) brightness(0.78) contrast(0.88);
+        transition:
+            opacity 150ms ease,
+            filter 150ms ease;
+    }
+
+    .official-player iframe:hover {
+        opacity: 0.9;
+        filter: grayscale(0.75) invert(0.82) brightness(0.84) contrast(0.92);
+    }
+
+    @media (min-width: 768px) {
+        .song-hero {
+            grid-template-columns: minmax(12rem, 0.56fr) minmax(0, 1fr);
+            align-items: stretch;
+            padding: 1.5rem;
+        }
+
+        .song-art {
+            min-height: 16rem;
+        }
+
+        .official-player {
+            margin-right: 1.5rem;
+            margin-bottom: 1.5rem;
+            margin-left: 1.5rem;
+        }
+    }
+</style>

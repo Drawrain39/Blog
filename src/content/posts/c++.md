@@ -4,13 +4,15 @@ published: 2025-09-29
 description: C++学习记录
 tags: [C++]
 category: C++
+series: C++ 与数据结构
+seriesOrder: 1
 draft: false
 ---
 作为c++的记录，纯基础
 ## 一些代码练习
 记录一下一些基础的代码
 ### 小写字母转大写
-```c++
+```cpp
 #include <bits/stdc++.h>
 using namespace std;
 signed main()
@@ -24,7 +26,7 @@ signed main()
 ```
 利用大小写字母ASCII码差32实现
 ### 数字反转
-```c++
+```cpp
 #include <bits/stdc++.h>
 using namespace std;
 signed main()
@@ -39,7 +41,7 @@ signed main()
 ```
 字符串练习
 ### 素数判断
-```c++
+```cpp
 #include <bits/stdc++.h>
 using namespace std;
 bool isPrime(int n)
@@ -66,7 +68,7 @@ signed main()
 写个isPrime判断素数，小于2直接返回false，大于2进行开平方判断
 ### ceil向上取整
 题目来自洛谷 <https://www.luogu.com.cn/problem/P5707>
-```c++
+```cpp
 #include <bits/stdc++.h>
 using namespace std;
 signed main()
@@ -98,7 +100,7 @@ signed main()
 }
 ```
 如果用到C的格式化输出就不会看着这么难受...
-```c++
+```cpp
 #include <bits/stdc++.h>
 using namespace std;
 signed main() {
@@ -114,7 +116,7 @@ signed main() {
 确实看着精简多了
 
 其实感觉这里对ceil向上取整更好的例子是这个<https://www.luogu.com.cn/problem/B2029>
-```c++
+```cpp
 #include <bits/stdc++.h>
 using namespace std;
 signed main()
@@ -132,7 +134,7 @@ v体积一定要是double 用int就把小数截断了
 例<https://www.luogu.com.cn/problem/P5706>
 
 主要是用来控制输出小数点后几位数字
-```c++
+```cpp
 #include <bits/stdc++.h>
 using namespace std;
 signed main()
@@ -148,7 +150,7 @@ signed main()
 }
 ```
 使用
-```c++
+```cpp
 std::cout << std::fixed << std::setprecision()
 ```
 来控制小数点后面输出，设置宽度setw暂不展示
@@ -159,7 +161,7 @@ std::cout << std::fixed << std::setprecision()
 
 于是写出下列代码
 
-```c++
+```cpp
 #include <bits/stdc++.h>
 using namespace std;
 #define int long long
@@ -181,7 +183,7 @@ signed main()
 }
 ```
 还有一种写法是直接暴力算出数学公式...
-```c++
+```cpp
 //......
 int total = 3 * pow(2, n - 1) - 2;
 ```
@@ -192,7 +194,7 @@ int total = 3 * pow(2, n - 1) - 2;
 使用switch语句可以替代一大坨的if else，更直观
 
 比如这样....
-```c++
+```cpp
 #include <bits/stdc++.h>
 using namespace std;
 signed main() 
@@ -210,7 +212,7 @@ signed main()
 }
 ```
 完全可以写成如下
-```c++
+```cpp
 #include <bits/stdc++.h>
 using namespace std;
 signed main()

@@ -4,6 +4,8 @@ published: 2026-01-05
 description: 记录个人比赛做题记录，主方向Re,团队赛，队友的我没写
 tags: [CTF, Writeup, Reverse, Crypto, Misc,Pwn]
 category: CTF
+series: CTF Writeup
+seriesOrder: 2
 draft: false
 ---
 ## Reverse
@@ -48,7 +50,7 @@ flag{elwgcag}
 ```
 ### AES
 C#写的扔进dnSpy就行,不要用IDA，那个只能看C/C++伪代码
-```c#
+```csharp
 private void button1_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(this.textBox1.Text))
@@ -107,7 +109,7 @@ flag{4f7786120450144791741bd082bfdb58}
 ```
 ### EasyRSA？
 又是C# 上一题一样流程
-```c#
+```csharp
 private void button1_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(this.textBox1.Text))
@@ -714,7 +716,7 @@ int __cdecl sub_401000(unsigned __int8 a1, unsigned __int8 a2)
 }
 ```
 
-```矩阵
+```text
 [7,2,5,1]
 [2,5,1,7]
 [1,7,2,5]
@@ -1076,7 +1078,7 @@ qsnctf{ec2ac70cfc4d4af0b78c802929857ba1}
 打栈溢出
 
 其实main函数早有提示，但是这个gk也能看出来
-```c++
+```cpp
   buf = (void *)std::array<char,24u>::data(v6);
   return read(0, buf, 0x68u);
 ```
