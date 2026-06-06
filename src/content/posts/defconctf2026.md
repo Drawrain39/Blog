@@ -20,11 +20,11 @@ draft: false
 
 下载之后需要在areas里加载game\.z64
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=MDYwM2JhMDIzN2VkMmQ2NWU5MTE1MTJjN2FhNzM2Y2RfYTg5ZjI5OTc1NjdlNzA4NzFmNzFjNmZkMGM4MDNjZTdfSUQ6NzY0Mjg1NDg1OTYzMjM2NDczMl8xNzgwMzg3MTEyOjE3ODA0NzM1MTJfVjM)
+![Image](/images/posts/defconctf2026/01-game-debug.png)
 
 神秘小游戏来了
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=NTkwYjE0YjE0NDczMjBkZDU2Mjg1ODVkOTYxMjBiYjBfZjU5OTU0MDM2MjgxNTIyZjdkMGIwOWU3ODA1NTdjYjNfSUQ6NzY0Mjg0NjUzNzQwNzUzMjAwMV8xNzgwMzg3MTEyOjE3ODA0NzM1MTJfVjM)
+![Image](/images/posts/defconctf2026/02-controller-config.png)
 
 配置下键位看看，没什么用，应该不是正常通过游玩得到flag的
 
@@ -275,7 +275,7 @@ N = 6931550756333500042688113713742187020277676842884989557328340391545867935915
 
 http://www\.factordb\.com/index\.php?query=69315507563335000426881137137421870202776768428849895573283403915458679359157
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=MDJlODAyNGJkZTliOGFiYzY1NTg0NTgyY2M5YzRjZjdfZTVlOTQ2ODBkODQwMGEyYmUwOTQ4OTY3MTA3MGRkMTdfSUQ6NzY0MzQ4MTYzNzc1NzQyMjc4OF8xNzgwMzg3MTEyOjE3ODA0NzM1MTJfVjM)
+![Image](/images/posts/defconctf2026/03-factor-db.png)
 
 ```text
 p = 312491767943139940981443826148003062019
@@ -392,7 +392,7 @@ Vapes，电子烟固件逆向？  ~~🔇I Got Smoke🚭~~
 
 拿题目第一反应是我之前打过的阿里CTF，题目是pixelflow，考的il2cpp，unity逆向，不过和这道题不太一样，但是最后结果额都是像素分析，解xor和tile映射最后套flag
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=MWI4NDMwNjU1YjUzODZhNzU2NDhkYzZhODE1ZjA4ODNfNWY3ODdkMjk5OWM5YWZlOTZiYzU0YTJmYThkMDZlYWZfSUQ6NzY0MzM3MTQ4NTAwNzk3MzM0M18xNzgwMzg3MTEyOjE3ODA0NzM1MTJfVjM)
+![Image](/images/posts/defconctf2026/04-hex-dump.png)
 
 0x234000开始选中0x6000字节直到0x239FFF
 
@@ -555,11 +555,11 @@ tile = raw_byte_at_pointer XOR AA XOR key[x]
 
 第一行
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=ODE4MzRhMDg5NzU2MjJhNzA4NjBjYWJkNjZhZTA3ZDVfY2RlMDFlMjhiNGYxNWYwMWUxNGYxZmExNjc4MzhmMGZfSUQ6NzY0MzM3OTIyNDQ4NDk0MTAxNl8xNzgwMzg3MTEyOjE3ODA0NzM1MTJfVjM)
+![Image](/images/posts/defconctf2026/05-first-row-decode-table.png)
 
 第二行
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=MzdlYWFlMzlkNWViMmIxMTM4NmE1YzA1YmRkNTE3MmNfODU1YTc3NjAzMzYxOTU1OGZmZmM0YzI4OWE1NTA1ODhfSUQ6NzY0MzM3OTM5NzEwNTgxNDUwMF8xNzgwMzg3MTEyOjE3ODA0NzM1MTJfVjM)
+![Image](/images/posts/defconctf2026/06-second-row-decode-table.png)
 
 CD = AA
 
@@ -567,9 +567,9 @@ CD = AA
 
 交给YY\-CHR查tile对应字符
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=YjE5ZGY5M2NjMDhmNmVkMWE2ZjI0MzUyMWNiNGE3MjZfOTUxNjU3NGIxMTJmMGNkNGMzYWQwNDgyZTcyZmU4MWVfSUQ6NzY0MzM4MTkxODY2NjQ5MzExNl8xNzgwMzg3MTEyOjE3ODA0NzM1MTJfVjM)
+![Image](/images/posts/defconctf2026/07-hidden-text.png)
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=ZGIwOWExZDAyNWRlYzAwNzllZWMyYzg3NzRlNjk5MGRfNmJiODIyOGZiZDMyNWEzNzlmYWVjYTVlMjNiNjg4MWVfSUQ6NzY0MzM2NDEzNzQ4NTAyODUzM18xNzgwMzg3MTEyOjE3ODA0NzM1MTJfVjM)
+![Image](/images/posts/defconctf2026/08-tile-glyph-map.png)
 
 
 
@@ -577,7 +577,7 @@ tile映射打表
 
 第一行
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=YjdjZDAxOTg5NjhkZjY2NTNiZWM5NTFmMDZjZDZmMjBfYTQ5ZGJlMDJkNzM3OWIxMmM5NWU3Mzg5MDg5OTlkMmFfSUQ6NzY0MzM3OTYzMzg1NzE1NDAwNl8xNzgwMzg3MTEyOjE3ODA0NzM1MTJfVjM)
+![Image](/images/posts/defconctf2026/09-tile-id-char-table.png)
 
 内存顺序KX9H\_A9CA
 
@@ -585,7 +585,7 @@ tile映射打表
 
 第二行
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=NGMyMzVlY2Y4ZWIxYWUzY2JhYzhiMDExMWFiMmRlMTdfZDBmZWM2Y2RiODJlN2M3YjBmNWYxZDU3NDg4NzZiOWZfSUQ6NzY0MzM3OTg3MDA2MzcwOTM4NF8xNzgwMzg3MTEyOjE3ODA0NzM1MTJfVjM)
+![Image](/images/posts/defconctf2026/10-second-row-char-table.png)
 
 内存顺序\_\_\_\_\_3YP\_
 

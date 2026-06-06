@@ -103,7 +103,7 @@ private void button1_Click(object sender, EventArgs e)
 
 赛博厨子一把梭了
 
-![](/blog/public//blogimage/116.png)
+![](/images/posts/2026-qsnctf-writeups/crypto-decrypt.png)
 ```text
 flag{4f7786120450144791741bd082bfdb58}
 ```
@@ -912,7 +912,7 @@ b'flag{e76926fb679f90b8367463ad2b0c27f4}'
 
 说实话我不知道任何原理，我只知道随波逐流秒了，试过正常base64+rc4解不出来
 
-![](/blog/public/blogimage/3f.png)
+![](/images/posts/2026-qsnctf-writeups/easy-rc4.png)
 
 ```text
 flag{e12ax8u}
@@ -923,7 +923,7 @@ flag{e12ax8u}
 
 Quoted解码，又被随波逐流秒掉了喵....
 
-![](/blog/public//blogimage/1a.png)
+![](/images/posts/2026-qsnctf-writeups/no-ascii.png)
 
 ```text
 flag{青少年CTF欢迎你}

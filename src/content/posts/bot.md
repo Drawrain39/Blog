@@ -72,7 +72,7 @@ docker里配端口 编辑容器那里
 6185-->6185/tcp
 
 6199-->6199/tcp
-![Napcat 配置截图](./rongqi.png)
+![Napcat 配置截图](/images/posts/bot/napcat-container.png)
 放行了你的端口后直接用你的服务器公网ip+端口号进入你的Astrbot，默认用户名密码astrbot
 
 应该会有一个引导，按照引导创建机器人，消息平台类别我们不走qq官方，用的自己号
@@ -81,12 +81,12 @@ docker里配端口 编辑容器那里
 
 名字自己写，然后反向 Websocket 主机填入你刚刚记的astrbot容器的IPV4地址，其余可以不用管，可以加token验证但是可以没必要
 
-![Astrbot](./1111.png)
+![Astrbot](/images/posts/bot/astrbot-guide.png)
 
-![astrbot](./11.png)
+![astrbot](/images/posts/bot/astrbot-onebot.png)
 
 接下来配置API，跟着引导走，选择siliconflow，ID填siliconflow 然后API Key去你的硅基流动里API密钥复制过来，下面是配置的模型，可以自己选，文本可以选deepseek之类的，识图模型选带VL的，自行选择即可，如果是新人会有免费代金券玩，也可以自行氪
-![硅基流动](./1.png)
+![硅基流动](/images/posts/bot/siliconflow-api.png)
 ### Napcat
 在宝塔docker里配一下端口 
 
@@ -103,13 +103,13 @@ docker里配端口 编辑容器那里
 新建一个网络配置，选择Websocket客户端，URL填ws://（你刚刚记的astrbot容器的IPV4地址）:（端口号，默认应该6199）/ws
 
 心跳间隔和重连间隔全部5000，保存即可
-![Napcat 配置](./2.png)
+![Napcat 配置](/images/posts/bot/napcat-websocket.png)
 
 然后看Astrbot的平台日志显示适配器已连接即可，到这里就结束了，可以尝试给你的bot发个消息看看
 
 部署结束~撒花
 
-![宝塔配置截图](./111.png)
+![宝塔配置截图](/images/posts/bot/baota-config.png)
 
 
 ## 继续完善Astrbot
