@@ -164,6 +164,12 @@ const jsonLd = {
         </article>
     </div>
 
+    {entry.slug === "englishb2" && <script is:inline>
+        document
+            .querySelectorAll('a[href="/english-b2-quiz/"]')
+            .forEach((link) => link.setAttribute("data-no-swup", ""));
+    </script>}
+
     <div class="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full">
         <a href={entry.data.nextSlug ? getPostUrlBySlug(entry.data.nextSlug) : "#"}
            class:list={["w-full font-bold overflow-hidden active:scale-95", {"pointer-events-none": !entry.data.nextSlug}]}>

@@ -43,6 +43,11 @@ export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
 		LinkPreset.Archive,
+		{
+			name: "刷题",
+			url: "/english-b2-quiz/",
+			noSwup: true,
+		},
 		LinkPreset.About,
 		{
 			name: "友链",

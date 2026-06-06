@@ -42,6 +42,7 @@ export default defineConfig({
 			smoothScrolling: true,
 			cache: true,
 			preload: true,
+			ignore: ["/english-b2-quiz", "/english-b2-quiz/"],
 			accessibility: true,
 			updateHead: true,
 			updateBodyClass: false,
