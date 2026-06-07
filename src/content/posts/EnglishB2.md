@@ -1136,13 +1136,13 @@ draft: false
 - C. held back
 - D. pointed out
 
-**题干翻译：** 激烈辩论中，他突然想出大胆想法。
+**题干翻译：** 激烈辩论中，他突然抛出一个大胆想法，让房间里的所有人都感到惊讶。
 
 **选项翻译：** A. 抛出 / B. 想出 / C. 隐瞒 / D. 指出
 
-**答案：** B
+**答案：** A
 
-**重点词汇：** come up with 想出；heated /ˈhiːtɪd/ adj. 激烈的；debate /dɪˈbeɪt/ n. 辩论
+**重点词汇：** throw out 提出；抛出；heated /ˈhiːtɪd/ adj. 激烈的；debate /dɪˈbeɪt/ n. 辩论
 
 ### 单元 3：B2U3 词汇练习
 
