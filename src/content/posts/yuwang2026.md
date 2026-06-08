@@ -8,11 +8,13 @@ series: CTF Writeup
 seriesOrder: 5
 draft: false
 ---
-这个比赛不予置评....
+不予置评
 
 比赛办的很好，下回别办了
 
-难度非常低，但存在阴人题目 + 很烂的服务器 + 永远连不上的靶机
+难度非常低 但是超大规模py + 连不上的破烂靶机 + 不明意义的大粪题 + 史一样的奖项规则 + wp的奇妙截图模版
+
+谁懂VERY_SECRET_KEY!，我不懂
 
 # Reverse
 

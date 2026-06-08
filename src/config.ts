@@ -9,7 +9,7 @@ import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
 	title: "Drawrain's Blog",
-	subtitle: "Just keep drawring without regrets",
+	subtitle: "Just keep drawing without regrets",
 	lang: "zh_CN", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
 	themeColor: {
 		hue: 345, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345
@@ -43,11 +43,6 @@ export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
 		LinkPreset.Archive,
-		{
-			name: "刷题",
-			url: "/english-b2-quiz/",
-			noSwup: true,
-		},
 		LinkPreset.About,
 		{
 			name: "友链",
@@ -64,7 +59,7 @@ export const navBarConfig: NavBarConfig = {
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avata.jpg", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 	name: "Drawrain",
-	bio: "Just keep drawring without regrets",
+	bio: "Just keep drawing without regrets",
 	links: [
 		{
 			name: "GitHub",
