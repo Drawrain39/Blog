@@ -5,14 +5,12 @@ const codeRows = [
 	"boot://drawrain.blog",
 	"load VOCALOAD.dll",
 	"compile dream.cpp",
-	"trace danmaku_pattern.ts",
 	"pray 少女祈祷中.....",
-	"我们将永远沉溺于深夜中",
 	"Stack Overflow",
 ];
 
-const particles = Array.from({ length: 28 }, (_, index) => index);
-const shards = Array.from({ length: 12 }, (_, index) => index);
+const particles = Array.from({ length: 16 }, (_, index) => index);
+const shards = Array.from({ length: 8 }, (_, index) => index);
 const charms = ["祈", "夢", "♪", "01"];
 ---
 
@@ -120,11 +118,12 @@ const charms = ["祈", "夢", "♪", "01"];
 			linear-gradient(135deg, rgba(4, 8, 18, 0.98), rgba(13, 18, 38, 0.96) 48%, rgba(8, 4, 18, 0.98));
 		color: #f8fafc;
 		opacity: 1;
+		contain: layout paint style;
+		isolation: isolate;
 		transition:
-			background 620ms ease,
-			opacity 820ms ease,
-			visibility 820ms ease;
-		will-change: opacity, background;
+			opacity 420ms ease,
+			visibility 420ms ease;
+		will-change: opacity;
 	}
 
 	.opening-splash.is-revealing {
@@ -151,12 +150,12 @@ const charms = ["祈", "夢", "♪", "01"];
 	}
 
 	.splash-noise {
-		opacity: 0.12;
+		opacity: 0.08;
 		background-image:
 			repeating-radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.8) 0 1px, transparent 1px 4px),
 			linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
 		mix-blend-mode: overlay;
-		animation: splash-noise 600ms steps(2) infinite;
+		animation: splash-noise 900ms steps(2) infinite;
 	}
 
 	.splash-scanline {
@@ -165,7 +164,7 @@ const charms = ["祈", "夢", "♪", "01"];
 			rgba(255, 255, 255, 0.08) 0 1px,
 			transparent 1px 4px
 		);
-		opacity: 0.18;
+		opacity: 0.12;
 	}
 
 	.splash-grid {
@@ -176,14 +175,14 @@ const charms = ["祈", "夢", "♪", "01"];
 		background-size: 4.2rem 4.2rem;
 		transform: perspective(32rem) rotateX(62deg) translateY(22%);
 		transform-origin: center bottom;
-		opacity: 0.18;
-		animation: splash-grid 2.4s linear infinite;
+		opacity: 0.14;
+		animation: splash-grid 3.2s linear infinite;
 	}
 
 	.splash-spell-ring {
 		display: grid;
 		place-items: center;
-		opacity: 0.46;
+		opacity: 0.34;
 		filter: drop-shadow(0 0 2rem rgba(0, 229, 212, 0.16));
 	}
 
@@ -204,20 +203,20 @@ const charms = ["祈", "夢", "♪", "01"];
 			);
 		mask: radial-gradient(circle, transparent 58%, #000 58.5% 60.5%, transparent 61%);
 		-webkit-mask: radial-gradient(circle, transparent 58%, #000 58.5% 60.5%, transparent 61%);
-		animation: spell-ring-spin 8s linear infinite;
+		animation: spell-ring-spin 12s linear infinite;
 	}
 
 	.splash-spell-ring span:nth-child(2) {
 		width: min(64vw, 34rem);
 		border-color: rgba(57, 255, 182, 0.14);
-		animation-duration: 6.4s;
+		animation-duration: 10s;
 		animation-direction: reverse;
 	}
 
 	.splash-spell-ring span:nth-child(3) {
 		width: min(48vw, 24rem);
 		border-style: dashed;
-		animation-duration: 5.2s;
+		animation-duration: 8s;
 	}
 
 	.splash-charms span {
@@ -240,7 +239,7 @@ const charms = ["祈", "夢", "♪", "01"];
 		letter-spacing: 0.12em;
 		box-shadow: 0 0 1.5rem rgba(0, 229, 212, 0.08);
 		transform: rotate(calc(var(--i) * 9deg - 14deg));
-		animation: charm-drift 2.6s ease-in-out calc(var(--i) * 180ms) infinite alternate;
+		animation: charm-drift 3.4s ease-in-out calc(var(--i) * 180ms) infinite alternate;
 	}
 
 	.splash-charms span::before,
@@ -275,13 +274,15 @@ const charms = ["祈", "夢", "♪", "01"];
 			linear-gradient(135deg, rgba(15, 23, 42, 0.68), rgba(6, 10, 22, 0.82)),
 			rgba(15, 23, 42, 0.6);
 		box-shadow:
-			0 2.2rem 7rem rgba(0, 0, 0, 0.48),
-			0 0 4rem rgba(57, 255, 182, 0.12),
+			0 1.6rem 4rem rgba(0, 0, 0, 0.42),
+			0 0 2.6rem rgba(57, 255, 182, 0.1),
 			inset 0 1px 0 rgba(255, 255, 255, 0.08);
-		backdrop-filter: blur(24px) saturate(1.05);
-		-webkit-backdrop-filter: blur(24px) saturate(1.05);
+		backdrop-filter: blur(12px) saturate(1.02);
+		-webkit-backdrop-filter: blur(12px) saturate(1.02);
 		transform: translateY(0.8rem) scale(0.985);
-		animation: splash-panel-in 900ms cubic-bezier(0.2, 0.9, 0.18, 1) both;
+		contain: layout paint;
+		will-change: transform, opacity;
+		animation: splash-panel-in 520ms cubic-bezier(0.2, 0.9, 0.18, 1) both;
 	}
 
 	.splash-panel::before,
@@ -295,7 +296,7 @@ const charms = ["祈", "夢", "♪", "01"];
 	.splash-panel::before {
 		background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.12), transparent);
 		transform: translateX(-120%);
-		animation: splash-sweep 1.2s ease 420ms both;
+		animation: splash-sweep 720ms ease 220ms both;
 	}
 
 	.splash-panel::after {
@@ -364,31 +365,27 @@ const charms = ["祈", "夢", "♪", "01"];
 	.terminal-body div {
 		opacity: 0;
 		transform: translateX(-0.6rem);
-		animation: terminal-line 360ms ease both;
+		animation: terminal-line 240ms ease both;
 	}
 
 	.terminal-body div:nth-child(1) {
-		animation-delay: 140ms;
+		animation-delay: 80ms;
 	}
 
 	.terminal-body div:nth-child(2) {
-		animation-delay: 240ms;
+		animation-delay: 140ms;
 	}
 
 	.terminal-body div:nth-child(3) {
-		animation-delay: 340ms;
+		animation-delay: 200ms;
 	}
 
 	.terminal-body div:nth-child(4) {
-		animation-delay: 440ms;
+		animation-delay: 260ms;
 	}
 
 	.terminal-body div:nth-child(5) {
-		animation-delay: 540ms;
-	}
-
-	.terminal-body div:nth-child(6) {
-		animation-delay: 640ms;
+		animation-delay: 320ms;
 	}
 
 	.terminal-body span {
@@ -482,7 +479,8 @@ const charms = ["祈", "夢", "♪", "01"];
 		box-shadow:
 			0 0 1rem rgba(57, 255, 182, 0.52),
 			0 0 2.2rem rgba(0, 229, 212, 0.22);
-		transition: width 130ms steps(2);
+		transition: width 90ms ease-out;
+		will-change: width;
 	}
 
 	.progress-fill::before,
@@ -500,13 +498,13 @@ const charms = ["祈", "夢", "♪", "01"];
 		);
 		mix-blend-mode: overlay;
 		opacity: 0.28;
-		animation: progress-fracture 420ms steps(2) infinite;
+		animation: progress-fracture 680ms steps(2) infinite;
 	}
 
 	.progress-fill::after {
 		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
 		transform: translateX(-120%);
-		animation: progress-flash 900ms ease-in-out infinite;
+		animation: progress-flash 1.1s ease-in-out infinite;
 	}
 
 	.progress-breaks {
@@ -545,41 +543,41 @@ const charms = ["祈", "夢", "♪", "01"];
 
 	.opening-splash.is-complete .splash-welcome {
 		display: block;
-		animation: welcome-pop 720ms cubic-bezier(0.2, 1.2, 0.24, 1) both, welcome-shine 1.8s linear 260ms infinite;
+		animation: welcome-pop 420ms cubic-bezier(0.2, 1.1, 0.24, 1) both, welcome-shine 1.6s linear 160ms infinite;
 	}
 
 	.opening-splash.is-revealing .splash-panel {
-		animation: splash-panel-out 360ms cubic-bezier(0.2, 0.9, 0.18, 1) both;
+		animation: splash-panel-out 260ms cubic-bezier(0.2, 0.9, 0.18, 1) both;
 	}
 
 	.opening-splash.is-revealing .splash-grid,
 	.opening-splash.is-revealing .splash-spell-ring,
 	.opening-splash.is-revealing .splash-charms {
 		opacity: 0;
-		transition: opacity 480ms ease;
+		transition: opacity 260ms ease;
 	}
 
 	.opening-splash.is-revealing .splash-noise {
-		opacity: 0.18;
+		opacity: 0.14;
 		mix-blend-mode: screen;
-		animation: reveal-noise 1.32s steps(3) both;
+		animation: reveal-noise 640ms steps(3) both;
 	}
 
 	.opening-splash.is-revealing .splash-scanline {
-		opacity: 0.16;
+		opacity: 0.12;
 		mix-blend-mode: screen;
-		animation: reveal-scanline 1.32s steps(4) both;
+		animation: reveal-scanline 640ms steps(4) both;
 	}
 
 	.opening-splash.is-revealing .splash-shards span {
 		background:
 			linear-gradient(90deg, transparent, rgba(57, 255, 182, 0.74), rgba(0, 229, 212, 0.72), transparent);
 		opacity: 0;
-		animation: afterglitch-shard 1.38s cubic-bezier(0.16, 0.92, 0.22, 1) calc(var(--i) * 26ms) both;
+		animation: afterglitch-shard 760ms cubic-bezier(0.16, 0.92, 0.22, 1) calc(var(--i) * 18ms) both;
 	}
 
 	.opening-splash.is-revealing .splash-notes span {
-		animation: afterglitch-pixel 1.46s cubic-bezier(0.16, 0.92, 0.22, 1) calc(var(--i) * 18ms) both;
+		animation: afterglitch-pixel 820ms cubic-bezier(0.16, 0.92, 0.22, 1) calc(var(--i) * 12ms) both;
 	}
 
 	.glitch-text::before,
@@ -595,14 +593,14 @@ const charms = ["祈", "夢", "♪", "01"];
 		color: #00e5d4;
 		transform: translate(0.06em, -0.02em);
 		clip-path: inset(0 0 55% 0);
-		animation: glitch-slice 960ms steps(2) infinite;
+		animation: glitch-slice 1.35s steps(2) infinite;
 	}
 
 	.glitch-text::after {
 		color: #39ffb6;
 		transform: translate(-0.05em, 0.03em);
 		clip-path: inset(45% 0 0 0);
-		animation: glitch-slice 1120ms steps(2) infinite reverse;
+		animation: glitch-slice 1.55s steps(2) infinite reverse;
 	}
 
 	.splash-notes span,
@@ -621,7 +619,7 @@ const charms = ["祈", "夢", "♪", "01"];
 		color: #39ffb6;
 		box-shadow: 0 0 0.8rem currentColor;
 		opacity: 0;
-		animation: note-float 1.25s cubic-bezier(0.18, 0.86, 0.32, 1) calc(var(--i) * 24ms) infinite;
+		animation: note-float 1.05s cubic-bezier(0.18, 0.86, 0.32, 1) calc(var(--i) * 18ms) 2;
 	}
 
 	.splash-notes span:nth-child(3n) {
@@ -647,7 +645,7 @@ const charms = ["祈", "夢", "♪", "01"];
 		top: calc(var(--i) * 7.7%);
 		left: calc(var(--i) * 8%);
 		opacity: 0.16;
-		animation: shard-slide 1.3s cubic-bezier(0.2, 0.8, 0.25, 1) calc(var(--i) * 38ms) infinite;
+		animation: shard-slide 1.15s cubic-bezier(0.2, 0.8, 0.25, 1) calc(var(--i) * 30ms) 2;
 	}
 
 	@keyframes splash-panel-in {
@@ -939,7 +937,7 @@ const charms = ["祈", "夢", "♪", "01"];
 		}
 
 		private tick() {
-			const jump = Math.ceil(4 + Math.random() * 11);
+			const jump = Math.ceil(14 + Math.random() * 20);
 			this.percent = Math.min(100, this.percent + jump);
 			this.style.setProperty("--splash-progress", `${this.percent}%`);
 
@@ -947,11 +945,11 @@ const charms = ["祈", "夢", "♪", "01"];
 			if (percentEl) percentEl.textContent = `${this.percent}%`;
 
 			if (this.percent >= 100) {
-				this.completeSoon(720);
+				this.completeSoon(120);
 				return;
 			}
 
-			this.timer = window.setTimeout(() => this.tick(), 82 + Math.random() * 108);
+			this.timer = window.setTimeout(() => this.tick(), 42 + Math.random() * 48);
 		}
 
 		private completeSoon(delay: number) {
@@ -969,9 +967,9 @@ const charms = ["祈", "夢", "♪", "01"];
 						this.timer = window.setTimeout(() => {
 							document.documentElement.classList.add("opening-splash-seen");
 							this.remove();
-						}, 860);
-					}, 1380);
-				}, 960);
+						}, 320);
+					}, 460);
+				}, 320);
 			}, delay);
 		}
 	}

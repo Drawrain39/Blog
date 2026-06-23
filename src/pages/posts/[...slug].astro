@@ -164,9 +164,9 @@ const jsonLd = {
         </article>
     </div>
 
-    {entry.slug === "englishb2" && <script is:inline>
+    {(entry.slug === "englishb2" || entry.slug === "military-theory") && <script is:inline>
         document
-            .querySelectorAll('a[href="/english-b2-quiz/"]')
+            .querySelectorAll('a[href="/english-b2-quiz/"], a[href="/military-theory-quiz/"]')
             .forEach((link) => link.setAttribute("data-no-swup", ""));
     </script>}
 
