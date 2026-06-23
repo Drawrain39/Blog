@@ -468,7 +468,7 @@ function toggleKey(key: string) {
 			: [...selectedKeys, key].sort();
 		return;
 	}
-	selectedKeys = [key];
+	selectedKeys = selectedKeys[0] === key ? [] : [key];
 }
 
 function canSubmit(question: MilitaryTheoryQuestion) {
@@ -1680,7 +1680,15 @@ function handleKeydown(event: KeyboardEvent) {
 		color: var(--text);
 	}
 
-	.option.multi-option.selected span {
+	.option.selected,
+	.judge-choice.selected {
+		box-shadow:
+			inset 0 0 0 1px rgba(247, 223, 126, 0.28),
+			0 0 0 1px rgba(216, 168, 56, 0.12);
+	}
+
+	.option.selected span,
+	.judge-choice.selected span {
 		background: rgba(216, 168, 56, 0.28);
 		box-shadow: inset 0 0 0 1px rgba(247, 223, 126, 0.48);
 	}
