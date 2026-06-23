@@ -94,6 +94,7 @@ let saveNotice = "";
 let saveNoticeTimer: ReturnType<typeof setTimeout> | undefined;
 let lastSavedState = "";
 let persistedState: PersistedState;
+let choiceRenderVersion = 0;
 
 $: chapters = data.chapters ?? [];
 $: questions = data.questions ?? [];
@@ -124,6 +125,10 @@ $: if (currentIndex >= visibleQuestions.length) {
 $: currentQuestion = visibleQuestions[currentIndex] ?? null;
 $: savedRecord = currentQuestion ? answered[currentQuestion.id] : undefined;
 $: resolvedSubmitted = Boolean(savedRecord);
+$: activeChoiceValues = savedRecord?.values ?? selectedKeys;
+$: choiceRenderKey = currentQuestion
+	? `${currentQuestion.id}:${resolvedSubmitted ? "saved" : "draft"}:${activeChoiceValues.join("|")}:${choiceRenderVersion}`
+	: "empty";
 $: canSubmitCurrent =
 	Boolean(currentQuestion) &&
 	!resolvedSubmitted &&
@@ -188,37 +193,23 @@ $: if (mounted) {
 
 onMount(() => {
 	const saved = loadSavedState();
-	if (saved) {
-		try {
-			const parsed = JSON.parse(saved);
-			answered = sanitizeAnswered(parsed.answered);
-			drafts = sanitizeDrafts(parsed.drafts);
-			wrongIds = sanitizeIds(parsed.wrongIds);
-			starredIds = sanitizeIds(parsed.starredIds);
-			view = validViews.has(parsed.view) ? parsed.view : "practice";
-			chapterFilter = isValidChapter(parsed.chapterFilter) ? parsed.chapterFilter : "all";
-			typeFilter = isValidType(parsed.typeFilter) ? parsed.typeFilter : "all";
-			mode = validModes.has(parsed.mode) ? parsed.mode : "all";
-			order = validOrders.has(parsed.order) ? parsed.order : "sequential";
-			currentIndex = Number.isFinite(parsed.currentIndex)
-				? Math.max(0, parsed.currentIndex)
-				: 0;
-			showQuestionList = parsed.showQuestionList ?? false;
-			search = typeof parsed.search === "string" ? parsed.search : "";
-			orderSeed = Number.isFinite(parsed.orderSeed) ? parsed.orderSeed : 0;
-			sessionCorrect = Number.isFinite(parsed.sessionCorrect)
-				? Math.max(0, parsed.sessionCorrect)
-				: 0;
-			sessionTotal = Number.isFinite(parsed.sessionTotal)
-				? Math.max(0, parsed.sessionTotal)
-				: 0;
-			lastSavedState = saved;
-		} catch {
-			resetAll(false);
-		}
-	}
+	if (saved) applySavedState(saved);
 	activeQuestionId = "";
 	mounted = true;
+
+	const handlePageRestore = () => {
+		const restored = loadSavedState();
+		if (restored) applySavedState(restored);
+		activeQuestionId = "";
+		choiceRenderVersion += 1;
+	};
+
+	window.addEventListener("pageshow", handlePageRestore);
+	window.addEventListener("popstate", handlePageRestore);
+	return () => {
+		window.removeEventListener("pageshow", handlePageRestore);
+		window.removeEventListener("popstate", handlePageRestore);
+	};
 });
 
 function loadSavedState() {
@@ -239,6 +230,36 @@ function saveState(state: PersistedState) {
 	} catch {
 		// localStorage may be blocked; the page still works without persistence.
 		return false;
+	}
+}
+
+function applySavedState(saved: string) {
+	try {
+		const parsed = JSON.parse(saved);
+		answered = sanitizeAnswered(parsed.answered);
+		drafts = sanitizeDrafts(parsed.drafts);
+		wrongIds = sanitizeIds(parsed.wrongIds);
+		starredIds = sanitizeIds(parsed.starredIds);
+		view = validViews.has(parsed.view) ? parsed.view : "practice";
+		chapterFilter = isValidChapter(parsed.chapterFilter) ? parsed.chapterFilter : "all";
+		typeFilter = isValidType(parsed.typeFilter) ? parsed.typeFilter : "all";
+		mode = validModes.has(parsed.mode) ? parsed.mode : "all";
+		order = validOrders.has(parsed.order) ? parsed.order : "sequential";
+		currentIndex = Number.isFinite(parsed.currentIndex)
+			? Math.max(0, parsed.currentIndex)
+			: 0;
+		showQuestionList = parsed.showQuestionList ?? false;
+		search = typeof parsed.search === "string" ? parsed.search : "";
+		orderSeed = Number.isFinite(parsed.orderSeed) ? parsed.orderSeed : 0;
+		sessionCorrect = Number.isFinite(parsed.sessionCorrect)
+			? Math.max(0, parsed.sessionCorrect)
+			: 0;
+		sessionTotal = Number.isFinite(parsed.sessionTotal)
+			? Math.max(0, parsed.sessionTotal)
+			: 0;
+		lastSavedState = saved;
+	} catch {
+		resetAll(false);
 	}
 }
 
@@ -462,13 +483,26 @@ function toggleStar() {
 
 function toggleKey(key: string) {
 	if (!currentQuestion || resolvedSubmitted) return;
+	const currentValues = selectedKeys.length ? selectedKeys : getPressedChoiceValuesFromDom();
 	if (currentQuestion.type === "multiple") {
-		selectedKeys = selectedKeys.includes(key)
-			? selectedKeys.filter((item) => item !== key)
-			: [...selectedKeys, key].sort();
+		selectedKeys = currentValues.includes(key)
+			? currentValues.filter((item) => item !== key)
+			: [...currentValues, key].sort();
+		choiceRenderVersion += 1;
 		return;
 	}
-	selectedKeys = selectedKeys[0] === key ? [] : [key];
+	selectedKeys = currentValues[0] === key ? [] : [key];
+	choiceRenderVersion += 1;
+}
+
+function getPressedChoiceValuesFromDom() {
+	if (typeof document === "undefined") return [];
+	const buttons = document.querySelectorAll<HTMLButtonElement>(
+		'.question-panel [aria-pressed="true"][data-choice-key]',
+	);
+	return Array.from(buttons)
+		.map((button) => button.dataset.choiceKey)
+		.filter((value): value is string => Boolean(value));
 }
 
 function canSubmit(question: MilitaryTheoryQuestion) {
@@ -921,7 +955,7 @@ function handleKeydown(event: KeyboardEvent) {
 			</aside>
 
 			{#if currentQuestion}
-				<article class="question-panel">
+				<article class="question-panel" data-question-id={currentQuestion.id}>
 					<div class="question-head">
 						<div>
 							<span>{currentQuestion.chapterTitle}</span>
@@ -952,43 +986,50 @@ function handleKeydown(event: KeyboardEvent) {
 								<strong>{selectedKeys.length ? `已选 ${selectedKeys.join("、")}` : "未选择"}</strong>
 							</div>
 						{/if}
-						<div class="options" class:multi-options={currentQuestion.type === "multiple"}>
-							{#each currentQuestion.options ?? [] as option}
-								<button
-									type="button"
-									class={getChoiceClass(option.key)}
-									class:multi-option={currentQuestion.type === "multiple"}
-									on:click={() => toggleKey(option.key)}
-									aria-pressed={(savedRecord?.values ?? selectedKeys).includes(option.key)}
-								>
-									<span>{option.key}</span>
-									<strong>{option.text}</strong>
-								</button>
-							{/each}
-						</div>
+						{#key choiceRenderKey}
+							<div class="options" class:multi-options={currentQuestion.type === "multiple"}>
+								{#each currentQuestion.options ?? [] as option}
+									<button
+										type="button"
+										class={getChoiceClass(option.key)}
+										class:multi-option={currentQuestion.type === "multiple"}
+										on:click={() => toggleKey(option.key)}
+										aria-pressed={activeChoiceValues.includes(option.key)}
+										data-choice-key={option.key}
+									>
+										<span>{option.key}</span>
+										<strong>{option.text}</strong>
+									</button>
+								{/each}
+							</div>
+						{/key}
 					{/if}
 
 					{#if currentQuestion.type === "judge"}
-						<div class="judge-grid">
-							<button
-								type="button"
-								class={getJudgeClass("对")}
-								on:click={() => toggleKey("对")}
-								aria-pressed={(savedRecord?.values?.[0] ?? selectedKeys[0] ?? "") === "对"}
-							>
-								<span>对</span>
-								<strong>正确</strong>
-							</button>
-							<button
-								type="button"
-								class={getJudgeClass("错")}
-								on:click={() => toggleKey("错")}
-								aria-pressed={(savedRecord?.values?.[0] ?? selectedKeys[0] ?? "") === "错"}
-							>
-								<span>错</span>
-								<strong>错误</strong>
-							</button>
-						</div>
+						{#key choiceRenderKey}
+							<div class="judge-grid">
+								<button
+									type="button"
+									class={getJudgeClass("对")}
+									on:click={() => toggleKey("对")}
+									aria-pressed={activeChoiceValues[0] === "对"}
+									data-choice-key="对"
+								>
+									<span>对</span>
+									<strong>正确</strong>
+								</button>
+								<button
+									type="button"
+									class={getJudgeClass("错")}
+									on:click={() => toggleKey("错")}
+									aria-pressed={activeChoiceValues[0] === "错"}
+									data-choice-key="错"
+								>
+									<span>错</span>
+									<strong>错误</strong>
+								</button>
+							</div>
+						{/key}
 					{/if}
 
 					{#if currentQuestion.type === "fill"}
