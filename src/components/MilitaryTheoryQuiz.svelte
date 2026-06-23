@@ -30,6 +30,31 @@ interface StoredAnswer {
 	self?: SelfMark;
 }
 
+interface DraftAnswer {
+	values: string[];
+	fillInput: string;
+	writtenAnswer: string;
+	showAnswer: boolean;
+}
+
+interface PersistedState {
+	answered: Record<string, StoredAnswer>;
+	wrongIds: string[];
+	starredIds: string[];
+	view: View;
+	chapterFilter: string;
+	typeFilter: MilitaryTheoryQuestionType | "all";
+	mode: Mode;
+	order: Order;
+	currentIndex: number;
+	showQuestionList: boolean;
+	search: string;
+	orderSeed: number;
+	sessionCorrect: number;
+	sessionTotal: number;
+	drafts: Record<string, DraftAnswer>;
+}
+
 const storageKey = "drawrain-military-theory-quiz-v1";
 const validModes = new Set<Mode>(["all", "wrong", "starred"]);
 const validOrders = new Set<Order>(["sequential", "random"]);
@@ -57,6 +82,7 @@ let showAnswer = false;
 let showQuestionList = false;
 let search = "";
 let answered: Record<string, StoredAnswer> = {};
+let drafts: Record<string, DraftAnswer> = {};
 let wrongIds: string[] = [];
 let starredIds: string[] = [];
 let sessionCorrect = 0;
@@ -64,6 +90,10 @@ let sessionTotal = 0;
 let orderSeed = 0;
 let mounted = false;
 let activeQuestionId = "";
+let saveNotice = "";
+let saveNoticeTimer: ReturnType<typeof setTimeout> | undefined;
+let lastSavedState = "";
+let persistedState: PersistedState;
 
 $: chapters = data.chapters ?? [];
 $: questions = data.questions ?? [];
@@ -116,13 +146,44 @@ $: subjectiveCount = questions.length - objectiveCount;
 $: if (currentQuestion && currentQuestion.id !== activeQuestionId) {
 	activeQuestionId = currentQuestion.id;
 	const saved = answered[currentQuestion.id];
-	selectedKeys = saved?.values ? [...saved.values] : [];
-	fillInput = currentQuestion.type === "fill" ? saved?.text ?? "" : "";
+	const draft = drafts[currentQuestion.id];
+	selectedKeys = saved?.values ? [...saved.values] : draft?.values ? [...draft.values] : [];
+	fillInput = currentQuestion.type === "fill" ? saved?.text ?? draft?.fillInput ?? "" : "";
 	writtenAnswer =
 		currentQuestion.type === "short" || currentQuestion.type === "essay"
-			? saved?.text ?? ""
+			? saved?.text ?? draft?.writtenAnswer ?? ""
 			: "";
-	showAnswer = Boolean(saved);
+	showAnswer = Boolean(saved) || Boolean(draft?.showAnswer);
+}
+
+$: if (mounted && currentQuestion && !resolvedSubmitted) {
+	selectedKeys;
+	fillInput;
+	writtenAnswer;
+	showAnswer;
+	syncCurrentDraft();
+}
+
+$: persistedState = {
+	answered,
+	wrongIds,
+	starredIds,
+	view,
+	chapterFilter,
+	typeFilter,
+	mode,
+	order,
+	currentIndex,
+	showQuestionList,
+	search,
+	orderSeed,
+	sessionCorrect,
+	sessionTotal,
+	drafts,
+};
+
+$: if (mounted) {
+	saveState(persistedState);
 }
 
 onMount(() => {
@@ -131,6 +192,7 @@ onMount(() => {
 		try {
 			const parsed = JSON.parse(saved);
 			answered = sanitizeAnswered(parsed.answered);
+			drafts = sanitizeDrafts(parsed.drafts);
 			wrongIds = sanitizeIds(parsed.wrongIds);
 			starredIds = sanitizeIds(parsed.starredIds);
 			view = validViews.has(parsed.view) ? parsed.view : "practice";
@@ -144,16 +206,20 @@ onMount(() => {
 			showQuestionList = parsed.showQuestionList ?? false;
 			search = typeof parsed.search === "string" ? parsed.search : "";
 			orderSeed = Number.isFinite(parsed.orderSeed) ? parsed.orderSeed : 0;
+			sessionCorrect = Number.isFinite(parsed.sessionCorrect)
+				? Math.max(0, parsed.sessionCorrect)
+				: 0;
+			sessionTotal = Number.isFinite(parsed.sessionTotal)
+				? Math.max(0, parsed.sessionTotal)
+				: 0;
+			lastSavedState = saved;
 		} catch {
 			resetAll(false);
 		}
 	}
+	activeQuestionId = "";
 	mounted = true;
 });
-
-$: if (mounted) {
-	saveState();
-}
 
 function loadSavedState() {
 	try {
@@ -163,27 +229,16 @@ function loadSavedState() {
 	}
 }
 
-function saveState() {
+function saveState(state: PersistedState) {
 	try {
-		localStorage.setItem(
-			storageKey,
-			JSON.stringify({
-				answered,
-				wrongIds,
-				starredIds,
-				view,
-				chapterFilter,
-				typeFilter,
-				mode,
-				order,
-				currentIndex,
-				showQuestionList,
-				search,
-				orderSeed,
-			}),
-		);
+		const serialized = JSON.stringify(state);
+		if (serialized === lastSavedState) return true;
+		localStorage.setItem(storageKey, serialized);
+		lastSavedState = serialized;
+		return true;
 	} catch {
 		// localStorage may be blocked; the page still works without persistence.
+		return false;
 	}
 }
 
@@ -206,6 +261,76 @@ function sanitizeAnswered(value: unknown) {
 		);
 	});
 	return Object.fromEntries(entries) as Record<string, StoredAnswer>;
+}
+
+function sanitizeDrafts(value: unknown) {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+	const entries = Object.entries(value).flatMap(([id, record]) => {
+		if (!questionIds.has(id)) return [];
+		if (!record || typeof record !== "object" || Array.isArray(record)) return [];
+		const draft = record as Partial<DraftAnswer>;
+		const sanitized: DraftAnswer = {
+			values: Array.isArray(draft.values)
+				? draft.values.filter((item): item is string => typeof item === "string")
+				: [],
+			fillInput: typeof draft.fillInput === "string" ? draft.fillInput : "",
+			writtenAnswer: typeof draft.writtenAnswer === "string" ? draft.writtenAnswer : "",
+			showAnswer: draft.showAnswer === true,
+		};
+		return hasDraftContent(sanitized) ? [[id, sanitized] as const] : [];
+	});
+	return Object.fromEntries(entries) as Record<string, DraftAnswer>;
+}
+
+function hasDraftContent(draft: DraftAnswer) {
+	return (
+		draft.values.length > 0 ||
+		Boolean(draft.fillInput.trim()) ||
+		Boolean(draft.writtenAnswer.trim()) ||
+		draft.showAnswer
+	);
+}
+
+function sameDraft(left: DraftAnswer | undefined, right: DraftAnswer) {
+	return (
+		Boolean(left) &&
+		sameSet(left?.values ?? [], right.values) &&
+		(left?.fillInput ?? "") === right.fillInput &&
+		(left?.writtenAnswer ?? "") === right.writtenAnswer &&
+		Boolean(left?.showAnswer) === right.showAnswer
+	);
+}
+
+function syncCurrentDraft() {
+	if (!currentQuestion || resolvedSubmitted) return;
+	const isFill = currentQuestion.type === "fill";
+	const isWritten = currentQuestion.type === "short" || currentQuestion.type === "essay";
+	const isChoice =
+		currentQuestion.type === "single" ||
+		currentQuestion.type === "multiple" ||
+		currentQuestion.type === "judge";
+	const draft: DraftAnswer = {
+		values: isChoice ? [...selectedKeys] : [],
+		fillInput: isFill ? fillInput : "",
+		writtenAnswer: isWritten ? writtenAnswer : "",
+		showAnswer,
+	};
+
+	if (!hasDraftContent(draft)) {
+		removeDraft(currentQuestion.id);
+		return;
+	}
+	if (sameDraft(drafts[currentQuestion.id], draft)) return;
+	drafts = {
+		...drafts,
+		[currentQuestion.id]: draft,
+	};
+}
+
+function removeDraft(id: string) {
+	if (!drafts[id]) return;
+	const { [id]: _removed, ...rest } = drafts;
+	drafts = rest;
 }
 
 function isValidChapter(value: unknown) {
@@ -378,6 +503,7 @@ function submitAnswer() {
 	} else if (!wrongIds.includes(currentQuestion.id)) {
 		wrongIds = [...wrongIds, currentQuestion.id];
 	}
+	removeDraft(currentQuestion.id);
 	showAnswer = true;
 }
 
@@ -403,6 +529,7 @@ function markSubjective(self: SelfMark) {
 	} else if (!wrongIds.includes(currentQuestion.id)) {
 		wrongIds = [...wrongIds, currentQuestion.id];
 	}
+	removeDraft(currentQuestion.id);
 	showAnswer = true;
 }
 
@@ -464,6 +591,7 @@ function retryQuestion() {
 	selectedKeys = [];
 	fillInput = "";
 	writtenAnswer = "";
+	removeDraft(currentQuestion.id);
 	showAnswer = false;
 }
 
@@ -473,12 +601,14 @@ function resetSession() {
 	selectedKeys = [];
 	fillInput = "";
 	writtenAnswer = "";
+	if (currentQuestion) removeDraft(currentQuestion.id);
 	showAnswer = false;
 }
 
 function resetAll(confirmFirst = true) {
 	if (confirmFirst && !confirm("清空军事理论刷题记录、错题和收藏？")) return;
 	answered = {};
+	drafts = {};
 	wrongIds = [];
 	starredIds = [];
 	currentIndex = 0;
@@ -489,6 +619,19 @@ function resetAll(confirmFirst = true) {
 	sessionCorrect = 0;
 	sessionTotal = 0;
 	activeQuestionId = "";
+}
+
+function manualSave() {
+	const saved = saveState(persistedState);
+	flashSaveNotice(saved ? "已保存到本机" : "浏览器未允许保存");
+}
+
+function flashSaveNotice(message: string) {
+	saveNotice = message;
+	if (saveNoticeTimer) clearTimeout(saveNoticeTimer);
+	saveNoticeTimer = setTimeout(() => {
+		saveNotice = "";
+	}, 1600);
 }
 
 function startChapterPractice(chapter: number) {
@@ -715,6 +858,10 @@ function handleKeydown(event: KeyboardEvent) {
 						<Icon icon="material-symbols:restart-alt-rounded" class="button-icon" />
 						本次清零
 					</button>
+					<button type="button" on:click={manualSave}>
+						<Icon icon="material-symbols:save-outline-rounded" class="button-icon" />
+						保存
+					</button>
 					<button
 						type="button"
 						class:active-tool={showQuestionList}
@@ -727,6 +874,11 @@ function handleKeydown(event: KeyboardEvent) {
 						<Icon icon="material-symbols:delete-outline-rounded" class="button-icon" />
 						清空
 					</button>
+				</div>
+
+				<div class="save-status" aria-live="polite">
+					<Icon icon="material-symbols:cloud-done-outline-rounded" class="button-icon" />
+					<span>{saveNotice || "自动保存已开启"}</span>
 				</div>
 
 				<div class="bank-meta">
@@ -752,6 +904,7 @@ function handleKeydown(event: KeyboardEvent) {
 									type="button"
 									class:current={index === currentIndex}
 									class:answered={Boolean(answered[question.id])}
+									class:drafted={Boolean(drafts[question.id]) && !answered[question.id]}
 									class:wrong={wrongSet.has(question.id)}
 									on:click={() => goToQuestion(index)}
 								>
@@ -793,12 +946,20 @@ function handleKeydown(event: KeyboardEvent) {
 					<p class="question-text">{currentQuestion.prompt}</p>
 
 					{#if currentQuestion.type === "single" || currentQuestion.type === "multiple"}
-						<div class="options">
+						{#if currentQuestion.type === "multiple"}
+							<div class="multi-hint" aria-live="polite">
+								<span>多选题</span>
+								<strong>{selectedKeys.length ? `已选 ${selectedKeys.join("、")}` : "未选择"}</strong>
+							</div>
+						{/if}
+						<div class="options" class:multi-options={currentQuestion.type === "multiple"}>
 							{#each currentQuestion.options ?? [] as option}
 								<button
 									type="button"
 									class={getChoiceClass(option.key)}
+									class:multi-option={currentQuestion.type === "multiple"}
 									on:click={() => toggleKey(option.key)}
+									aria-pressed={(savedRecord?.values ?? selectedKeys).includes(option.key)}
 								>
 									<span>{option.key}</span>
 									<strong>{option.text}</strong>
@@ -1244,6 +1405,26 @@ function handleKeydown(event: KeyboardEvent) {
 		color: rgba(254, 202, 202, 0.92);
 	}
 
+	.save-status {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.42rem;
+		min-height: 2.2rem;
+		border: 1px solid rgba(74, 222, 128, 0.18);
+		border-radius: 0.5rem;
+		background: rgba(22, 101, 52, 0.16);
+		color: rgba(187, 247, 208, 0.9);
+		font-size: 0.8rem;
+		font-weight: 840;
+		text-align: center;
+	}
+
+	.save-status span {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+
 	.question-list-card {
 		display: grid;
 		gap: 0.65rem;
@@ -1302,6 +1483,11 @@ function handleKeydown(event: KeyboardEvent) {
 
 	.question-list button.answered:not(.current) {
 		border-color: rgba(74, 222, 128, 0.22);
+	}
+
+	.question-list button.drafted:not(.current) {
+		border-color: rgba(216, 168, 56, 0.32);
+		background: rgba(216, 168, 56, 0.09);
 	}
 
 	.question-list button.wrong:not(.current) {
@@ -1397,12 +1583,46 @@ function handleKeydown(event: KeyboardEvent) {
 		gap: 0.62rem;
 	}
 
+	.options.multi-options {
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+		align-items: stretch;
+	}
+
+	.multi-hint {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin: -0.15rem 0 0.7rem;
+		border: 1px solid rgba(216, 168, 56, 0.18);
+		border-radius: 0.5rem;
+		background: rgba(216, 168, 56, 0.09);
+		padding: 0.55rem 0.65rem;
+		color: var(--muted);
+	}
+
+	.multi-hint span,
+	.multi-hint strong {
+		font-size: 0.8rem;
+		font-weight: 880;
+		line-height: 1.4;
+	}
+
+	.multi-hint strong {
+		min-width: 0;
+		color: var(--text);
+		overflow-wrap: anywhere;
+	}
+
 	.option,
 	.judge-choice {
+		position: relative;
 		display: grid;
 		align-items: center;
 		gap: 0.7rem;
 		width: 100%;
+		min-width: 0;
 		min-height: 3.4rem;
 		border: 1px solid rgba(232, 224, 202, 0.12);
 		border-radius: 0.5rem;
@@ -1416,6 +1636,11 @@ function handleKeydown(event: KeyboardEvent) {
 		grid-template-columns: 2.15rem minmax(0, 1fr);
 	}
 
+	.option.multi-option {
+		align-items: start;
+		min-height: 4rem;
+	}
+
 	.judge-choice {
 		grid-template-columns: 2.4rem minmax(0, 1fr);
 	}
@@ -1424,6 +1649,7 @@ function handleKeydown(event: KeyboardEvent) {
 	.judge-choice span {
 		display: grid;
 		place-items: center;
+		flex: 0 0 auto;
 		width: 2.15rem;
 		height: 2.15rem;
 		border-radius: 0.42rem;
@@ -1434,11 +1660,13 @@ function handleKeydown(event: KeyboardEvent) {
 
 	.option strong,
 	.judge-choice strong {
+		min-width: 0;
 		color: inherit;
 		font-size: 0.98rem;
 		font-weight: 760;
 		line-height: 1.45;
 		word-break: break-word;
+		overflow-wrap: anywhere;
 	}
 
 	.option:hover,
@@ -1450,6 +1678,11 @@ function handleKeydown(event: KeyboardEvent) {
 			linear-gradient(135deg, rgba(216, 168, 56, 0.16), rgba(131, 179, 80, 0.09)),
 			rgba(233, 223, 198, 0.09);
 		color: var(--text);
+	}
+
+	.option.multi-option.selected span {
+		background: rgba(216, 168, 56, 0.28);
+		box-shadow: inset 0 0 0 1px rgba(247, 223, 126, 0.48);
 	}
 
 	.option.correct,
@@ -1724,6 +1957,84 @@ function handleKeydown(event: KeyboardEvent) {
 
 	:global(:root:not(.dark)) .military-shell {
 		color: var(--text);
+	}
+
+	@media (max-width: 520px) {
+		.military-shell {
+			padding: 0.75rem;
+		}
+
+		.head-stats,
+		.mini-stats,
+		.bank-meta {
+			gap: 0.45rem;
+		}
+
+		.tool-grid {
+			gap: 0.45rem;
+		}
+
+		.tool-grid button {
+			min-width: 0;
+			min-height: 2.55rem;
+			padding: 0 0.35rem;
+			font-size: 0.82rem;
+			white-space: normal;
+		}
+
+		.question-panel {
+			min-height: 28rem;
+			padding: 0.82rem;
+		}
+
+		.question-head {
+			align-items: flex-start;
+			gap: 0.75rem;
+		}
+
+		.question-head strong {
+			font-size: 1rem;
+			line-height: 1.35;
+		}
+
+		.options.multi-options {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.multi-hint {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 0.22rem;
+		}
+
+		.option,
+		.judge-choice {
+			grid-template-columns: 2rem minmax(0, 1fr);
+			gap: 0.58rem;
+			min-height: 3.25rem;
+			padding: 0.62rem;
+		}
+
+		.option span,
+		.judge-choice span {
+			width: 2rem;
+			height: 2rem;
+		}
+
+		.option strong,
+		.judge-choice strong {
+			font-size: 0.94rem;
+			line-height: 1.52;
+		}
+
+		.answer-actions {
+			gap: 0.5rem;
+		}
+
+		.knowledge-tools label {
+			grid-template-columns: auto minmax(0, 1fr);
+			width: 100%;
+		}
 	}
 
 	@media (min-width: 768px) {
