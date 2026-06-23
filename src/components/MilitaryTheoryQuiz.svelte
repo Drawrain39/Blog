@@ -970,11 +970,21 @@ function handleKeydown(event: KeyboardEvent) {
 
 					{#if currentQuestion.type === "judge"}
 						<div class="judge-grid">
-							<button type="button" class={getJudgeClass("对")} on:click={() => toggleKey("对")}>
+							<button
+								type="button"
+								class={getJudgeClass("对")}
+								on:click={() => toggleKey("对")}
+								aria-pressed={(savedRecord?.values?.[0] ?? selectedKeys[0] ?? "") === "对"}
+							>
 								<span>对</span>
 								<strong>正确</strong>
 							</button>
-							<button type="button" class={getJudgeClass("错")} on:click={() => toggleKey("错")}>
+							<button
+								type="button"
+								class={getJudgeClass("错")}
+								on:click={() => toggleKey("错")}
+								aria-pressed={(savedRecord?.values?.[0] ?? selectedKeys[0] ?? "") === "错"}
+							>
 								<span>错</span>
 								<strong>错误</strong>
 							</button>
@@ -1670,9 +1680,7 @@ function handleKeydown(event: KeyboardEvent) {
 	}
 
 	.option:hover,
-	.judge-choice:hover,
-	.option.selected,
-	.judge-choice.selected {
+	.judge-choice:hover {
 		border-color: rgba(216, 168, 56, 0.58);
 		background:
 			linear-gradient(135deg, rgba(216, 168, 56, 0.16), rgba(131, 179, 80, 0.09)),
@@ -1681,28 +1689,59 @@ function handleKeydown(event: KeyboardEvent) {
 	}
 
 	.option.selected,
-	.judge-choice.selected {
+	.option[aria-pressed="true"],
+	.judge-choice.selected,
+	.judge-choice[aria-pressed="true"] {
+		border-color: rgba(247, 223, 126, 0.95);
+		background:
+			linear-gradient(135deg, rgba(247, 208, 86, 0.92), rgba(131, 179, 80, 0.84)),
+			#d8a838;
+		color: #17140c;
 		box-shadow:
-			inset 0 0 0 1px rgba(247, 223, 126, 0.28),
-			0 0 0 1px rgba(216, 168, 56, 0.12);
+			inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+			0 0 0 2px rgba(216, 168, 56, 0.2);
 	}
 
 	.option.selected span,
-	.judge-choice.selected span {
-		background: rgba(216, 168, 56, 0.28);
-		box-shadow: inset 0 0 0 1px rgba(247, 223, 126, 0.48);
+	.option[aria-pressed="true"] span,
+	.judge-choice.selected span,
+	.judge-choice[aria-pressed="true"] span {
+		background: rgba(23, 20, 12, 0.16);
+		color: #17140c;
+		box-shadow: inset 0 0 0 1px rgba(23, 20, 12, 0.18);
+	}
+
+	.option.selected strong,
+	.option[aria-pressed="true"] strong,
+	.judge-choice.selected strong,
+	.judge-choice[aria-pressed="true"] strong {
+		color: #17140c;
+		font-weight: 900;
 	}
 
 	.option.correct,
 	.judge-choice.correct {
 		border-color: rgba(74, 222, 128, 0.72);
 		background: rgba(22, 101, 52, 0.27);
+		color: var(--text);
 	}
 
 	.option.wrong,
 	.judge-choice.wrong {
 		border-color: rgba(248, 113, 113, 0.76);
 		background: rgba(127, 29, 29, 0.27);
+		color: var(--text);
+	}
+
+	.option.correct span,
+	.option.correct strong,
+	.option.wrong span,
+	.option.wrong strong,
+	.judge-choice.correct span,
+	.judge-choice.correct strong,
+	.judge-choice.wrong span,
+	.judge-choice.wrong strong {
+		color: var(--text);
 	}
 
 	.option.muted,
