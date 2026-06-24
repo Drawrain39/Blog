@@ -18,7 +18,7 @@ export let data: MilitaryTheoryData = {
 	knowledge: [],
 };
 
-type View = "practice" | "knowledge";
+type View = "practice" | "knowledge" | "exam";
 type Mode = "all" | "wrong" | "starred";
 type Order = "sequential" | "random";
 type SelfMark = "known" | "review";
@@ -55,14 +55,34 @@ interface PersistedState {
 	drafts: Record<string, DraftAnswer>;
 }
 
+interface ExamAnswer {
+	values: string[];
+	text: string;
+}
+
+const examDurationMs = 60 * 60 * 1000;
+const examPlan: Array<{
+	type: MilitaryTheoryQuestionType;
+	count: number;
+	label: string;
+}> = [
+	{ type: "fill", count: 20, label: "填空" },
+	{ type: "single", count: 20, label: "单选" },
+	{ type: "judge", count: 20, label: "判断" },
+	{ type: "short", count: 1, label: "简答" },
+	{ type: "essay", count: 1, label: "论述" },
+];
+const examTotalCount = examPlan.reduce((total, item) => total + item.count, 0);
 const storageKey = "drawrain-military-theory-quiz-v1";
 const validModes = new Set<Mode>(["all", "wrong", "starred"]);
 const validOrders = new Set<Order>(["sequential", "random"]);
-const validViews = new Set<View>(["practice", "knowledge"]);
-const typeFilters: Array<{ value: MilitaryTheoryQuestionType | "all"; label: string }> = [
+const validViews = new Set<View>(["practice", "knowledge", "exam"]);
+const typeFilters: Array<{
+	value: MilitaryTheoryQuestionType | "all";
+	label: string;
+}> = [
 	{ value: "all", label: "全部题型" },
 	{ value: "single", label: "单选" },
-	{ value: "multiple", label: "多选" },
 	{ value: "fill", label: "填空" },
 	{ value: "judge", label: "判断" },
 	{ value: "short", label: "简答" },
@@ -95,9 +115,27 @@ let saveNoticeTimer: ReturnType<typeof setTimeout> | undefined;
 let lastSavedState = "";
 let persistedState: PersistedState;
 let choiceRenderVersion = 0;
+let examQuestions: MilitaryTheoryQuestion[] = [];
+let examAnswers: Record<string, ExamAnswer> = {};
+let examIndex = 0;
+let examStartedAt = 0;
+let examSubmittedAt = 0;
+let examNow = Date.now();
+let examActiveQuestionId = "";
+let examSelectedKeys: string[] = [];
+let examFillInput = "";
+let examWrittenAnswer = "";
+let examSubmitted = false;
+let examNotice = "";
+let examChoiceRenderVersion = 0;
+let examTimer: ReturnType<typeof setInterval> | undefined;
+let examAnsweredCount = 0;
+let examObjectiveCorrect = 0;
 
 $: chapters = data.chapters ?? [];
-$: questions = data.questions ?? [];
+$: questions = (data.questions ?? []).filter(
+	(question) => question.type !== "multiple",
+);
 $: knowledge = data.knowledge ?? [];
 $: questionIds = new Set(questions.map((question) => question.id));
 $: wrongSet = new Set(wrongIds);
@@ -141,24 +179,101 @@ $: progressPercent =
 	visibleQuestions.length > 0
 		? Math.round(((currentIndex + 1) / visibleQuestions.length) * 100)
 		: 0;
-$: answeredInScope = visibleQuestions.filter((question) => answered[question.id]).length;
+$: answeredInScope = visibleQuestions.filter(
+	(question) => answered[question.id],
+).length;
 $: accuracy =
 	sessionTotal > 0 ? Math.round((sessionCorrect / sessionTotal) * 100) : 0;
 $: filteredKnowledge = buildKnowledgeCards(knowledge, chapterFilter, search);
 $: objectiveCount = questions.filter(isObjectiveMilitaryQuestion).length;
 $: subjectiveCount = questions.length - objectiveCount;
+$: examCurrentQuestion = examQuestions[examIndex] ?? null;
+$: examRemainingMs =
+	examStartedAt && !examSubmitted
+		? Math.max(0, examDurationMs - (examNow - examStartedAt))
+		: 0;
+$: examDisplayRemainingMs = examStartedAt
+	? Math.max(
+			0,
+			examDurationMs -
+				((examSubmitted ? examSubmittedAt || examNow : examNow) -
+					examStartedAt),
+		)
+	: examDurationMs;
+$: examProgressPercent = examQuestions.length
+	? Math.round(((examIndex + 1) / examQuestions.length) * 100)
+	: 0;
+$: examObjectiveTotal = examQuestions.filter(
+	isObjectiveMilitaryQuestion,
+).length;
+$: examResultPercent = examObjectiveTotal
+	? Math.round((examObjectiveCorrect / examObjectiveTotal) * 100)
+	: 0;
+$: examChoiceValues = examSubmitted
+	? examCurrentQuestion
+		? (examAnswers[examCurrentQuestion.id]?.values ?? [])
+		: []
+	: examSelectedKeys;
+$: examChoiceRenderKey = examCurrentQuestion
+	? `${examCurrentQuestion.id}:${examSubmitted ? "submitted" : "draft"}:${examChoiceValues.join("|")}:${examChoiceRenderVersion}`
+	: "empty";
+$: examCurrentAnswered = examCurrentQuestion
+	? hasExamAnswerRecord(
+			examCurrentQuestion,
+			examAnswers[examCurrentQuestion.id],
+		)
+	: false;
+$: examAnsweredCount = examQuestions.filter((question) =>
+	hasExamAnswerRecord(question, examAnswers[question.id]),
+).length;
+$: examObjectiveCorrect = examSubmitted
+	? examQuestions.filter(
+			(question) =>
+				isObjectiveMilitaryQuestion(question) &&
+				evaluateExamQuestion(question, examAnswers[question.id]),
+		).length
+	: 0;
+$: if (examRemainingMs === 0 && examStartedAt && !examSubmitted) {
+	finishExam(true);
+}
 
 $: if (currentQuestion && currentQuestion.id !== activeQuestionId) {
 	activeQuestionId = currentQuestion.id;
 	const saved = answered[currentQuestion.id];
 	const draft = drafts[currentQuestion.id];
-	selectedKeys = saved?.values ? [...saved.values] : draft?.values ? [...draft.values] : [];
-	fillInput = currentQuestion.type === "fill" ? saved?.text ?? draft?.fillInput ?? "" : "";
+	selectedKeys = saved?.values
+		? [...saved.values]
+		: draft?.values
+			? [...draft.values]
+			: [];
+	fillInput =
+		currentQuestion.type === "fill"
+			? (saved?.text ?? draft?.fillInput ?? "")
+			: "";
 	writtenAnswer =
 		currentQuestion.type === "short" || currentQuestion.type === "essay"
-			? saved?.text ?? draft?.writtenAnswer ?? ""
+			? (saved?.text ?? draft?.writtenAnswer ?? "")
 			: "";
 	showAnswer = Boolean(saved) || Boolean(draft?.showAnswer);
+}
+
+$: if (examCurrentQuestion && examCurrentQuestion.id !== examActiveQuestionId) {
+	examActiveQuestionId = examCurrentQuestion.id;
+	const answer = examAnswers[examCurrentQuestion.id];
+	examSelectedKeys = answer?.values ? [...answer.values] : [];
+	examFillInput =
+		examCurrentQuestion.type === "fill" ? (answer?.text ?? "") : "";
+	examWrittenAnswer =
+		examCurrentQuestion.type === "short" || examCurrentQuestion.type === "essay"
+			? (answer?.text ?? "")
+			: "";
+}
+
+$: if (examCurrentQuestion && !examSubmitted) {
+	examSelectedKeys;
+	examFillInput;
+	examWrittenAnswer;
+	syncExamAnswer();
 }
 
 $: if (mounted && currentQuestion && !resolvedSubmitted) {
@@ -196,12 +311,17 @@ onMount(() => {
 	if (saved) applySavedState(saved);
 	activeQuestionId = "";
 	mounted = true;
+	examTimer = setInterval(() => {
+		if (examStartedAt && !examSubmitted) examNow = Date.now();
+	}, 1000);
 
 	const handlePageRestore = () => {
 		const restored = loadSavedState();
 		if (restored) applySavedState(restored);
 		activeQuestionId = "";
 		choiceRenderVersion += 1;
+		examChoiceRenderVersion += 1;
+		examNow = Date.now();
 	};
 
 	window.addEventListener("pageshow", handlePageRestore);
@@ -209,6 +329,8 @@ onMount(() => {
 	return () => {
 		window.removeEventListener("pageshow", handlePageRestore);
 		window.removeEventListener("popstate", handlePageRestore);
+		if (examTimer) clearInterval(examTimer);
+		if (saveNoticeTimer) clearTimeout(saveNoticeTimer);
 	};
 });
 
@@ -241,7 +363,9 @@ function applySavedState(saved: string) {
 		wrongIds = sanitizeIds(parsed.wrongIds);
 		starredIds = sanitizeIds(parsed.starredIds);
 		view = validViews.has(parsed.view) ? parsed.view : "practice";
-		chapterFilter = isValidChapter(parsed.chapterFilter) ? parsed.chapterFilter : "all";
+		chapterFilter = isValidChapter(parsed.chapterFilter)
+			? parsed.chapterFilter
+			: "all";
 		typeFilter = isValidType(parsed.typeFilter) ? parsed.typeFilter : "all";
 		mode = validModes.has(parsed.mode) ? parsed.mode : "all";
 		order = validOrders.has(parsed.order) ? parsed.order : "sequential";
@@ -265,14 +389,17 @@ function applySavedState(saved: string) {
 
 function sanitizeIds(value: unknown) {
 	if (!Array.isArray(value)) return [];
-	return value.filter((id): id is string => typeof id === "string" && questionIds.has(id));
+	return value.filter(
+		(id): id is string => typeof id === "string" && questionIds.has(id),
+	);
 }
 
 function sanitizeAnswered(value: unknown) {
 	if (!value || typeof value !== "object" || Array.isArray(value)) return {};
 	const entries = Object.entries(value).filter(([id, record]) => {
 		if (!questionIds.has(id)) return false;
-		if (!record || typeof record !== "object" || Array.isArray(record)) return false;
+		if (!record || typeof record !== "object" || Array.isArray(record))
+			return false;
 		const answer = record as Partial<StoredAnswer>;
 		return (
 			Array.isArray(answer.values) &&
@@ -288,14 +415,18 @@ function sanitizeDrafts(value: unknown) {
 	if (!value || typeof value !== "object" || Array.isArray(value)) return {};
 	const entries = Object.entries(value).flatMap(([id, record]) => {
 		if (!questionIds.has(id)) return [];
-		if (!record || typeof record !== "object" || Array.isArray(record)) return [];
+		if (!record || typeof record !== "object" || Array.isArray(record))
+			return [];
 		const draft = record as Partial<DraftAnswer>;
 		const sanitized: DraftAnswer = {
 			values: Array.isArray(draft.values)
-				? draft.values.filter((item): item is string => typeof item === "string")
+				? draft.values.filter(
+						(item): item is string => typeof item === "string",
+					)
 				: [],
 			fillInput: typeof draft.fillInput === "string" ? draft.fillInput : "",
-			writtenAnswer: typeof draft.writtenAnswer === "string" ? draft.writtenAnswer : "",
+			writtenAnswer:
+				typeof draft.writtenAnswer === "string" ? draft.writtenAnswer : "",
 			showAnswer: draft.showAnswer === true,
 		};
 		return hasDraftContent(sanitized) ? [[id, sanitized] as const] : [];
@@ -325,11 +456,10 @@ function sameDraft(left: DraftAnswer | undefined, right: DraftAnswer) {
 function syncCurrentDraft() {
 	if (!currentQuestion || resolvedSubmitted) return;
 	const isFill = currentQuestion.type === "fill";
-	const isWritten = currentQuestion.type === "short" || currentQuestion.type === "essay";
+	const isWritten =
+		currentQuestion.type === "short" || currentQuestion.type === "essay";
 	const isChoice =
-		currentQuestion.type === "single" ||
-		currentQuestion.type === "multiple" ||
-		currentQuestion.type === "judge";
+		currentQuestion.type === "single" || currentQuestion.type === "judge";
 	const draft: DraftAnswer = {
 		values: isChoice ? [...selectedKeys] : [],
 		fillInput: isFill ? fillInput : "",
@@ -356,10 +486,15 @@ function removeDraft(id: string) {
 
 function isValidChapter(value: unknown) {
 	if (value === "all") return true;
-	return typeof value === "string" && chapters.some((chapter) => String(chapter.chapter) === value);
+	return (
+		typeof value === "string" &&
+		chapters.some((chapter) => String(chapter.chapter) === value)
+	);
 }
 
-function isValidType(value: unknown): value is MilitaryTheoryQuestionType | "all" {
+function isValidType(
+	value: unknown,
+): value is MilitaryTheoryQuestionType | "all" {
 	return value === "all" || typeFilters.some((type) => type.value === value);
 }
 
@@ -460,12 +595,16 @@ function reshuffle() {
 }
 
 function goToQuestion(index: number) {
-	currentIndex = Math.min(Math.max(index, 0), Math.max(visibleQuestions.length - 1, 0));
+	currentIndex = Math.min(
+		Math.max(index, 0),
+		Math.max(visibleQuestions.length - 1, 0),
+	);
 	activeQuestionId = "";
 }
 
 function nextQuestion() {
-	if (currentIndex < visibleQuestions.length - 1) goToQuestion(currentIndex + 1);
+	if (currentIndex < visibleQuestions.length - 1)
+		goToQuestion(currentIndex + 1);
 }
 
 function previousQuestion() {
@@ -483,14 +622,9 @@ function toggleStar() {
 
 function toggleKey(key: string) {
 	if (!currentQuestion || resolvedSubmitted) return;
-	const currentValues = selectedKeys.length ? selectedKeys : getPressedChoiceValuesFromDom();
-	if (currentQuestion.type === "multiple") {
-		selectedKeys = currentValues.includes(key)
-			? currentValues.filter((item) => item !== key)
-			: [...currentValues, key].sort();
-		choiceRenderVersion += 1;
-		return;
-	}
+	const currentValues = selectedKeys.length
+		? selectedKeys
+		: getPressedChoiceValuesFromDom();
 	selectedKeys = currentValues[0] === key ? [] : [key];
 	choiceRenderVersion += 1;
 }
@@ -503,6 +637,175 @@ function getPressedChoiceValuesFromDom() {
 	return Array.from(buttons)
 		.map((button) => button.dataset.choiceKey)
 		.filter((value): value is string => Boolean(value));
+}
+
+function buildExamQuestions(seed = nextRandomSeed()) {
+	return examPlan.flatMap((item, index) =>
+		shuffleQuestions(
+			questions.filter((question) => question.type === item.type),
+			seed + index * 137,
+		).slice(0, item.count),
+	);
+}
+
+function startExam() {
+	if (
+		examStartedAt &&
+		!examSubmitted &&
+		!confirm("当前模拟考试还没有交卷，要重新组卷吗？")
+	) {
+		return;
+	}
+	const paper = buildExamQuestions();
+	examQuestions = paper;
+	examAnswers = {};
+	examIndex = 0;
+	examStartedAt = Date.now();
+	examSubmittedAt = 0;
+	examNow = examStartedAt;
+	examActiveQuestionId = "";
+	examSelectedKeys = [];
+	examFillInput = "";
+	examWrittenAnswer = "";
+	examSubmitted = false;
+	examChoiceRenderVersion += 1;
+	examNotice =
+		paper.length === examTotalCount
+			? "模拟考试已开始"
+			: `题库数量不足，已生成 ${paper.length} / ${examTotalCount} 题`;
+}
+
+function syncExamAnswer() {
+	if (!examCurrentQuestion || examSubmitted) return;
+	const answer = buildExamAnswer(examCurrentQuestion);
+	if (!hasExamAnswerRecord(examCurrentQuestion, answer)) {
+		removeExamAnswer(examCurrentQuestion.id);
+		return;
+	}
+	if (sameExamAnswer(examAnswers[examCurrentQuestion.id], answer)) return;
+	examAnswers = {
+		...examAnswers,
+		[examCurrentQuestion.id]: answer,
+	};
+}
+
+function buildExamAnswer(question: MilitaryTheoryQuestion): ExamAnswer {
+	if (question.type === "single" || question.type === "judge") {
+		return {
+			values: [...examSelectedKeys],
+			text: examSelectedKeys.join(""),
+		};
+	}
+	if (question.type === "fill") {
+		return {
+			values: [],
+			text: examFillInput.trim(),
+		};
+	}
+	return {
+		values: [],
+		text: examWrittenAnswer.trim(),
+	};
+}
+
+function removeExamAnswer(id: string) {
+	if (!examAnswers[id]) return;
+	const { [id]: _removed, ...rest } = examAnswers;
+	examAnswers = rest;
+}
+
+function sameExamAnswer(left: ExamAnswer | undefined, right: ExamAnswer) {
+	return (
+		Boolean(left) &&
+		sameSet(left?.values ?? [], right.values) &&
+		(left?.text ?? "") === right.text
+	);
+}
+
+function hasExamAnswerRecord(
+	question: MilitaryTheoryQuestion,
+	answer: ExamAnswer | undefined,
+) {
+	if (!answer) return false;
+	if (question.type === "single" || question.type === "judge")
+		return answer.values.length > 0;
+	return Boolean(answer.text.trim());
+}
+
+function evaluateExamQuestion(
+	question: MilitaryTheoryQuestion,
+	answer = examAnswers[question.id],
+) {
+	if (!answer) return false;
+	if (question.type === "single")
+		return answer.values[0] === question.answerKeys?.[0];
+	if (question.type === "judge")
+		return answer.values[0] === question.answerText;
+	if (question.type === "fill") return evaluateFill(question, answer.text);
+	return false;
+}
+
+function finishExam(autoSubmit = false) {
+	if (!examStartedAt || examSubmitted) return;
+	syncExamAnswer();
+	examSubmitted = true;
+	examSubmittedAt = Date.now();
+	examNow = examSubmittedAt;
+	examChoiceRenderVersion += 1;
+	examNotice = autoSubmit ? "时间到，已自动交卷" : "已交卷";
+}
+
+function goToExamQuestion(index: number) {
+	if (!examQuestions.length) return;
+	syncExamAnswer();
+	examIndex = Math.min(
+		Math.max(index, 0),
+		Math.max(examQuestions.length - 1, 0),
+	);
+	examActiveQuestionId = "";
+	examChoiceRenderVersion += 1;
+}
+
+function nextExamQuestion() {
+	if (examIndex < examQuestions.length - 1) goToExamQuestion(examIndex + 1);
+}
+
+function previousExamQuestion() {
+	if (examIndex > 0) goToExamQuestion(examIndex - 1);
+}
+
+function toggleExamKey(key: string) {
+	if (!examCurrentQuestion || examSubmitted) return;
+	const currentValues = examSelectedKeys.length
+		? examSelectedKeys
+		: getPressedExamChoiceValuesFromDom();
+	examSelectedKeys = currentValues[0] === key ? [] : [key];
+	examChoiceRenderVersion += 1;
+}
+
+function getPressedExamChoiceValuesFromDom() {
+	if (typeof document === "undefined") return [];
+	const buttons = document.querySelectorAll<HTMLButtonElement>(
+		'.exam-question-panel [aria-pressed="true"][data-exam-choice-key]',
+	);
+	return Array.from(buttons)
+		.map((button) => button.dataset.examChoiceKey)
+		.filter((value): value is string => Boolean(value));
+}
+
+function examAnswerText(question: MilitaryTheoryQuestion) {
+	const answer = examAnswers[question.id];
+	if (!hasExamAnswerRecord(question, answer)) return "未作答";
+	if (question.type === "single" || question.type === "judge")
+		return answer?.values.join("") ?? "";
+	return answer?.text ?? "";
+}
+
+function formatExamTime(value: number) {
+	const totalSeconds = Math.max(0, Math.ceil(value / 1000));
+	const minutes = Math.floor(totalSeconds / 60);
+	const seconds = totalSeconds % 60;
+	return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 function canSubmit(question: MilitaryTheoryQuestion) {
@@ -521,7 +824,8 @@ function submitAnswer() {
 	}
 
 	const correct = evaluateObjective(currentQuestion);
-	const text = currentQuestion.type === "fill" ? fillInput.trim() : selectedKeys.join("");
+	const text =
+		currentQuestion.type === "fill" ? fillInput.trim() : selectedKeys.join("");
 	answered = {
 		...answered,
 		[currentQuestion.id]: {
@@ -571,9 +875,6 @@ function evaluateObjective(question: MilitaryTheoryQuestion) {
 	if (question.type === "single") {
 		return selectedKeys[0] === question.answerKeys?.[0];
 	}
-	if (question.type === "multiple") {
-		return sameSet(selectedKeys, question.answerKeys ?? []);
-	}
 	if (question.type === "judge") {
 		return selectedKeys[0] === question.answerText;
 	}
@@ -590,9 +891,7 @@ function sameSet(left: string[], right: string[]) {
 }
 
 function normalizeAnswer(value: string) {
-	return value
-		.toLowerCase()
-		.replace(/[（）()【】\s,，、;；.。/\\|_\-^]/gu, "");
+	return value.toLowerCase().replace(/[（）()【】\s,，、;；.。/\\|_\-^]/gu, "");
 }
 
 function splitFillInput(value: string) {
@@ -608,7 +907,10 @@ function evaluateFill(question: MilitaryTheoryQuestion, value: string) {
 	const parts = splitFillInput(value);
 	if (
 		parts.length === expected.length &&
-		parts.every((part, index) => normalizeAnswer(part) === normalizeAnswer(expected[index]))
+		parts.every(
+			(part, index) =>
+				normalizeAnswer(part) === normalizeAnswer(expected[index]),
+		)
 	) {
 		return true;
 	}
@@ -681,12 +983,13 @@ function typeLabel(type: MilitaryTheoryQuestionType) {
 
 function selectedAnswerText(question: MilitaryTheoryQuestion) {
 	if (question.type === "fill") return savedRecord?.text || fillInput;
-	if (question.type === "judge") return savedRecord?.values?.[0] || selectedKeys[0] || "";
+	if (question.type === "judge")
+		return savedRecord?.values?.[0] || selectedKeys[0] || "";
 	return (savedRecord?.values ?? selectedKeys).join("");
 }
 
 function correctAnswerText(question: MilitaryTheoryQuestion) {
-	if (question.type === "single" || question.type === "multiple") {
+	if (question.type === "single") {
 		return question.answerKeys?.join("") ?? "";
 	}
 	return question.answerText;
@@ -694,7 +997,9 @@ function correctAnswerText(question: MilitaryTheoryQuestion) {
 
 function getFillHint(question: MilitaryTheoryQuestion) {
 	const answerCount = question.answers?.length ?? 0;
-	if (question.answers?.some((answer) => normalizeAnswer(answer) === "c4kisr")) {
+	if (
+		question.answers?.some((answer) => normalizeAnswer(answer) === "c4kisr")
+	) {
 		return "由于输入格式可能会出错，直接给出答案：C^4KISR。";
 	}
 	if (answerCount > 1) {
@@ -711,15 +1016,47 @@ function getChoiceClass(key: string) {
 		return savedValues.includes(key) ? "option selected" : "option";
 	}
 	if (correctKeys.includes(key)) return "option correct";
-	if (savedValues.includes(key) && !correctKeys.includes(key)) return "option wrong";
+	if (savedValues.includes(key) && !correctKeys.includes(key))
+		return "option wrong";
 	return "option muted";
 }
 
 function getJudgeClass(value: string) {
 	const chosen = savedRecord?.values?.[0] ?? selectedKeys[0] ?? "";
-	if (!resolvedSubmitted) return chosen === value ? "judge-choice selected" : "judge-choice";
+	if (!resolvedSubmitted)
+		return chosen === value ? "judge-choice selected" : "judge-choice";
 	if (value === currentQuestion?.answerText) return "judge-choice correct";
-	if (chosen === value && value !== currentQuestion?.answerText) return "judge-choice wrong";
+	if (chosen === value && value !== currentQuestion?.answerText)
+		return "judge-choice wrong";
+	return "judge-choice muted";
+}
+
+function getExamChoiceClass(key: string) {
+	if (!examCurrentQuestion) return "option";
+	const answer = examAnswers[examCurrentQuestion.id];
+	const chosenValues = examSubmitted
+		? (answer?.values ?? [])
+		: examChoiceValues;
+	const correctKeys = examCurrentQuestion.answerKeys ?? [];
+	if (!examSubmitted)
+		return chosenValues.includes(key) ? "option selected" : "option";
+	if (correctKeys.includes(key)) return "option correct";
+	if (chosenValues.includes(key) && !correctKeys.includes(key))
+		return "option wrong";
+	return "option muted";
+}
+
+function getExamJudgeClass(value: string) {
+	if (!examCurrentQuestion) return "judge-choice";
+	const answer = examAnswers[examCurrentQuestion.id];
+	const chosen = examSubmitted
+		? (answer?.values?.[0] ?? "")
+		: (examChoiceValues[0] ?? "");
+	if (!examSubmitted)
+		return chosen === value ? "judge-choice selected" : "judge-choice";
+	if (value === examCurrentQuestion.answerText) return "judge-choice correct";
+	if (chosen === value && value !== examCurrentQuestion.answerText)
+		return "judge-choice wrong";
 	return "judge-choice muted";
 }
 
@@ -733,17 +1070,21 @@ function handleKeydown(event: KeyboardEvent) {
 	) {
 		return;
 	}
+	if (view === "exam") {
+		handleExamKeydown(event);
+		return;
+	}
 	if (!currentQuestion) return;
 
 	const key = event.key.toUpperCase();
-	if (
-		(currentQuestion.type === "single" || currentQuestion.type === "multiple") &&
-		/^[A-F]$/u.test(key)
-	) {
+	if (currentQuestion.type === "single" && /^[A-F]$/u.test(key)) {
 		toggleKey(key);
 		return;
 	}
-	if (currentQuestion.type === "judge" && (event.key === "1" || event.key === "2")) {
+	if (
+		currentQuestion.type === "judge" &&
+		(event.key === "1" || event.key === "2")
+	) {
 		toggleKey(event.key === "1" ? "对" : "错");
 		return;
 	}
@@ -754,6 +1095,24 @@ function handleKeydown(event: KeyboardEvent) {
 	}
 	if (event.key === "ArrowRight") nextQuestion();
 	if (event.key === "ArrowLeft") previousQuestion();
+}
+
+function handleExamKeydown(event: KeyboardEvent) {
+	if (!examCurrentQuestion || !examStartedAt || examSubmitted) return;
+	const key = event.key.toUpperCase();
+	if (examCurrentQuestion.type === "single" && /^[A-F]$/u.test(key)) {
+		toggleExamKey(key);
+		return;
+	}
+	if (
+		examCurrentQuestion.type === "judge" &&
+		(event.key === "1" || event.key === "2")
+	) {
+		toggleExamKey(event.key === "1" ? "对" : "错");
+		return;
+	}
+	if (event.key === "ArrowRight") nextExamQuestion();
+	if (event.key === "ArrowLeft") previousExamQuestion();
 }
 </script>
 
@@ -794,35 +1153,41 @@ function handleKeydown(event: KeyboardEvent) {
 			<Icon icon="material-symbols:menu-book-outline-rounded" class="button-icon" />
 			知识点
 		</button>
+		<button type="button" class:active={view === "exam"} on:click={() => changeView("exam")}>
+			<Icon icon="material-symbols:timer-outline-rounded" class="button-icon" />
+			模拟考试
+		</button>
 	</div>
 
-	<div class="filter-panel">
-		<div class="chapter-tabs" aria-label="章节筛选">
-			{#each chapterFilters as chapter}
-				<button
-					type="button"
-					class:active={chapterFilter === chapter.value}
-					on:click={() => changeChapter(chapter.value)}
-				>
-					{chapter.label}
-				</button>
-			{/each}
-		</div>
-
-		{#if view === "practice"}
-			<div class="type-tabs" aria-label="题型筛选">
-				{#each typeFilters as type}
+	{#if view !== "exam"}
+		<div class="filter-panel">
+			<div class="chapter-tabs" aria-label="章节筛选">
+				{#each chapterFilters as chapter}
 					<button
 						type="button"
-						class:active={typeFilter === type.value}
-						on:click={() => changeType(type.value)}
+						class:active={chapterFilter === chapter.value}
+						on:click={() => changeChapter(chapter.value)}
 					>
-						{type.label}
+						{chapter.label}
 					</button>
 				{/each}
 			</div>
-		{/if}
-	</div>
+
+			{#if view === "practice"}
+				<div class="type-tabs" aria-label="题型筛选">
+					{#each typeFilters as type}
+						<button
+							type="button"
+							class:active={typeFilter === type.value}
+							on:click={() => changeType(type.value)}
+						>
+							{type.label}
+						</button>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	{/if}
 
 	{#if view === "practice"}
 		<div class="mode-tabs" aria-label="刷题范围">
@@ -895,6 +1260,10 @@ function handleKeydown(event: KeyboardEvent) {
 					<button type="button" on:click={manualSave}>
 						<Icon icon="material-symbols:save-outline-rounded" class="button-icon" />
 						保存
+					</button>
+					<button type="button" on:click={() => changeView("exam")}>
+						<Icon icon="material-symbols:timer-outline-rounded" class="button-icon" />
+						模拟考试
 					</button>
 					<button
 						type="button"
@@ -979,20 +1348,13 @@ function handleKeydown(event: KeyboardEvent) {
 
 					<p class="question-text">{currentQuestion.prompt}</p>
 
-					{#if currentQuestion.type === "single" || currentQuestion.type === "multiple"}
-						{#if currentQuestion.type === "multiple"}
-							<div class="multi-hint" aria-live="polite">
-								<span>多选题</span>
-								<strong>{selectedKeys.length ? `已选 ${selectedKeys.join("、")}` : "未选择"}</strong>
-							</div>
-						{/if}
+					{#if currentQuestion.type === "single"}
 						{#key choiceRenderKey}
-							<div class="options" class:multi-options={currentQuestion.type === "multiple"}>
+							<div class="options">
 								{#each currentQuestion.options ?? [] as option}
 									<button
 										type="button"
 										class={getChoiceClass(option.key)}
-										class:multi-option={currentQuestion.type === "multiple"}
 										on:click={() => toggleKey(option.key)}
 										aria-pressed={activeChoiceValues.includes(option.key)}
 										data-choice-key={option.key}
@@ -1121,7 +1483,7 @@ function handleKeydown(event: KeyboardEvent) {
 
 							{#if currentQuestion.type === "fill"}
 								<p>{currentQuestion.filledPrompt}</p>
-							{:else if currentQuestion.type === "single" || currentQuestion.type === "multiple" || currentQuestion.type === "judge"}
+							{:else if currentQuestion.type === "single" || currentQuestion.type === "judge"}
 								<p>{correctAnswerText(currentQuestion)}</p>
 							{:else}
 								<ul>
@@ -1148,6 +1510,291 @@ function handleKeydown(event: KeyboardEvent) {
 					<Icon icon="material-symbols:quiz-outline-rounded" class="empty-icon" />
 					<h2>当前范围没有题目</h2>
 					<button type="button" on:click={() => changeMode("all")}>回到全部</button>
+				</section>
+			{/if}
+		</div>
+	{:else if view === "exam"}
+		<div class="practice-layout exam-layout">
+			<aside class="side-panel">
+				<div
+					class="exam-timer"
+					class:warning={examStartedAt && !examSubmitted && examDisplayRemainingMs <= 5 * 60 * 1000}
+					class:submitted={examSubmitted}
+				>
+					<span>{examSubmitted ? "剩余时间" : "倒计时"}</span>
+					<strong>{formatExamTime(examDisplayRemainingMs)}</strong>
+					<small>{examStartedAt ? (examSubmitted ? "已交卷" : "限时 60 分钟") : "等待开始"}</small>
+				</div>
+
+				<div class="progress-block">
+					<div class="progress-title">
+						<span>考试进度</span>
+						<strong>{examStartedAt ? `${examProgressPercent}%` : "--"}</strong>
+					</div>
+					<div class="progress-track">
+						<div style={`width: ${examStartedAt ? examProgressPercent : 0}%`}></div>
+					</div>
+					<div class="progress-meta">
+						<span>{examQuestions.length ? examIndex + 1 : 0} / {examQuestions.length || examTotalCount}</span>
+						<span>已答 {examAnsweredCount}</span>
+					</div>
+				</div>
+
+				<div class="mini-stats">
+					<div>
+						<span>客观题</span>
+						<strong>{examSubmitted ? `${examObjectiveCorrect}/${examObjectiveTotal}` : examObjectiveTotal || 60}</strong>
+					</div>
+					<div>
+						<span>正确率</span>
+						<strong>{examSubmitted ? `${examResultPercent}%` : "--"}</strong>
+					</div>
+				</div>
+
+				<div class="exam-plan">
+					<div class="list-head">
+						<strong>试卷构成</strong>
+						<span>{examTotalCount} 题</span>
+					</div>
+					<div class="exam-plan-grid">
+						{#each examPlan as item}
+							<div>
+								<span>{item.label}</span>
+								<strong>{item.count}</strong>
+							</div>
+						{/each}
+					</div>
+				</div>
+
+				<div class="tool-grid">
+					<button type="button" on:click={() => startExam()}>
+						<Icon icon="material-symbols:assignment-add-outline-rounded" class="button-icon" />
+						{examStartedAt ? "重新组卷" : "开始考试"}
+					</button>
+					<button
+						type="button"
+						class="exam-submit-tool"
+						on:click={() => finishExam(false)}
+						disabled={!examStartedAt || examSubmitted}
+					>
+						<Icon icon="material-symbols:done-all-rounded" class="button-icon" />
+						{examSubmitted ? "已交卷" : "交卷"}
+					</button>
+				</div>
+
+				{#if examNotice}
+					<div class="save-status" aria-live="polite">
+						<Icon icon="material-symbols:info-outline-rounded" class="button-icon" />
+						<span>{examNotice}</span>
+					</div>
+				{/if}
+
+				{#if examQuestions.length}
+					<div class="question-list-card">
+						<div class="list-head">
+							<strong>模拟题板</strong>
+							<span>{examAnsweredCount} / {examQuestions.length}</span>
+						</div>
+						<div class="exam-question-map">
+							{#each examQuestions as question, index}
+								<button
+									type="button"
+									class:current={index === examIndex}
+									class:answered={hasExamAnswerRecord(question, examAnswers[question.id])}
+									class:correct={examSubmitted &&
+										isObjectiveMilitaryQuestion(question) &&
+										evaluateExamQuestion(question, examAnswers[question.id])}
+									class:wrong={examSubmitted &&
+										isObjectiveMilitaryQuestion(question) &&
+										!evaluateExamQuestion(question, examAnswers[question.id])}
+									on:click={() => goToExamQuestion(index)}
+								>
+									<span>{index + 1}</span>
+									<strong>{typeLabel(question.type)}</strong>
+								</button>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			</aside>
+
+			{#if !examStartedAt}
+				<section class="question-panel exam-start-panel">
+					<div>
+						<Icon icon="material-symbols:timer-outline-rounded" class="empty-icon" />
+						<h2>模拟考试</h2>
+						<p>60 分钟 · 20 填空 · 20 单选 · 20 判断 · 1 简答 · 1 论述</p>
+						<div class="exam-plan-grid large">
+							{#each examPlan as item}
+								<div>
+									<span>{item.label}</span>
+									<strong>{item.count}</strong>
+								</div>
+							{/each}
+						</div>
+						<button type="button" class="submit-btn" on:click={() => startExam()}>
+							<Icon icon="material-symbols:play-arrow-rounded" class="button-icon" />
+							开始模拟考试
+						</button>
+					</div>
+				</section>
+			{:else if examCurrentQuestion}
+				<article class="question-panel exam-question-panel" data-question-id={examCurrentQuestion.id}>
+					<div class="question-head">
+						<div>
+							<span>{examCurrentQuestion.chapterTitle}</span>
+							<strong>{typeLabel(examCurrentQuestion.type)} · 第 {examIndex + 1} / {examQuestions.length} 题</strong>
+						</div>
+						<div class="exam-state-pill" class:answered={examCurrentAnswered}>
+							{examCurrentAnswered ? "已作答" : "未作答"}
+						</div>
+					</div>
+
+					<p class="question-text">{examCurrentQuestion.prompt}</p>
+
+					{#if examCurrentQuestion.type === "single"}
+						{#key examChoiceRenderKey}
+							<div class="options">
+								{#each examCurrentQuestion.options ?? [] as option}
+									<button
+										type="button"
+										class={getExamChoiceClass(option.key)}
+										on:click={() => toggleExamKey(option.key)}
+										aria-pressed={examChoiceValues.includes(option.key)}
+										data-exam-choice-key={option.key}
+									>
+										<span>{option.key}</span>
+										<strong>{option.text}</strong>
+									</button>
+								{/each}
+							</div>
+						{/key}
+					{/if}
+
+					{#if examCurrentQuestion.type === "judge"}
+						{#key examChoiceRenderKey}
+							<div class="judge-grid">
+								<button
+									type="button"
+									class={getExamJudgeClass("对")}
+									on:click={() => toggleExamKey("对")}
+									aria-pressed={examChoiceValues[0] === "对"}
+									data-exam-choice-key="对"
+								>
+									<span>对</span>
+									<strong>正确</strong>
+								</button>
+								<button
+									type="button"
+									class={getExamJudgeClass("错")}
+									on:click={() => toggleExamKey("错")}
+									aria-pressed={examChoiceValues[0] === "错"}
+									data-exam-choice-key="错"
+								>
+									<span>错</span>
+									<strong>错误</strong>
+								</button>
+							</div>
+						{/key}
+					{/if}
+
+					{#if examCurrentQuestion.type === "fill"}
+						<label class="answer-input">
+							<span>填写答案</span>
+							<textarea
+								bind:value={examFillInput}
+								rows="3"
+								disabled={examSubmitted}
+								placeholder="多个答案请用中文分号；隔开"
+							></textarea>
+							<small>{getFillHint(examCurrentQuestion)}</small>
+						</label>
+					{/if}
+
+					{#if examCurrentQuestion.type === "short" || examCurrentQuestion.type === "essay"}
+						<label class="answer-input">
+							<span>我的要点</span>
+							<textarea bind:value={examWrittenAnswer} rows="7" disabled={examSubmitted}></textarea>
+						</label>
+					{/if}
+
+					<div class="answer-actions">
+						<button type="button" class="nav-btn" on:click={previousExamQuestion} disabled={examIndex === 0}>
+							<Icon icon="material-symbols:chevron-left-rounded" class="button-icon" />
+							上一题
+						</button>
+						<button
+							type="button"
+							class="submit-btn exam-submit"
+							on:click={() => finishExam(false)}
+							disabled={examSubmitted}
+						>
+							<Icon icon="material-symbols:done-all-rounded" class="button-icon" />
+							{examSubmitted ? "已交卷" : "交卷"}
+						</button>
+						<button
+							type="button"
+							class="nav-btn"
+							on:click={nextExamQuestion}
+							disabled={examIndex >= examQuestions.length - 1}
+						>
+							下一题
+							<Icon icon="material-symbols:chevron-right-rounded" class="button-icon" />
+						</button>
+					</div>
+
+					{#if examSubmitted && isObjectiveMilitaryQuestion(examCurrentQuestion)}
+						<div
+							class:result-correct={evaluateExamQuestion(
+								examCurrentQuestion,
+								examAnswers[examCurrentQuestion.id],
+							)}
+							class:result-wrong={!evaluateExamQuestion(
+								examCurrentQuestion,
+								examAnswers[examCurrentQuestion.id],
+							)}
+							class="result-banner"
+						>
+							<Icon
+								icon={evaluateExamQuestion(examCurrentQuestion, examAnswers[examCurrentQuestion.id])
+									? "material-symbols:check-circle-rounded"
+									: "material-symbols:cancel-rounded"}
+								class="result-icon"
+							/>
+							<div>
+								<strong>{evaluateExamQuestion(examCurrentQuestion, examAnswers[examCurrentQuestion.id]) ? "回答正确" : "回答错误"}</strong>
+								<span>你的答案：{examAnswerText(examCurrentQuestion)} · 正确答案：{correctAnswerText(examCurrentQuestion)}</span>
+							</div>
+						</div>
+					{/if}
+
+					{#if examSubmitted}
+						<section class="answer-panel">
+							<div class="answer-title">
+								<Icon icon="material-symbols:fact-check-outline-rounded" class="button-icon" />
+								<strong>答案</strong>
+							</div>
+
+							{#if examCurrentQuestion.type === "fill"}
+								<p>{examCurrentQuestion.filledPrompt}</p>
+							{:else if examCurrentQuestion.type === "single" || examCurrentQuestion.type === "judge"}
+								<p>{correctAnswerText(examCurrentQuestion)}</p>
+							{:else}
+								<p class="written-response">我的答案：{examAnswerText(examCurrentQuestion)}</p>
+								<ul>
+									{#each examCurrentQuestion.answerLines ?? [] as line}
+										<li>{line}</li>
+									{/each}
+								</ul>
+							{/if}
+						</section>
+					{/if}
+				</article>
+			{:else}
+				<section class="empty-panel">
+					<Icon icon="material-symbols:quiz-outline-rounded" class="empty-icon" />
+					<h2>模拟卷生成失败</h2>
+					<button type="button" on:click={() => startExam()}>重新组卷</button>
 				</section>
 			{/if}
 		</div>
@@ -1476,6 +2123,149 @@ function handleKeydown(event: KeyboardEvent) {
 		overflow-wrap: anywhere;
 	}
 
+	.exam-timer {
+		border: 1px solid rgba(216, 168, 56, 0.32);
+		border-radius: 0.5rem;
+		background:
+			linear-gradient(135deg, rgba(216, 168, 56, 0.2), rgba(131, 179, 80, 0.1)),
+			rgba(10, 12, 11, 0.42);
+		padding: 0.9rem;
+		text-align: center;
+	}
+
+	.exam-timer span,
+	.exam-timer small {
+		display: block;
+		color: var(--muted);
+		font-size: 0.78rem;
+		font-weight: 850;
+	}
+
+	.exam-timer strong {
+		display: block;
+		margin: 0.22rem 0;
+		color: var(--text);
+		font-variant-numeric: tabular-nums;
+		font-size: 2.25rem;
+		font-weight: 950;
+		line-height: 1;
+	}
+
+	.exam-timer.warning {
+		border-color: rgba(248, 113, 113, 0.62);
+		background:
+			linear-gradient(135deg, rgba(248, 113, 113, 0.26), rgba(216, 168, 56, 0.12)),
+			rgba(10, 12, 11, 0.42);
+	}
+
+	.exam-timer.submitted {
+		border-color: rgba(74, 222, 128, 0.34);
+		background: rgba(22, 101, 52, 0.18);
+	}
+
+	.exam-plan {
+		display: grid;
+		gap: 0.65rem;
+		border: 1px solid var(--line);
+		border-radius: 0.5rem;
+		background: rgba(10, 12, 11, 0.32);
+		padding: 0.7rem;
+	}
+
+	.exam-plan-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.45rem;
+	}
+
+	.exam-plan-grid.large {
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+		margin: 1rem 0;
+	}
+
+	.exam-plan-grid > div {
+		border: 1px solid rgba(232, 224, 202, 0.1);
+		border-radius: 0.5rem;
+		background: rgba(233, 223, 198, 0.07);
+		padding: 0.6rem;
+	}
+
+	.exam-plan-grid span,
+	.exam-plan-grid strong {
+		display: block;
+	}
+
+	.exam-plan-grid span {
+		color: var(--muted);
+		font-size: 0.76rem;
+		font-weight: 850;
+	}
+
+	.exam-plan-grid strong {
+		margin-top: 0.25rem;
+		color: var(--text);
+		font-size: 1.25rem;
+		line-height: 1;
+	}
+
+	.exam-question-map {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(3.8rem, 1fr));
+		gap: 0.42rem;
+		max-height: 23rem;
+		overflow-y: auto;
+		padding-right: 0.15rem;
+	}
+
+	.exam-question-map button {
+		display: grid;
+		place-items: center;
+		gap: 0.2rem;
+		min-height: 3.2rem;
+		border: 1px solid rgba(232, 224, 202, 0.1);
+		border-radius: 0.5rem;
+		background: rgba(233, 223, 198, 0.07);
+		color: var(--soft);
+		padding: 0.35rem;
+	}
+
+	.exam-question-map button:hover,
+	.exam-question-map button.current {
+		border-color: rgba(216, 168, 56, 0.58);
+		background: rgba(216, 168, 56, 0.15);
+		color: var(--text);
+	}
+
+	.exam-question-map button.answered:not(.current) {
+		border-color: rgba(74, 222, 128, 0.24);
+	}
+
+	.exam-question-map button.correct {
+		border-color: rgba(74, 222, 128, 0.62);
+		background: rgba(22, 101, 52, 0.28);
+		color: var(--text);
+	}
+
+	.exam-question-map button.wrong {
+		border-color: rgba(248, 113, 113, 0.66);
+		background: rgba(127, 29, 29, 0.28);
+		color: var(--text);
+	}
+
+	.exam-question-map button span {
+		color: inherit;
+		font-size: 0.82rem;
+		font-weight: 930;
+		line-height: 1;
+	}
+
+	.exam-question-map button strong {
+		color: inherit;
+		font-size: 0.72rem;
+		font-weight: 820;
+		line-height: 1.2;
+	}
+
 	.question-list-card {
 		display: grid;
 		gap: 0.65rem;
@@ -1577,6 +2367,33 @@ function handleKeydown(event: KeyboardEvent) {
 		padding: 1rem;
 	}
 
+	.exam-start-panel {
+		display: grid;
+		place-items: center;
+		text-align: center;
+	}
+
+	.exam-start-panel > div {
+		width: min(100%, 42rem);
+	}
+
+	.exam-start-panel h2 {
+		margin: 0.65rem 0 0;
+		color: var(--text);
+		font-size: 1.6rem;
+	}
+
+	.exam-start-panel p {
+		margin: 0.45rem 0 0;
+		color: var(--muted);
+		font-weight: 820;
+		line-height: 1.65;
+	}
+
+	.exam-start-panel .submit-btn {
+		padding: 0 1.2rem;
+	}
+
 	.question-head {
 		display: flex;
 		align-items: center;
@@ -1619,6 +2436,27 @@ function handleKeydown(event: KeyboardEvent) {
 		font-size: 1.35rem;
 	}
 
+	.exam-state-pill {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2.25rem;
+		border: 1px solid rgba(232, 224, 202, 0.14);
+		border-radius: 0.5rem;
+		background: rgba(233, 223, 198, 0.08);
+		color: var(--muted);
+		padding: 0 0.72rem;
+		font-size: 0.8rem;
+		font-weight: 860;
+		white-space: nowrap;
+	}
+
+	.exam-state-pill.answered {
+		border-color: rgba(74, 222, 128, 0.34);
+		background: rgba(22, 101, 52, 0.18);
+		color: rgba(187, 247, 208, 0.92);
+	}
+
 	.question-text {
 		margin: 0 0 1rem;
 		color: var(--text);
@@ -1632,38 +2470,6 @@ function handleKeydown(event: KeyboardEvent) {
 	.judge-grid {
 		display: grid;
 		gap: 0.62rem;
-	}
-
-	.options.multi-options {
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
-		align-items: stretch;
-	}
-
-	.multi-hint {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: 0.45rem;
-		margin: -0.15rem 0 0.7rem;
-		border: 1px solid rgba(216, 168, 56, 0.18);
-		border-radius: 0.5rem;
-		background: rgba(216, 168, 56, 0.09);
-		padding: 0.55rem 0.65rem;
-		color: var(--muted);
-	}
-
-	.multi-hint span,
-	.multi-hint strong {
-		font-size: 0.8rem;
-		font-weight: 880;
-		line-height: 1.4;
-	}
-
-	.multi-hint strong {
-		min-width: 0;
-		color: var(--text);
-		overflow-wrap: anywhere;
 	}
 
 	.option,
@@ -1685,11 +2491,6 @@ function handleKeydown(event: KeyboardEvent) {
 
 	.option {
 		grid-template-columns: 2.15rem minmax(0, 1fr);
-	}
-
-	.option.multi-option {
-		align-items: start;
-		min-height: 4rem;
 	}
 
 	.judge-choice {
@@ -1926,6 +2727,14 @@ function handleKeydown(event: KeyboardEvent) {
 		line-height: 1.75;
 	}
 
+	.answer-panel .written-response {
+		border: 1px solid rgba(232, 224, 202, 0.1);
+		border-radius: 0.5rem;
+		background: rgba(233, 223, 198, 0.06);
+		padding: 0.7rem;
+		white-space: pre-wrap;
+	}
+
 	.answer-panel ul,
 	.knowledge-card ul {
 		margin: 0.65rem 0 0;
@@ -2085,16 +2894,6 @@ function handleKeydown(event: KeyboardEvent) {
 			line-height: 1.35;
 		}
 
-		.options.multi-options {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.multi-hint {
-			align-items: flex-start;
-			flex-direction: column;
-			gap: 0.22rem;
-		}
-
 		.option,
 		.judge-choice {
 			grid-template-columns: 2rem minmax(0, 1fr);
@@ -2117,6 +2916,15 @@ function handleKeydown(event: KeyboardEvent) {
 
 		.answer-actions {
 			gap: 0.5rem;
+		}
+
+		.exam-question-map {
+			grid-template-columns: repeat(auto-fill, minmax(3.25rem, 1fr));
+			max-height: 18rem;
+		}
+
+		.exam-plan-grid.large {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 
 		.knowledge-tools label {
