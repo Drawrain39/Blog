@@ -1199,6 +1199,563 @@ int main() {
 }
 ```
 
+### 实践三
+
+#### A. 二叉链表存储的二叉树
+
+##### 题目描述
+
+给出一个按照先序遍历得到的字符串，其中空格表示空子节点，大写字母表示非空节点。
+
+要求根据这个字符串建立二叉树，并分别输出：
+
+1. 先序遍历结果
+2. 第一种非递归中序遍历结果
+3. 第二种非递归中序遍历结果
+
+每个非空节点后面输出一个空格。
+
+##### 输入
+
+输入只有一行，包含一个字符串 `S`。
+
+字符串中空格代表空节点，大写字母代表节点内容，长度不超过 `100`。
+
+##### 输出
+
+输出三行。
+
+第一行为先序遍历序列。
+
+第二行为第一种中序遍历序列。
+
+第三行为第二种中序遍历序列。
+
+##### 样例输入
+
+```text
+ABC  DE G  F   
+```
+
+##### 样例输出
+
+```text
+A B C D E G F 
+C B E G D F A 
+C B E G D F A 
+```
+
+##### 解题思路
+
+因为输入字符串本身就是带空节点标记的先序序列，所以可以按照先序递归建树：
+
+1. 如果当前字符是空格，说明当前位置是空子树
+2. 如果当前字符是大写字母，就新建节点
+3. 递归建立左子树
+4. 递归建立右子树
+
+建树完成后，先序遍历可以直接递归输出。
+
+中序遍历使用两种非递归写法，核心都借助栈模拟递归过程。
+
+本题要特别注意：输入中的空格是有效字符，不能用 `cin >> s`，应该用 `getline(cin, s)` 读取整行。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <string>
+#include <stack>
+using namespace std;
+struct BiTNode {
+    char data;
+    BiTNode *lchild, *rchild;
+};
+string s;
+int pos = 0;
+BiTNode* create() {
+    if (pos >= s.size()) {
+        return NULL;
+    }
+    char ch = s[pos++];
+    if (ch == ' ') {
+        return NULL;
+    }
+    BiTNode* t = new BiTNode;
+    t->data = ch;
+    t->lchild = create();
+    t->rchild = create();
+    return t;
+}
+void preorder(BiTNode* t) {
+    if (t) {
+        cout << t->data << " ";
+        preorder(t->lchild);
+        preorder(t->rchild);
+    }
+}
+void inorder1(BiTNode* t) {
+    stack<BiTNode*> st;
+    while (t || !st.empty()) {
+        if (t) {
+            st.push(t);
+            t = t->lchild;
+        } else {
+            t = st.top();
+            st.pop();
+            cout << t->data << " ";
+            t = t->rchild;
+        }
+    }
+}
+void inorder2(BiTNode* t) {
+    stack<BiTNode*> st;
+    st.push(t);
+    while (!st.empty()) {
+        while (st.top()) {
+            st.push(st.top()->lchild);
+        }
+        st.pop();
+        if (!st.empty()) {
+            t = st.top();
+            st.pop();
+            cout << t->data << " ";
+            st.push(t->rchild);
+        }
+    }
+}
+int main() {
+    getline(cin, s);
+    BiTNode* t = create();
+    preorder(t);
+    cout << endl;
+    inorder1(t);
+    cout << endl;
+    inorder2(t);
+    cout << endl;
+    return 0;
+}
+```
+
+---
+
+#### B. 哈夫曼树
+
+##### 题目描述
+
+第一行输入一个数 `n`，表示叶节点的个数。
+
+接着输入 `n` 个叶节点的权值，需要用这些叶节点生成哈夫曼树，并输出所有叶子节点的路径长度与权值乘积之和，也就是哈夫曼树的带权路径长度。
+
+##### 输入
+
+输入包含多组数据。
+
+每组第一行输入一个数 `n`，接着输入 `n` 个叶节点权值。
+
+其中 `2 <= n <= 1000`，叶节点权值不超过 `100`。
+
+##### 输出
+
+对于每组数据，输出哈夫曼树的带权路径长度。
+
+##### 样例输入
+
+```text
+2
+2 8
+3
+5 11 30
+```
+
+##### 样例输出
+
+```text
+10
+62
+```
+
+##### 解题思路
+
+哈夫曼树的构造规则是：每次选取权值最小的两个节点合并。
+
+合并出的新节点权值为两个节点权值之和，并重新放回集合中。
+
+在这个过程中，每一次合并产生的代价都会计入最终答案。
+
+因此可以使用小根堆维护当前所有节点权值：
+
+1. 将所有叶节点权值加入小根堆
+2. 每次取出两个最小值 `a` 和 `b`
+3. 将 `a + b` 加到答案中
+4. 再把 `a + b` 放回堆中
+5. 堆中只剩一个节点时结束
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+int main() {
+    int n;
+    while (cin >> n) {
+        priority_queue<int, vector<int>, greater<int> > q;
+        for (int i = 0; i < n; ++i) {
+            int x;
+            cin >> x;
+            q.push(x);
+        }
+        int ans = 0;
+        while (q.size() > 1) {
+            int a = q.top();
+            q.pop();
+            int b = q.top();
+            q.pop();
+            ans += a + b;
+            q.push(a + b);
+        }
+        cout << ans << endl;
+    }
+    return 0;
+}
+```
+
+---
+
+#### C. 树的遍历
+
+##### 题目描述
+
+已知二叉树中所有键值都是不同的正整数。
+
+如果给出前序遍历和中序遍历，或者给出后序遍历和中序遍历，都可以唯一确定一棵二叉树。
+
+但是如果只给出前序遍历和后序遍历，二叉树不一定唯一。
+
+现在给出一棵二叉树的前序序列和后序序列，要求输出一组可行的中序遍历序列。
+
+如果这棵树唯一，输出 `Yes`；否则输出 `No`。
+
+##### 输入
+
+第一行输入正整数 `N`，表示二叉树中的节点总数。
+
+第二行输入前序遍历序列。
+
+第三行输入后序遍历序列。
+
+##### 输出
+
+第一行输出 `Yes` 或 `No`。
+
+如果树唯一，输出 `Yes`；否则输出 `No`。
+
+第二行输出对应的中序遍历序列，数字之间用一个空格隔开，行尾不能有多余空格。
+
+##### 样例输入
+
+```text
+7
+1 2 3 4 6 7 5
+2 6 7 4 5 3 1
+```
+
+##### 样例输出
+
+```text
+Yes
+2 1 6 4 7 3 5
+```
+
+##### 解题思路
+
+前序遍历的第一个节点一定是当前子树的根。
+
+后序遍历的最后一个节点也一定是当前子树的根。
+
+在当前区间中，如果节点数大于 `1`，那么后序序列中根节点前面的那个节点可以看作右子树的根。
+
+找到这个右子树根在前序序列中的位置，就可以把前序序列分成左子树和右子树两部分。
+
+如果当前根节点下面只有一棵子树，那么这棵子树既可以看作左子树，也可以看作右子树，因此二叉树不唯一。
+
+递归过程中按照：
+
+```text
+左子树 -> 根节点 -> 右子树
+```
+
+把节点加入答案，就能得到一组合法的中序遍历序列。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+vector<int> pre, post, in;
+bool flag = true;
+void dfs(int pl, int pr, int pol, int por) {
+    if (pl > pr) return;
+    if (pl == pr) {
+        in.push_back(pre[pl]);
+        return;
+    }
+    int rightRoot = post[por - 1], k = pl;
+    while (pre[k] != rightRoot) k++;
+    int rightSize = pr - k + 1;
+    if (rightSize == pr - pl) flag = false;
+    dfs(pl + 1, k - 1, pol, por - rightSize - 1);
+    in.push_back(pre[pl]);
+    dfs(k, pr, por - rightSize, por - 1);
+}
+int main() {
+    int n;
+    cin >> n;
+    pre.resize(n), post.resize(n);
+    for (int i = 0; i < n; ++i) cin >> pre[i];
+    for (int i = 0; i < n; ++i) cin >> post[i];
+    dfs(0, n - 1, 0, n - 1);
+    cout << (flag ? "Yes" : "No") << endl;
+    for (int i = 0; i < n; ++i) {
+        if (i) cout << " ";
+        cout << in[i];
+    }
+    cout << endl;
+    return 0;
+}
+```
+
+---
+
+#### D. 最短路径
+
+##### 题目描述
+
+一个迷宫地图中，多个房间由单向通道相连。
+
+房间号从 `1` 到 `N` 依次编号。
+
+给出所有单向通道及其长度，求起点房间到终点房间之间的最短路径长度。
+
+##### 输入
+
+第一行输入房间数 `N` 和单向通道数 `M`。
+
+接下来 `M` 行，每行输入三个整数 `x y z`，表示存在一条从 `x` 到 `y` 的单向通道，长度为 `z`。
+
+最后一行输入 `start` 和 `end`，表示起点和终点。
+
+##### 输出
+
+输出起点房间到终点房间的最短路径长度。
+
+如果没有通路，输出 `STOP`。
+
+##### 样例输入
+
+```text
+7 9
+1 2 3
+1 3 2
+3 4 2
+6 3 1
+2 6 3
+6 7 6
+2 5 4
+5 4 2
+5 7 5
+1 7
+```
+
+##### 样例输出
+
+```text
+12
+```
+
+##### 解题思路
+
+本题是带正权边的单源最短路径问题。
+
+因为通道长度都是正数，所以可以使用 Dijkstra 算法。
+
+用邻接表保存有向边，`dis[i]` 表示从起点到房间 `i` 的当前最短距离。
+
+再用小根堆每次取出当前距离最小的房间进行松弛：
+
+```text
+if (dis[v] > dis[u] + w)
+    dis[v] = dis[u] + w
+```
+
+最后如果终点距离仍然是无穷大，说明无法到达，输出 `STOP`。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+struct Edge {
+    int to;
+    int w;
+};
+const int INF = 114514;
+int main() {
+    int n, m;
+    cin >> n >> m;
+    vector<Edge> g[105];
+    for (int i = 0; i < m; ++i) {
+        int x, y, z;
+        cin >> x >> y >> z;
+        g[x].push_back({y, z});
+    }
+    int start, end;
+    cin >> start >> end;
+    vector<int> dis(n + 1, INF);
+    vector<int> vis(n + 1, 0);
+    priority_queue<
+        pair<int, int>,
+        vector<pair<int, int> >,
+        greater<pair<int, int> >
+    > q;
+    dis[start] = 0;
+    q.push({0, start});
+    while (!q.empty()) {
+        int u = q.top().second;
+        q.pop();
+
+        if (vis[u]) {
+            continue;
+        }
+        vis[u] = 1;
+        for (int i = 0; i < g[u].size(); ++i) {
+            int v = g[u][i].to;
+            int w = g[u][i].w;
+
+            if (dis[v] > dis[u] + w) {
+                dis[v] = dis[u] + w;
+                q.push({dis[v], v});
+            }
+        }
+    }
+    if (dis[end] == INF) {
+        cout << "STOP" << endl;
+    } else {
+        cout << dis[end] << endl;
+    }
+    return 0;
+}
+```
+
+---
+
+#### E. 最小生成树
+
+##### 题目描述
+
+给出一个无向图的邻接矩阵。
+
+矩阵中第 `i` 行第 `j` 个数如果不为 `0`，表示第 `i` 个顶点和第 `j` 个顶点之间有直接连接，且代价为该数。
+
+`0` 表示没有直接连接。
+
+要求使用最小生成树思想，输出连接所有顶点所需要的最小总代价。
+
+##### 输入
+
+第一行输入正整数 `n`，表示图中共有 `n` 个顶点。
+
+接下来 `n` 行，每行输入 `n` 个整数，表示无向图的邻接矩阵。
+
+输入保证矩阵对称，并且图只有一个连通分量。
+
+##### 输出
+
+输出一个整数，表示最小生成树的总代价。
+
+##### 样例输入
+
+```text
+4
+0 2 4 0
+2 0 3 5
+4 3 0 1
+0 5 1 0
+```
+
+##### 样例输出
+
+```text
+6
+```
+
+##### 解题思路
+
+本题使用 Prim 算法。
+
+先从 `1` 号顶点开始，把它加入生成树集合。
+
+`lowcost[i]` 表示当前生成树集合连接到顶点 `i` 的最小边权。
+
+每一轮选择一个未加入生成树、且 `lowcost` 最小的顶点加入答案，然后用这个新加入的顶点更新其他顶点的 `lowcost`。
+
+因为题目保证图连通，所以最终一定能加入所有顶点。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+int main() {
+    int n;
+    cin >> n;
+    vector<vector<int> > a(n + 1, vector<int>(n + 1));
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            cin >> a[i][j];
+        }
+    }
+    vector<int> lowcost(n + 1, -1);
+    vector<int> vis(n + 1, 0);
+    vis[1] = 1;
+    for (int i = 1; i <= n; ++i) {
+        if (a[1][i] != 0) {
+            lowcost[i] = a[1][i];
+        }
+    }
+    int ans = 0;
+    for (int i = 1; i < n; ++i) {
+        int k = 0;
+
+        for (int j = 1; j <= n; ++j) {
+            if (!vis[j] && lowcost[j] != -1) {
+                if (k == 0 || lowcost[j] < lowcost[k]) {
+                    k = j;
+                }
+            }
+        }
+        vis[k] = 1;
+        ans += lowcost[k];
+        for (int j = 1; j <= n; ++j) {
+            if (!vis[j] && a[k][j] != 0) {
+                if (lowcost[j] == -1 || lowcost[j] > a[k][j]) {
+                    lowcost[j] = a[k][j];
+                }
+            }
+        }
+    }
+    cout << ans << endl;
+    return 0;
+}
+```
+
+
 ---
 
 ## 数据结构作业
