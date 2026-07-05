@@ -1757,6 +1757,541 @@ int main() {
 
 ### 实践四
 
+#### A. 机器人王国里的路径长度
+
+##### 题目描述
+
+机器人王国以首都为根节点，向外分层建设卫星城市。
+
+每个城市会向下一层分出两个卫星城，每条道路长度不同。第 `N` 层的卫星城不再继续分出新的城市。
+
+现在给出所有直接相连城市之间的道路长度，要求计算某个卫星城到首都的路程。
+
+##### 输入
+
+第一行输入 `N`，表示有 `N` 层卫星城。
+
+接下来输入 `2^(N+1)-2` 行，每行包含父城市代号、子城市代号和它们之间的路程。
+
+最后一行输入要求查询的卫星城代号。
+
+##### 输出
+
+输出该卫星城到首都的路程。
+
+##### 样例输入
+
+```text
+2
+A F 20
+B D 100
+G A 5
+G B 10
+A C 6
+B E 30
+D
+```
+
+##### 样例输出
+
+```text
+110
+```
+
+##### 解题思路
+
+输入给出的边是父城市到子城市的路程。
+
+要求某个卫星城到首都的距离，可以反过来存每个子城市的父亲：
+
+```text
+fa[child] = parent
+len[child] = distance
+```
+
+最后从查询城市开始，不断向父亲走，每走一条边就把边长加到答案中，直到走到没有父亲的城市，也就是首都。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <map>
+#include <string>
+using namespace std;
+int main() {
+    int n;
+    cin >> n;
+    map<string, string> fa;
+    map<string, int> len;
+    int m = (1 << (n + 1)) - 2;
+    for (int i = 0; i < m; ++i) {
+        string a, b;
+        int w;
+        cin >> a >> b >> w;
+        fa[b] = a;
+        len[b] = w;
+    }
+    string s;
+    cin >> s;
+    int ans = 0;
+    while (fa.count(s)) {
+        ans += len[s];
+        s = fa[s];
+    }
+    cout << ans << endl;
+    return 0;
+}
+```
+
+---
+
+#### B. 从源点开始的最短路径
+
+##### 题目描述
+
+给出一个有向图的所有有序边，顶点用 `1` 到 `n` 编号。
+
+要求求出从源点 `1` 到指定顶点 `i` 的最短路径长度。
+
+##### 输入
+
+第一行输入 `n` 和 `m`，分别表示顶点数和有向边数。
+
+接下来 `m` 行，每行输入三个数，前两个数表示一条有向边，第三个数表示边权。
+
+最后一行输入目标顶点 `i`。
+
+##### 输出
+
+输出从 `1` 到顶点 `i` 的最短路径长度。
+
+##### 样例输入
+
+```text
+4 5
+1 2 4
+1 3 6
+2 3 1
+3 4 6
+2 4 7
+3
+```
+
+##### 样例输出
+
+```text
+5
+```
+
+##### 解题思路
+
+本题是单源最短路径问题，源点固定为 `1`。
+
+因为边权为正，可以使用 Dijkstra 算法。
+
+用邻接表保存有向边，`dis[v]` 表示从 `1` 到顶点 `v` 的当前最短距离。
+
+每次从小根堆中取出距离最小的顶点进行松弛，最后输出 `dis[end]`。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+struct Edge {
+    int to;
+    int w;
+};
+const int INF = 114514;
+int main() {
+    int n, m;
+    cin >> n >> m;
+    vector<Edge> g[105];
+    for (int i = 0; i < m; ++i) {
+        int x, y, z;
+        cin >> x >> y >> z;
+        g[x].push_back({y, z});
+    }
+    int end;
+    cin >> end;
+    vector<int> dis(n + 1, INF);
+    vector<int> vis(n + 1, 0);
+    priority_queue<
+        pair<int, int>,
+        vector<pair<int, int> >,
+        greater<pair<int, int> >
+    > q;
+    dis[1] = 0;
+    q.push({0, 1});
+    while (!q.empty()) {
+        int u = q.top().second;
+        q.pop();
+        if (vis[u]) {
+            continue;
+        }
+        vis[u] = 1;
+        for (int i = 0; i < g[u].size(); ++i) {
+            int v = g[u][i].to;
+            int w = g[u][i].w;
+            if (dis[v] > dis[u] + w) {
+                dis[v] = dis[u] + w;
+                q.push({dis[v], v});
+            }
+        }
+    }
+    cout << dis[end] << endl;
+    return 0;
+}
+```
+
+---
+
+#### C. 最少天数
+
+##### 题目描述
+
+一项工程由许多有前后依赖关系的子任务组成。
+
+每个子任务用一个开始事件和结束事件表示，并给出完成该子任务需要的天数。
+
+整个工程的开始事件为 `A`，结束事件为 `Z`。
+
+要求计算完成整个工程所需的最少天数。
+
+##### 输入
+
+第一行输入事件节点个数 `N` 和子任务数 `M`。
+
+接下来 `M` 行，每行输入子任务的开始事件、结束事件以及完成该任务所需天数。
+
+##### 输出
+
+输出完成该工程所需的最少天数。
+
+##### 样例输入
+
+```text
+4 3
+A B 6
+B Z 2
+A Z 5
+```
+
+##### 样例输出
+
+```text
+8
+```
+
+##### 解题思路
+
+这题不能按普通最短路理解。
+
+样例中虽然 `A -> Z` 直接路径长度为 `5`，但还有任务链 `A -> B -> Z`，需要 `6 + 2 = 8` 天。
+
+工程必须等所有依赖任务完成后才能结束，所以总工期取决于关键路径，也就是从 `A` 到 `Z` 的最长路径。
+
+因此可以在有向无环图上做记忆化搜索：
+
+```text
+dfs(u) = 从事件 u 到 Z 还需要的最长时间
+```
+
+答案就是 `dfs(A)`。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+struct Edge {
+    int to;
+    int w;
+};
+vector<Edge> g[26];
+int dp[26], vis[26];
+int dfs(int u) {
+    if (u == 'Z' - 'A') {
+        return 0;
+    }
+    if (vis[u]) {
+        return dp[u];
+    }
+    vis[u] = 1;
+    for (int i = 0; i < g[u].size(); ++i) {
+        int v = g[u][i].to;
+        int w = g[u][i].w;
+        dp[u] = max(dp[u], dfs(v) + w);
+    }
+    return dp[u];
+}
+int main() {
+    int n, m;
+    cin >> n >> m;
+    for (int i = 0; i < m; ++i) {
+        char a, b;
+        int w;
+        cin >> a >> b >> w;
+        g[a - 'A'].push_back({b - 'A', w});
+    }
+    cout << dfs(0) << endl;
+    return 0;
+}
+```
+
+---
+
+#### D. 寻找第二小的数
+
+##### 题目描述
+
+求 `n` 个整数中第二小的数。
+
+相同的整数看成一个数。
+
+例如 `1 1 3 4 5` 中，第二小的数是 `3`。
+
+##### 输入
+
+第一行输入整数 `C`，表示有 `C` 组测试数据。
+
+每组数据第一行输入 `n`，表示本组有 `n` 个整数。
+
+接着一行输入 `n` 个整数。
+
+##### 输出
+
+对每组测试数据输出第二小的整数。
+
+如果不存在第二小的整数，输出 `NO`。
+
+##### 样例输入
+
+```text
+3
+2
+1 2
+5
+1 1 3 4 5
+3
+1 1 1
+```
+
+##### 样例输出
+
+```text
+2
+3
+NO
+```
+
+##### 解题思路
+
+先把数组从小到大排序。
+
+排序后，最小值一定是 `a[0]`。
+
+从 `a[1]` 开始向后找第一个不等于 `a[0]` 的数，它就是第二小的不同整数。
+
+如果找不到，说明所有数都相同，不存在第二小的数。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <algorithm>
+using namespace std;
+int main() {
+    int c;
+    cin >> c;
+    while (c--) {
+        int n;
+        cin >> n;
+        int a[15];
+        for (int i = 0; i < n; ++i) {
+            cin >> a[i];
+        }
+        sort(a, a + n);
+        int ans = -1;
+        for (int i = 1; i < n; ++i) {
+            if (a[i] != a[0]) {
+                ans = a[i];
+                break;
+            }
+        }
+        if (ans == -1) {
+            cout << "NO" << endl;
+        } else {
+            cout << ans << endl;
+        }
+    }
+    return 0;
+}
+```
+
+---
+
+#### E. 按十进制各位和排序
+
+##### 题目描述
+
+对于给定的正整数序列，按照每个数十进制形式各位数字之和从大到小排序。
+
+如果各位数字之和相同，则按照数字本身大小从大到小排序。
+
+##### 输入
+
+第一行输入整数 `n`，表示序列大小。
+
+第二行输入 `n` 个正整数。
+
+##### 输出
+
+输出按照题目要求排序后的序列。
+
+##### 样例输入
+
+```text
+6
+17 26 9 13 88 22
+```
+
+##### 样例输出
+
+```text
+88 9 26 17 22 13
+```
+
+##### 解题思路
+
+先写一个函数求一个整数的十进制各位数字之和。
+
+排序时使用自定义比较函数：
+
+1. 如果两个数的数位和不同，数位和大的排前面
+2. 如果两个数的数位和相同，数字本身大的排前面
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <algorithm>
+using namespace std;
+int sum(int x) {
+    int ans = 0;
+    while (x) {
+        ans += x % 10;
+        x /= 10;
+    }
+    return ans;
+}
+bool cmp(int a, int b) {
+    int sa = sum(a);
+    int sb = sum(b);
+    if (sa != sb) {
+        return sa > sb;
+    }
+    return a > b;
+}
+int main() {
+    int n;
+    cin >> n;
+    int a[1005];
+    for (int i = 0; i < n; ++i) {
+        cin >> a[i];
+    }
+    sort(a, a + n, cmp);
+    for (int i = 0; i < n; ++i) {
+        if (i) {
+            cout << " ";
+        }
+        cout << a[i];
+    }
+    cout << endl;
+    return 0;
+}
+```
+
+---
+
+#### F. 奇偶数的排序
+
+##### 题目描述
+
+给你 `10` 个正整数，其中有 `5` 个奇数和 `5` 个偶数。
+
+要求先把奇数按从大到小排序输出，然后再把偶数按从小到大排序输出。
+
+##### 输入
+
+输入一行 `10` 个正整数。
+
+##### 输出
+
+先递减输出 `5` 个奇数，再递增输出 `5` 个偶数。
+
+各个数之间用一个空格隔开。
+
+##### 样例输入
+
+```text
+1 2 3 4 5 6 7 8 10 9
+```
+
+##### 样例输出
+
+```text
+9 7 5 3 1 2 4 6 8 10
+```
+
+##### 解题思路
+
+可以直接写一个自定义比较函数：
+
+1. 如果一个数是奇数，另一个数是偶数，奇数排在前面
+2. 如果两个数都是奇数，数值大的排在前面
+3. 如果两个数都是偶数，数值小的排在前面
+
+然后直接对整个数组排序即可。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+bool cmp(int a, int b) {
+    bool m = (a % 2 != 0);
+    bool n = (b % 2 != 0);
+    if (m && !n) return true;  
+    if (!m && n) return false;  
+    if (m) return a > b;           
+    else       return a < b;          
+}
+
+int main() {
+    const int n = 10;                 
+    vector<int> arr(n);
+    for (int i = 0; i < n; ++i) {
+        cin >> arr[i];        
+    }
+    sort(arr.begin(), arr.end(), cmp);
+    for (int i = 0; i < n; ++i) {
+        if (i) {
+            cout << " ";
+        }
+        cout << arr[i];
+    }
+    cout << endl;
+    return 0;
+}
+```
+
+---
 
 
 ---
@@ -2419,4 +2954,949 @@ int main(){
 
 ### 作业二
 
-#### A.
+#### A. 统计回文子串
+
+##### 题目描述
+
+给定一个字符串 `S`，计算 `S` 中有多少个连续子串是回文串。
+
+##### 输入
+
+输入包含多组测试数据。
+
+每组输入是一个非空字符串，长度不超过 `5000`。
+
+##### 输出
+
+对于每组输入，输出回文子串的个数。
+
+##### 样例输入
+
+```text
+aba
+aa
+```
+
+##### 样例输出
+
+```text
+4
+3
+```
+
+##### 解题思路
+
+回文串可以从中心向两边扩展。
+
+每个字符都可以作为奇数长度回文串的中心，例如 `aba`。
+
+每两个相邻字符中间也可以作为偶数长度回文串的中心，例如 `aa`。
+
+所以对每个位置分别扩展奇数回文和偶数回文，每扩展成功一次，就说明找到了一个回文子串。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+int main(){
+  string s;
+  while (cin >> s){
+    int n = s.size();
+    long long ans = 0;
+    for(int i = 0; i < n; i++){
+      int l = i, r = i;
+      while (l >= 0 && r < n && s[l] == s[r]){
+        ans++;
+        l--;
+        r++;
+      }
+      l = i;
+      r = i + 1;
+      while(l >= 0 && r < n && s[l] == s[r]){
+        ans++;
+        l--;
+        r++;
+      }
+    }
+    cout << ans << endl;
+  }
+  return 0;
+}
+```
+
+---
+
+#### B. 构建矩阵
+
+##### 题目描述
+
+构建一个 `N * N` 的矩阵。
+
+第 `i` 行第 `j` 列的元素为 `i * j`，其中 `i` 和 `j` 都从 `1` 开始。
+
+##### 输入
+
+第一行输入正整数 `C`，表示测试样例个数。
+
+接下来 `C` 行，每行输入一个整数 `N`。
+
+其中 `1 <= N <= 9`。
+
+##### 输出
+
+对于每组输入，输出构建出的矩阵。
+
+##### 样例输入
+
+```text
+2
+1
+4
+```
+
+##### 样例输出
+
+```text
+1
+1 2 3 4
+2 4 6 8
+3 6 9 12
+4 8 12 16
+```
+
+##### 解题思路
+
+矩阵第 `i` 行第 `j` 列的值就是 `i * j`。
+
+因此直接双重循环输出即可。
+
+解法一先把所有测试数据的 `N` 保存下来，再统一输出矩阵。
+
+##### 最终代码：解法一
+
+```cpp
+#include <iostream>
+using namespace std;
+int main(){
+  int c;
+  cin >> c;
+  int b[105];
+  for(int i = 1; i <= c; i++){
+    cin >> b[i];
+  }
+  for(int i = 1; i <= c; i++){
+    for(int j = 1; j <= b[i]; j++){
+      for(int k = 1; k <= b[i]; k++){
+        if(k != 1){
+          cout << " ";
+        }
+        cout << j * k;
+      }
+      cout << endl;
+    }
+  }
+  return 0;
+}
+```
+
+##### 最终代码：解法二
+
+```cpp
+#include <iostream>
+using namespace std;
+int main(){
+  int c;
+  cin >> c;
+  while(c--){
+    int N;
+    cin >> N;
+    for(int i = 1 ; i <= N; i++){
+      for(int j = 1; j <= N; j++){
+        cout << i * j;
+        if(j != N) cout << " ";
+      }
+      cout << endl;
+    }
+  }
+  return 0;
+}
+```
+
+---
+
+#### C. 找规律填数字
+
+##### 题目描述
+
+给出一组有规律序列的前 `5` 个整数，要求输出后面连续的 `5` 个整数。
+
+已知这串序列只可能是等差数列、等比数列或者斐波那契数列。
+
+##### 输入
+
+输入包含多组测试数据。
+
+每组输入 `5` 个整数。
+
+当 `5` 个整数都为 `0` 时，输入结束。
+
+##### 输出
+
+对于每组输入，输出这串数列后面的 `5` 个数字，每个数字之间用一个空格隔开。
+
+##### 样例输入
+
+```text
+1 2 3 4 5
+1 2 4 8 16
+1 2 3 5 8
+0 0 0 0 0
+```
+
+##### 样例输出
+
+```text
+6 7 8 9 10
+32 64 128 256 512
+13 21 34 55 89
+```
+
+##### 解题思路
+
+根据前五项判断序列类型：
+
+1. 如果相邻两项差值都相同，就是等差数列
+2. 如果满足连续三项的比例关系，就是等比数列
+3. 如果每一项等于前两项之和，就是斐波那契数列
+
+判断出类型后，再按对应规律继续生成后面 `5` 项。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+using namespace std;
+int main(){
+  int a[10];
+  while(cin >> a[0] >> a[1] >> a[2] >> a[3] >> a[4]){
+    if(a[0] == 0 && a[1] == 0 && a[2] == 0 && a[3] == 0 && a[4] == 0){
+      break;
+    }
+  if(a[4] - a[3] == a[3] - a[2] && a[3] - a[2] == a[2] - a[1] && a[2] - a[1] == a[1] - a[0]){
+    int d = a[1] - a[0];
+    for(int i = 1; i <= 5; i++){
+      if(i != 1){
+        cout << " ";
+      }
+      cout << a[4] + i * d;
+    }
+    cout << endl;
+  }else if(a[0] * a[2] == a[1] * a[1] && a[1] * a[3] == a[2] * a[2] && a[2] * a[4] == a[3] * a[3]){
+    int q = a[4] / a[3];
+    int x = a[4];
+    for(int i = 1; i <= 5; i++){
+      x *= q;
+      if(i != 1){
+        cout << " ";
+      }
+      cout << x;
+    }
+    cout << endl;
+  }else if(a[2] == a[0] + a[1] && a[3] == a[1] + a[2] && a[4] == a[2] + a[3]){
+    int x = a[3], y = a[4];
+    for(int i = 1; i <= 5; i++){
+      int z = x + y;
+      if(i != 1){
+        cout << " ";
+      }
+      cout << z;
+      x = y;
+      y = z;
+    }
+    cout << endl;
+  }
+  }
+  return 0;
+}
+```
+
+---
+
+#### D. 复原二叉树
+
+##### 题目描述
+
+给出一棵二叉树的前序遍历和中序遍历结果，要求输出这棵二叉树的后序遍历结果。
+
+##### 输入
+
+输入包含多组测试数据。
+
+每组输入包含两个字符串，分别表示二叉树的前序遍历和中序遍历结果。
+
+每个字符串由不重复的大写字母组成。
+
+##### 输出
+
+对于每组输入，输出对应二叉树的后序遍历结果。
+
+##### 样例输入
+
+```text
+DBACEGF ABCDEFG
+BCAD CBAD
+```
+
+##### 样例输出
+
+```text
+ACBFGED
+CDAB
+```
+
+##### 解题思路
+
+前序遍历的第一个字符一定是当前子树的根。
+
+在中序遍历中找到根的位置后，左边就是左子树，右边就是右子树。
+
+根据左子树节点数量，可以继续把前序遍历切成左子树前序和右子树前序。
+
+递归处理左右子树后，最后输出根节点，就是后序遍历。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+void postOrder(string pre,string in){
+  if(pre.empty()){
+    return;
+  }
+  char root = pre[0];
+  int pos = in.find(root);
+  string leftIn = in.substr(0,pos);
+  string rightIn = in.substr(pos + 1);
+  int leftSize = leftIn.size();
+  string leftPre = pre.substr(1,leftSize);
+  string rightPre = pre.substr(1 + leftSize);
+  postOrder(leftPre,leftIn);
+  postOrder(rightPre,rightIn);
+  cout << root;
+}
+int main(){
+  string pre,in;
+  while(cin >> pre >> in){
+    postOrder(pre,in);
+    cout << endl;
+  }
+  return 0;
+}
+```
+
+---
+
+#### E. 子树的后序遍历
+
+##### 题目描述
+
+给出一棵二叉树的中序遍历序列和后序遍历序列，要求输出该二叉树左子树或右子树的后序遍历序列。
+
+##### 输入
+
+输入占三行。
+
+第一行是二叉树的中序遍历序列。
+
+第二行是二叉树的后序遍历序列。
+
+第三行是单个字母，`L` 表示要求输出左子树的后序遍历序列，`R` 表示要求输出右子树的后序遍历序列。
+
+##### 输出
+
+按要求输出该二叉树左子树或右子树的后序遍历序列。
+
+##### 样例输入
+
+```text
+BDCEAFHG
+DECBHGFA
+R
+```
+
+##### 样例输出
+
+```text
+HGF
+```
+
+##### 解题思路
+
+后序遍历的最后一个字符是整棵树的根。
+
+在中序遍历中找到根的位置：
+
+1. 根左边的部分是左子树中序遍历
+2. 根右边的部分是右子树中序遍历
+
+左子树有多少个节点，它在后序遍历中就占前多少个字符。
+
+右子树的后序遍历紧跟在左子树后面。
+
+因此可以直接根据左右子树大小切出对应的后序序列。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+int main(){
+  string inorder,postorder;
+  char op;
+  cin >> inorder;
+  cin >> postorder;
+  cin >> op;
+  int n = postorder.size();
+  char root = postorder[n-1];
+  int rootpos = inorder.find(root);
+  string leftIn = inorder.substr(0,rootpos);
+  string rightIn = inorder.substr(rootpos + 1);
+  int cntleft = leftIn.size();
+  int cntright = rightIn.size();
+  string leftpost = postorder.substr(0,cntleft);
+  string rightpost = postorder.substr(cntleft,cntright);
+  if(op == 'R'){
+    cout << rightpost << endl;
+  }else if(op == 'L'){
+    cout << leftpost << endl;
+  }
+  return 0;
+}
+```
+
+---
+
+#### F. 迷宫问题
+
+##### 题目描述
+
+给出一个迷宫，要求求出从起点 `S` 到终点 `E` 的最短路程。
+
+小明只能向上、下、左、右四个方向移动。
+
+##### 输入
+
+第一行输入整数 `T`，表示有 `T` 组测试数据。
+
+每组数据第一行输入两个整数 `N` 和 `M`。
+
+接下来 `N` 行，每行输入 `M` 个字符，表示迷宫。
+
+字符含义如下：
+
+- `S` 表示起点
+- `E` 表示终点
+- `-` 表示可以通过的空地
+- `#` 表示无法通过的障碍
+
+##### 输出
+
+对于每组输入，输出从起点到终点的最短路程。
+
+如果不存在路径，输出 `-1`。
+
+##### 样例输入
+
+```text
+1
+5 5
+S-###
+-----
+##---
+E#---
+---##
+```
+
+##### 样例输出
+
+```text
+9
+```
+
+##### 解题思路
+
+迷宫最短路可以使用 BFS。
+
+BFS 从起点开始，一层一层向外扩展，第一次到达终点时的步数就是最短路程。
+
+用队列保存当前位置和当前步数，并用 `visited` 数组避免重复访问。
+
+每次从队列中取出一个位置，尝试向上下左右四个方向移动。
+
+如果新位置没有越界、不是障碍、没有访问过，就加入队列。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <queue>
+#include <string>
+using namespace std;
+struct Node{
+    int x;
+    int y;
+    int step;
+};
+int main(){
+    int T;
+    cin >> T;
+    string maze[105];
+    int sx,sy;
+    while(T--){
+        int N,M;
+        cin >> N >> M;
+        for(int i = 0; i < N; i++){
+            cin >> maze[i];
+            for(int j = 0; j < M; j++){
+                if(maze[i][j] == 'S'){
+                    sx = i;
+                    sy = j;
+                }
+            }
+        }
+        bool visited[105][105] = {false};
+        queue<Node> q;
+        q.push({sx,sy,0});
+        visited[sx][sy] = true;
+        int dx[4] = {-1,1,0,0};
+        int dy[4] = {0,0,-1,1};
+        int ans = -1;
+        while(!q.empty()){
+            Node cur = q.front();
+            q.pop();
+            if(maze[cur.x][cur.y] == 'E'){
+                ans = cur.step;
+                break;
+            }
+            for(int i = 0; i < 4; i++){
+                int nx = cur.x + dx[i];
+                int ny = cur.y + dy[i];
+                if(nx < 0 || nx >= N || ny < 0 || ny >= M){
+                    continue;
+                }
+                if(maze[nx][ny] == '#'){
+                    continue;
+                }
+                if(visited[nx][ny]){
+                    continue;
+                }
+                visited[nx][ny] = true;
+                q.push({nx,ny,cur.step + 1});
+            }
+        }
+        cout << ans << endl;
+    }
+    return 0;
+}
+```
+
+---
+
+### 作业三
+
+#### A. 无向图的深度优先搜索
+
+##### 题目描述
+
+已知一个无向图 `G` 的顶点和边，顶点从 `0` 开始依次编号。
+
+现在需要从 `0` 号顶点开始进行深度优先搜索，访问任一邻接顶点时，编号小的顶点优先。
+
+##### 输入
+
+第一行输入整数 `m` 和 `n`，分别表示顶点数和边数。
+
+接下来 `n` 行，每行输入两个整数，表示一条无向边的两个顶点。
+
+##### 输出
+
+输出该图从 `0` 号顶点开始的深度优先搜索序列。
+
+##### 样例输入
+
+```text
+5 5
+0 1
+2 0
+1 3
+1 4
+4 2
+```
+
+##### 样例输出
+
+```text
+0 1 3 4 2
+```
+
+##### 解题思路
+
+因为访问邻接点时要求编号小的顶点优先，可以使用邻接矩阵存图。
+
+DFS 时从 `0` 到 `m - 1` 依次枚举顶点，如果当前顶点和 `u` 相邻且没有访问过，就递归访问它。
+
+这样天然保证了小编号优先。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+using namespace std;
+int m,n;
+int g[105][105];
+bool visited[105];
+bool first = true;
+void dfs(int u){
+  visited[u] = true;
+  if(first){
+    cout << u;
+    first = false;
+  }else{
+    cout << " " << u;
+  }
+  for(int v = 0; v < m; v++){
+    if(g[u][v] == 1 && !visited[v]){
+      dfs(v);
+    }
+  }
+}
+int main(){
+  cin >> m >> n;
+  for(int i = 0; i < n; i++){
+    int a,b;
+    cin >> a >> b;
+    g[a][b] = 1;
+    g[b][a] = 1;
+  }
+  dfs(0);
+  cout << endl;
+  return 0;
+}
+```
+
+---
+
+#### B. 最小堆的形成
+
+##### 题目描述
+
+给出 `n` 个节点的完全二叉树数组存储序列。
+
+要求将它调整为最小堆，并输出对应的最小堆存储序列。
+
+##### 输入
+
+第一行输入整数 `n`。
+
+第二行输入 `n` 个节点的完全二叉树数组存储序列。
+
+##### 输出
+
+输出调整后的最小堆存储序列。
+
+##### 样例输入
+
+```text
+8
+53 17 78 23 45 65 87 9
+```
+
+##### 样例输出
+
+```text
+9 17 65 23 45 78 87 53
+```
+
+##### 解题思路
+
+使用完全二叉树的数组下标关系：
+
+```text
+left = 2 * i
+right = 2 * i + 1
+```
+
+从最后一个非叶子节点 `n / 2` 开始，向前依次执行下沉操作。
+
+每次让当前节点和左右孩子中最小的节点比较，如果孩子更小，就交换并继续向下调整。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+int n;
+vector<int> heap;
+void down(int i){
+  while(true){
+    int smallest = i;
+    int left = 2 * i;
+    int right = 2 * i + 1;
+    if(left <= n && heap[left] < heap[smallest]){
+      smallest = left;
+    }
+    if(right <= n && heap[right] < heap[smallest]){
+      smallest = right;
+    }
+    if(smallest == i){
+      break;
+    }
+    swap(heap[i],heap[smallest]);
+    i = smallest;
+  }
+}
+int main(){
+  cin >> n;
+  heap.resize(n + 1);
+  for(int i = 1; i <= n; i++){
+    cin >> heap[i];
+  }
+  for(int i = n / 2; i >= 1; i--){
+    down(i);
+  }
+  for(int i = 1; i <= n; i++){
+    if(i > 1) cout << " ";
+    cout << heap[i];
+  }
+  cout << endl;
+  return 0;
+}
+```
+
+---
+
+#### C. 折半查找的次数
+
+##### 题目描述
+
+给出一个无重复数的有序序列。
+
+如果采用折半查找的方式，对于给定的数，要求输出需要比较几次才能找到。
+
+##### 输入
+
+第一行输入 `N`，表示序列中数的个数。
+
+第二行输入一个有序序列。
+
+第三行输入要查找的数 `x`。
+
+##### 输出
+
+如果找到 `x`，输出折半比较的次数。
+
+否则输出 `NO`。
+
+##### 样例输入
+
+```text
+11
+5 13 19 21 37 56 64 75 80 88 92
+19
+```
+
+##### 样例输出
+
+```text
+2
+```
+
+##### 解题思路
+
+使用标准二分查找。
+
+每取一次中间位置 `mid`，就说明进行了一次比较，因此计数器加一。
+
+如果 `a[mid] == x`，输出比较次数。
+
+如果区间缩小到为空仍未找到，输出 `NO`。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+using namespace std;
+int main(){
+    int N;
+    cin >> N;
+    int a[1005];
+    for(int i = 0; i < N; i++){
+        cin >> a[i];
+    }
+    int x;
+    cin >> x;
+    int left = 0;
+    int right = N - 1;
+    int cnt = 0;
+    while(left <= right){
+        int mid =  (left + right) / 2;
+        cnt++;
+        if(a[mid] == x){
+            cout << cnt << endl;
+            return 0;
+        }else if(a[mid] > x){
+            right = mid - 1;
+        }else{
+            left = mid +1;
+        }
+    }
+    cout << "NO" << endl;
+    return 0;
+}
+```
+
+---
+
+#### D. N 个数的排序
+
+##### 题目描述
+
+给出 `N` 个自然数，输出排序后的这 `N` 个数。
+
+##### 输入
+
+第一行输入整数 `N`。
+
+第二行输入 `N` 个用空格隔开的自然数。
+
+##### 输出
+
+按从小到大的顺序输出 `N` 个数，每个数之间用一个空格间隔。
+
+##### 样例输入
+
+```text
+5
+9 6 8 7 5
+```
+
+##### 样例输出
+
+```text
+5 6 7 8 9
+```
+
+##### 解题思路
+
+直接使用 `sort` 对数组升序排序。
+
+输出时注意只在两个数之间输出空格，避免行尾多余空格。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <algorithm>
+using namespace std;
+int main(){
+    int n;
+    cin >> n;
+    int a[105];
+    for(int i = 0; i < n; i++){
+        cin >> a[i];
+    }
+    sort(a,a + n);
+    for(int i = 0; i < n; i++){
+        if(i){
+            cout << " ";
+        }
+        cout << a[i];
+    }
+    cout << endl;
+    return 0;
+}
+```
+
+---
+
+#### E. 班级同学信息查询
+
+##### 题目描述
+
+班级里有 `N` 个同学。
+
+需要保存每个同学的学号、姓名和座位号。
+
+查询时输入某个同学的学号，输出该同学的姓名和座位号。
+
+##### 输入
+
+第一行输入整数 `N`，表示班里同学的人数。
+
+接下来 `N` 行，每行输入一个同学的学号、姓名和座位号。
+
+最后一行输入要查询的同学学号。
+
+##### 输出
+
+输出查询同学的姓名和座位号。
+
+##### 样例输入
+
+```text
+3
+1 zhang 11
+2 wang 22
+3 li 33
+2
+```
+
+##### 样例输出
+
+```text
+wang 22
+```
+
+##### 解题思路
+
+用结构体保存每个同学的信息。
+
+读入要查询的学号后，顺序枚举所有学生。
+
+如果当前学生学号等于查询学号，就输出姓名和座位号。
+
+##### 最终代码
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+struct Student{
+    int id;
+    string name;
+    int seat;
+};
+int main(){
+    int N;
+    cin >> N;
+    Student stu[105];
+    for(int i = 0; i < N; i++){
+        cin >> stu[i].id >> stu[i].name >> stu[i].seat;
+    }
+    int x;
+    cin >> x;
+    for(int i = 0; i < N; i++){
+        if(stu[i].id == x){
+            cout << stu[i].name << " " << stu[i].seat << endl;
+            break;
+        }
+    }
+    return 0;
+}
+```
+
