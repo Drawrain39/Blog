@@ -1,15 +1,42 @@
 ---
-
-import { profileConfig } from "../config";
-
+import { url } from "../utils/url-utils";
 const currentYear = new Date().getFullYear();
 ---
 
-<!--<div class="border-t border-[var(&#45;&#45;primary)] mx-16 border-dashed py-8 max-w-[var(&#45;&#45;page-width)] flex flex-col items-center justify-center px-6">-->
-<div class="transition border-t border-black/10 dark:border-white/15 my-10 border-dashed mx-32"></div>
-<!--<div class="transition bg-[oklch(92%_0.01_var(&#45;&#45;hue))] dark:bg-black rounded-2xl py-8 mt-4 mb-8 flex flex-col items-center justify-center px-6">-->
-<div class="transition border-dashed border-[oklch(85%_0.01_var(--hue))] dark:border-white/15 rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
-    <div class="transition text-50 text-sm text-center">
-        &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. All Rights Reserved. 
-    </div>
-</div>
+<footer class="journal-footer" data-pagefind-ignore>
+	<div class="footer-top">
+		<div>
+			<a href={url("/")} class="footer-wordmark">Drawrain<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="m10 1 2.3 6.7L19 10l-6.7 2.3L10 19l-2.3-6.7L1 10l6.7-2.3L10 1Z"/></svg></a>
+			<p>即使迷茫，也要前行。</p>
+		</div>
+		<a class="back-top" href="#top">回到顶部 <span aria-hidden="true">↑</span></a>
+	</div>
+	<div class="footer-bottom">
+		<p>© {currentYear} Drawrain <span class="footer-dot">·</span> Just keep drawing without regrets</p>
+		<div class="footer-links">
+			<a href="https://github.com/Drawrain39" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.journal-footer { margin-top: 56px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); padding: 28px 30px 22px; color: var(--muted); }
+	.footer-top { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-bottom: 24px; }
+	.footer-wordmark { display: inline-flex; align-items: center; gap: 9px; font-size: 23px; line-height: 1.2; font-weight: 800; font-style: italic; letter-spacing: -.5px; color: var(--ink); text-decoration: none; }
+	.footer-wordmark svg { color: var(--accent); }
+	.footer-top p { margin: 10px 0 0; font-size: 12px; }
+	.back-top { color: var(--muted); display: flex; gap: 12px; align-items: center; font-size: 12px; text-decoration: none; border: 1px solid var(--line); border-radius: 12px; padding: 8px 13px; }
+	.back-top span { font-size: 18px; color: var(--accent); }
+	.footer-bottom { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 11px; }
+	.footer-bottom p { margin: 0; }
+	.footer-dot { margin: 0 8px; }
+	.footer-links { display: flex; gap: 25px; flex-shrink: 0; }
+	.footer-links a { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; }
+	.footer-links a:hover, .back-top:hover { color: var(--accent); }
+	@media (max-width: 650px) {
+		.journal-footer { margin-top: 35px; padding: 23px 20px 19px; border-radius: 18px; }
+		.footer-bottom { align-items: flex-start; flex-direction: column; gap: 16px; line-height: 1.8; }
+		.footer-bottom p { max-width: 250px; }
+		.footer-dot { margin: 0 4px; }
+	}
+</style>

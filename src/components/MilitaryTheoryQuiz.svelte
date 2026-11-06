@@ -1839,25 +1839,23 @@ function handleExamKeydown(event: KeyboardEvent) {
 
 <style>
 	.military-shell {
-		--panel: rgba(24, 27, 23, 0.78);
-		--panel-strong: rgba(17, 20, 18, 0.9);
-		--line: rgba(232, 224, 202, 0.16);
-		--text: #f7f4ec;
-		--soft: rgba(245, 239, 225, 0.86);
-		--muted: rgba(218, 208, 184, 0.72);
-		--accent: #d8a838;
-		--accent-2: #83b350;
-		--danger: #f87171;
-		--success: #4ade80;
+		--panel: var(--surface);
+		--panel-strong: var(--surface);
+		--quiz-line: var(--line);
+		--text: var(--ink);
+		--quiz-soft: var(--ink);
+		--quiz-muted: var(--muted);
+		--quiz-accent: var(--accent);
+		--quiz-accent-2: var(--olive);
+		--danger: var(--quiz-danger);
+		--success: var(--quiz-success);
 		min-height: calc(100vh - 7rem);
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		background:
-			linear-gradient(135deg, rgba(38, 45, 34, 0.88), rgba(16, 18, 17, 0.88)),
-			rgba(22, 24, 22, 0.86);
+		border: 1px solid var(--quiz-line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 1rem;
 		color: var(--text);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+		box-shadow: none;
 	}
 
 	button,
@@ -1880,9 +1878,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	}
 
 	.eyebrow {
-		color: var(--accent);
+		color: var(--quiz-accent);
 		font-size: 0.75rem;
-		font-weight: 850;
+		font-weight: 600;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 	}
@@ -1891,7 +1889,7 @@ function handleExamKeydown(event: KeyboardEvent) {
 		margin: 0.2rem 0 0;
 		color: var(--text);
 		font-size: clamp(1.8rem, 4vw, 2.5rem);
-		font-weight: 950;
+		font-weight: 600;
 		letter-spacing: 0;
 		line-height: 1.12;
 	}
@@ -1908,9 +1906,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	.mini-stats > div,
 	.bank-meta > div,
 	.progress-block {
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		background: rgba(15, 18, 16, 0.44);
+		border: 1px solid var(--quiz-line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.75rem;
 	}
 
@@ -1928,18 +1926,18 @@ function handleExamKeydown(event: KeyboardEvent) {
 	.bank-meta span {
 		display: block;
 		margin-top: 0.3rem;
-		color: var(--muted);
+		color: var(--quiz-muted);
 		font-size: 0.76rem;
-		font-weight: 800;
+		font-weight: 600;
 	}
 
 	.view-tabs,
 	.mode-tabs,
 	.filter-panel {
 		margin-bottom: 0.75rem;
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		background: rgba(11, 13, 12, 0.34);
+		border: 1px solid var(--quiz-line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.65rem;
 	}
 
@@ -1972,11 +1970,11 @@ function handleExamKeydown(event: KeyboardEvent) {
 		justify-content: center;
 		gap: 0.4rem;
 		min-height: 2.45rem;
-		border: 1px solid rgba(232, 224, 202, 0.11);
-		border-radius: 0.5rem;
-		background: rgba(233, 223, 198, 0.09);
-		color: var(--soft);
-		font-weight: 820;
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--soft);
+		color: var(--quiz-soft);
+		font-weight: 600;
 		transition:
 			background-color 160ms ease,
 			border-color 160ms ease,
@@ -2004,8 +2002,8 @@ function handleExamKeydown(event: KeyboardEvent) {
 	.self-actions button:hover,
 	.knowledge-card button:hover,
 	.empty-panel button:hover {
-		border-color: rgba(216, 168, 56, 0.45);
-		background: rgba(216, 168, 56, 0.13);
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		color: var(--text);
 	}
 
@@ -2015,12 +2013,10 @@ function handleExamKeydown(event: KeyboardEvent) {
 	.type-tabs button.active,
 	.tool-grid button.active-tool,
 	.submit-btn {
-		border-color: rgba(216, 168, 56, 0.58);
-		background:
-			linear-gradient(135deg, rgba(216, 168, 56, 0.25), rgba(131, 179, 80, 0.16)),
-			rgba(17, 20, 18, 0.7);
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		color: var(--text);
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+		box-shadow: none;
 	}
 
 	.practice-layout {
@@ -2033,11 +2029,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	.question-panel,
 	.empty-panel,
 	.knowledge-section {
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		background:
-			linear-gradient(135deg, rgba(27, 31, 26, 0.72), rgba(12, 14, 13, 0.66)),
-			var(--panel);
+		border: 1px solid var(--quiz-line);
+		border-radius: 4px;
+		background: var(--surface);
 	}
 
 	.side-panel {
@@ -2057,9 +2051,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 
 	.progress-title span,
 	.progress-meta {
-		color: var(--muted);
+		color: var(--quiz-muted);
 		font-size: 0.8rem;
-		font-weight: 820;
+		font-weight: 600;
 	}
 
 	.progress-title strong {
@@ -2072,13 +2066,13 @@ function handleExamKeydown(event: KeyboardEvent) {
 		height: 0.52rem;
 		margin: 0.7rem 0;
 		border-radius: 999px;
-		background: rgba(232, 224, 202, 0.13);
+		background: var(--surface);
 	}
 
 	.progress-track > div {
 		height: 100%;
 		border-radius: inherit;
-		background: linear-gradient(90deg, var(--accent), var(--accent-2));
+		background: linear-gradient(90deg, var(--quiz-accent), var(--quiz-accent-2));
 		transition: width 220ms ease;
 	}
 
@@ -2098,9 +2092,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	}
 
 	.tool-grid button.danger-tool {
-		border-color: rgba(248, 113, 113, 0.22);
-		background: rgba(127, 29, 29, 0.22);
-		color: rgba(254, 202, 202, 0.92);
+		border-color: var(--quiz-danger);
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
+		color: var(--quiz-danger);
 	}
 
 	.save-status {
@@ -2109,12 +2103,12 @@ function handleExamKeydown(event: KeyboardEvent) {
 		justify-content: center;
 		gap: 0.42rem;
 		min-height: 2.2rem;
-		border: 1px solid rgba(74, 222, 128, 0.18);
-		border-radius: 0.5rem;
-		background: rgba(22, 101, 52, 0.16);
-		color: rgba(187, 247, 208, 0.9);
+		border: 1px solid var(--quiz-success);
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--quiz-success) 10%, var(--surface));
+		color: var(--quiz-success);
 		font-size: 0.8rem;
-		font-weight: 840;
+		font-weight: 600;
 		text-align: center;
 	}
 
@@ -2124,11 +2118,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	}
 
 	.exam-timer {
-		border: 1px solid rgba(216, 168, 56, 0.32);
-		border-radius: 0.5rem;
-		background:
-			linear-gradient(135deg, rgba(216, 168, 56, 0.2), rgba(131, 179, 80, 0.1)),
-			rgba(10, 12, 11, 0.42);
+		border: 1px solid var(--accent);
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		padding: 0.9rem;
 		text-align: center;
 	}
@@ -2136,9 +2128,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	.exam-timer span,
 	.exam-timer small {
 		display: block;
-		color: var(--muted);
+		color: var(--quiz-muted);
 		font-size: 0.78rem;
-		font-weight: 850;
+		font-weight: 600;
 	}
 
 	.exam-timer strong {
@@ -2147,28 +2139,26 @@ function handleExamKeydown(event: KeyboardEvent) {
 		color: var(--text);
 		font-variant-numeric: tabular-nums;
 		font-size: 2.25rem;
-		font-weight: 950;
+		font-weight: 600;
 		line-height: 1;
 	}
 
 	.exam-timer.warning {
-		border-color: rgba(248, 113, 113, 0.62);
-		background:
-			linear-gradient(135deg, rgba(248, 113, 113, 0.26), rgba(216, 168, 56, 0.12)),
-			rgba(10, 12, 11, 0.42);
+		border-color: var(--quiz-danger);
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
 	}
 
 	.exam-timer.submitted {
-		border-color: rgba(74, 222, 128, 0.34);
-		background: rgba(22, 101, 52, 0.18);
+		border-color: var(--quiz-success);
+		background: color-mix(in srgb, var(--quiz-success) 10%, var(--surface));
 	}
 
 	.exam-plan {
 		display: grid;
 		gap: 0.65rem;
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		background: rgba(10, 12, 11, 0.32);
+		border: 1px solid var(--quiz-line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.7rem;
 	}
 
@@ -2184,9 +2174,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	}
 
 	.exam-plan-grid > div {
-		border: 1px solid rgba(232, 224, 202, 0.1);
-		border-radius: 0.5rem;
-		background: rgba(233, 223, 198, 0.07);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--soft);
 		padding: 0.6rem;
 	}
 
@@ -2196,9 +2186,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	}
 
 	.exam-plan-grid span {
-		color: var(--muted);
+		color: var(--quiz-muted);
 		font-size: 0.76rem;
-		font-weight: 850;
+		font-weight: 600;
 	}
 
 	.exam-plan-grid strong {
@@ -2222,56 +2212,56 @@ function handleExamKeydown(event: KeyboardEvent) {
 		place-items: center;
 		gap: 0.2rem;
 		min-height: 3.2rem;
-		border: 1px solid rgba(232, 224, 202, 0.1);
-		border-radius: 0.5rem;
-		background: rgba(233, 223, 198, 0.07);
-		color: var(--soft);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--soft);
+		color: var(--quiz-soft);
 		padding: 0.35rem;
 	}
 
 	.exam-question-map button:hover,
 	.exam-question-map button.current {
-		border-color: rgba(216, 168, 56, 0.58);
-		background: rgba(216, 168, 56, 0.15);
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		color: var(--text);
 	}
 
 	.exam-question-map button.answered:not(.current) {
-		border-color: rgba(74, 222, 128, 0.24);
+		border-color: var(--quiz-success);
 	}
 
 	.exam-question-map button.correct {
-		border-color: rgba(74, 222, 128, 0.62);
-		background: rgba(22, 101, 52, 0.28);
+		border-color: var(--quiz-success);
+		background: color-mix(in srgb, var(--quiz-success) 10%, var(--surface));
 		color: var(--text);
 	}
 
 	.exam-question-map button.wrong {
-		border-color: rgba(248, 113, 113, 0.66);
-		background: rgba(127, 29, 29, 0.28);
+		border-color: var(--quiz-danger);
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
 		color: var(--text);
 	}
 
 	.exam-question-map button span {
 		color: inherit;
 		font-size: 0.82rem;
-		font-weight: 930;
+		font-weight: 600;
 		line-height: 1;
 	}
 
 	.exam-question-map button strong {
 		color: inherit;
 		font-size: 0.72rem;
-		font-weight: 820;
+		font-weight: 600;
 		line-height: 1.2;
 	}
 
 	.question-list-card {
 		display: grid;
 		gap: 0.65rem;
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		background: rgba(10, 12, 11, 0.32);
+		border: 1px solid var(--quiz-line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.7rem;
 	}
 
@@ -2288,9 +2278,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	}
 
 	.list-head span {
-		color: var(--muted);
+		color: var(--quiz-muted);
 		font-size: 0.76rem;
-		font-weight: 820;
+		font-weight: 600;
 	}
 
 	.question-list {
@@ -2307,33 +2297,33 @@ function handleExamKeydown(event: KeyboardEvent) {
 		align-items: center;
 		gap: 0.5rem;
 		min-height: 2.45rem;
-		border: 1px solid rgba(232, 224, 202, 0.1);
-		border-radius: 0.5rem;
-		background: rgba(233, 223, 198, 0.07);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--soft);
 		padding: 0.35rem 0.5rem;
-		color: var(--soft);
+		color: var(--quiz-soft);
 		text-align: left;
 	}
 
 	.question-list button:hover,
 	.question-list button.current {
-		border-color: rgba(216, 168, 56, 0.55);
-		background: rgba(216, 168, 56, 0.14);
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		color: var(--text);
 	}
 
 	.question-list button.answered:not(.current) {
-		border-color: rgba(74, 222, 128, 0.22);
+		border-color: var(--quiz-success);
 	}
 
 	.question-list button.drafted:not(.current) {
-		border-color: rgba(216, 168, 56, 0.32);
-		background: rgba(216, 168, 56, 0.09);
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 	}
 
 	.question-list button.wrong:not(.current) {
-		border-color: rgba(248, 113, 113, 0.42);
-		background: rgba(127, 29, 29, 0.18);
+		border-color: var(--quiz-danger);
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
 	}
 
 	.question-list button span {
@@ -2342,23 +2332,23 @@ function handleExamKeydown(event: KeyboardEvent) {
 		width: 2rem;
 		height: 1.8rem;
 		border-radius: 0.4rem;
-		background: rgba(233, 223, 198, 0.11);
+		background: var(--soft);
 		color: var(--text);
 		font-size: 0.76rem;
-		font-weight: 920;
+		font-weight: 600;
 	}
 
 	.question-list button strong {
 		overflow: hidden;
 		color: inherit;
 		font-size: 0.8rem;
-		font-weight: 800;
+		font-weight: 600;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
 	.list-star {
-		color: #facc15;
+		color: var(--quiz-favorite);
 		font-size: 1rem;
 	}
 
@@ -2385,8 +2375,8 @@ function handleExamKeydown(event: KeyboardEvent) {
 
 	.exam-start-panel p {
 		margin: 0.45rem 0 0;
-		color: var(--muted);
-		font-weight: 820;
+		color: var(--quiz-muted);
+		font-weight: 600;
 		line-height: 1.65;
 	}
 
@@ -2405,9 +2395,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	.question-head span {
 		display: inline-flex;
 		margin-bottom: 0.3rem;
-		color: var(--accent);
+		color: var(--quiz-accent);
 		font-size: 0.78rem;
-		font-weight: 900;
+		font-weight: 600;
 	}
 
 	.question-head strong {
@@ -2421,15 +2411,15 @@ function handleExamKeydown(event: KeyboardEvent) {
 		place-items: center;
 		width: 2.6rem;
 		height: 2.6rem;
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		background: rgba(233, 223, 198, 0.09);
-		color: var(--muted);
+		border: 1px solid var(--quiz-line);
+		border-radius: 4px;
+		background: var(--soft);
+		color: var(--quiz-muted);
 	}
 
 	.star-btn.active {
-		color: #facc15;
-		background: rgba(250, 204, 21, 0.14);
+		color: var(--quiz-favorite);
+		background: color-mix(in srgb, var(--quiz-favorite) 10%, var(--surface));
 	}
 
 	.star-icon {
@@ -2441,27 +2431,27 @@ function handleExamKeydown(event: KeyboardEvent) {
 		align-items: center;
 		justify-content: center;
 		min-height: 2.25rem;
-		border: 1px solid rgba(232, 224, 202, 0.14);
-		border-radius: 0.5rem;
-		background: rgba(233, 223, 198, 0.08);
-		color: var(--muted);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--soft);
+		color: var(--quiz-muted);
 		padding: 0 0.72rem;
 		font-size: 0.8rem;
-		font-weight: 860;
+		font-weight: 600;
 		white-space: nowrap;
 	}
 
 	.exam-state-pill.answered {
-		border-color: rgba(74, 222, 128, 0.34);
-		background: rgba(22, 101, 52, 0.18);
-		color: rgba(187, 247, 208, 0.92);
+		border-color: var(--quiz-success);
+		background: color-mix(in srgb, var(--quiz-success) 10%, var(--surface));
+		color: var(--quiz-success);
 	}
 
 	.question-text {
 		margin: 0 0 1rem;
 		color: var(--text);
 		font-size: clamp(1.05rem, 1.65vw, 1.2rem);
-		font-weight: 760;
+		font-weight: 600;
 		line-height: 1.8;
 		word-break: break-word;
 	}
@@ -2481,11 +2471,11 @@ function handleExamKeydown(event: KeyboardEvent) {
 		width: 100%;
 		min-width: 0;
 		min-height: 3.4rem;
-		border: 1px solid rgba(232, 224, 202, 0.12);
-		border-radius: 0.5rem;
-		background: rgba(13, 16, 14, 0.46);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.7rem;
-		color: var(--soft);
+		color: var(--quiz-soft);
 		text-align: left;
 	}
 
@@ -2505,9 +2495,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 		width: 2.15rem;
 		height: 2.15rem;
 		border-radius: 0.42rem;
-		background: rgba(233, 223, 198, 0.12);
+		background: var(--soft);
 		color: var(--text);
-		font-weight: 930;
+		font-weight: 600;
 	}
 
 	.option strong,
@@ -2515,7 +2505,7 @@ function handleExamKeydown(event: KeyboardEvent) {
 		min-width: 0;
 		color: inherit;
 		font-size: 0.98rem;
-		font-weight: 760;
+		font-weight: 600;
 		line-height: 1.45;
 		word-break: break-word;
 		overflow-wrap: anywhere;
@@ -2523,10 +2513,8 @@ function handleExamKeydown(event: KeyboardEvent) {
 
 	.option:hover,
 	.judge-choice:hover {
-		border-color: rgba(216, 168, 56, 0.58);
-		background:
-			linear-gradient(135deg, rgba(216, 168, 56, 0.16), rgba(131, 179, 80, 0.09)),
-			rgba(233, 223, 198, 0.09);
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		color: var(--text);
 	}
 
@@ -2534,44 +2522,40 @@ function handleExamKeydown(event: KeyboardEvent) {
 	.option[aria-pressed="true"],
 	.judge-choice.selected,
 	.judge-choice[aria-pressed="true"] {
-		border-color: rgba(247, 223, 126, 0.95);
-		background:
-			linear-gradient(135deg, rgba(247, 208, 86, 0.92), rgba(131, 179, 80, 0.84)),
-			#d8a838;
-		color: #17140c;
-		box-shadow:
-			inset 0 0 0 1px rgba(255, 255, 255, 0.22),
-			0 0 0 2px rgba(216, 168, 56, 0.2);
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+		color: var(--ink);
+		box-shadow: none;
 	}
 
 	.option.selected span,
 	.option[aria-pressed="true"] span,
 	.judge-choice.selected span,
 	.judge-choice[aria-pressed="true"] span {
-		background: rgba(23, 20, 12, 0.16);
-		color: #17140c;
-		box-shadow: inset 0 0 0 1px rgba(23, 20, 12, 0.18);
+		background: var(--surface);
+		color: var(--ink);
+		box-shadow: none;
 	}
 
 	.option.selected strong,
 	.option[aria-pressed="true"] strong,
 	.judge-choice.selected strong,
 	.judge-choice[aria-pressed="true"] strong {
-		color: #17140c;
-		font-weight: 900;
+		color: var(--ink);
+		font-weight: 600;
 	}
 
 	.option.correct,
 	.judge-choice.correct {
-		border-color: rgba(74, 222, 128, 0.72);
-		background: rgba(22, 101, 52, 0.27);
+		border-color: var(--quiz-success);
+		background: color-mix(in srgb, var(--quiz-success) 10%, var(--surface));
 		color: var(--text);
 	}
 
 	.option.wrong,
 	.judge-choice.wrong {
-		border-color: rgba(248, 113, 113, 0.76);
-		background: rgba(127, 29, 29, 0.27);
+		border-color: var(--quiz-danger);
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
 		color: var(--text);
 	}
 
@@ -2598,24 +2582,24 @@ function handleExamKeydown(event: KeyboardEvent) {
 	}
 
 	.answer-input span {
-		color: var(--accent);
+		color: var(--quiz-accent);
 		font-size: 0.8rem;
-		font-weight: 900;
+		font-weight: 600;
 	}
 
 	.answer-input small {
-		color: var(--muted);
+		color: var(--quiz-muted);
 		font-size: 0.78rem;
-		font-weight: 760;
+		font-weight: 600;
 		line-height: 1.55;
 	}
 
 	.answer-input textarea,
 	.knowledge-tools input {
 		width: 100%;
-		border: 1px solid rgba(232, 224, 202, 0.14);
-		border-radius: 0.5rem;
-		background: rgba(8, 10, 9, 0.56);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--surface);
 		color: var(--text);
 		outline: none;
 	}
@@ -2629,8 +2613,8 @@ function handleExamKeydown(event: KeyboardEvent) {
 
 	.answer-input textarea:focus,
 	.knowledge-tools input:focus {
-		border-color: rgba(216, 168, 56, 0.58);
-		box-shadow: 0 0 0 3px rgba(216, 168, 56, 0.12);
+		border-color: var(--accent);
+		box-shadow: none;
 	}
 
 	.answer-actions {
@@ -2658,7 +2642,7 @@ function handleExamKeydown(event: KeyboardEvent) {
 		flex-wrap: wrap;
 		gap: 0.8rem;
 		margin-top: 0.9rem;
-		border-radius: 0.5rem;
+		border-radius: 4px;
 		padding: 0.85rem;
 	}
 
@@ -2669,10 +2653,10 @@ function handleExamKeydown(event: KeyboardEvent) {
 	.result-banner button {
 		min-height: 2.25rem;
 		border-radius: 0.45rem;
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--soft);
+		background: var(--soft);
+		color: var(--quiz-soft);
 		padding: 0 0.75rem;
-		font-weight: 830;
+		font-weight: 600;
 	}
 
 	.result-icon {
@@ -2690,26 +2674,26 @@ function handleExamKeydown(event: KeyboardEvent) {
 
 	.result-banner span {
 		margin-top: 0.16rem;
-		color: var(--muted);
+		color: var(--quiz-muted);
 		font-size: 0.86rem;
 		line-height: 1.5;
 	}
 
 	.result-correct {
-		background: rgba(22, 101, 52, 0.28);
-		color: #86efac;
+		background: color-mix(in srgb, var(--quiz-success) 10%, var(--surface));
+		color: var(--quiz-success);
 	}
 
 	.result-wrong {
-		background: rgba(127, 29, 29, 0.28);
-		color: #fca5a5;
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
+		color: var(--quiz-danger);
 	}
 
 	.answer-panel {
 		margin-top: 0.9rem;
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		background: rgba(8, 10, 9, 0.34);
+		border: 1px solid var(--quiz-line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.85rem;
 	}
 
@@ -2717,20 +2701,20 @@ function handleExamKeydown(event: KeyboardEvent) {
 		display: flex;
 		align-items: center;
 		gap: 0.45rem;
-		color: var(--accent);
-		font-weight: 900;
+		color: var(--quiz-accent);
+		font-weight: 600;
 	}
 
 	.answer-panel p {
 		margin: 0.55rem 0 0;
-		color: var(--soft);
+		color: var(--quiz-soft);
 		line-height: 1.75;
 	}
 
 	.answer-panel .written-response {
-		border: 1px solid rgba(232, 224, 202, 0.1);
-		border-radius: 0.5rem;
-		background: rgba(233, 223, 198, 0.06);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--soft);
 		padding: 0.7rem;
 		white-space: pre-wrap;
 	}
@@ -2739,7 +2723,7 @@ function handleExamKeydown(event: KeyboardEvent) {
 	.knowledge-card ul {
 		margin: 0.65rem 0 0;
 		padding-left: 1.15rem;
-		color: var(--soft);
+		color: var(--quiz-soft);
 		line-height: 1.75;
 	}
 
@@ -2763,7 +2747,7 @@ function handleExamKeydown(event: KeyboardEvent) {
 	}
 
 	.empty-icon {
-		color: var(--accent);
+		color: var(--quiz-accent);
 		font-size: 3rem;
 	}
 
@@ -2794,7 +2778,7 @@ function handleExamKeydown(event: KeyboardEvent) {
 		grid-template-columns: auto minmax(12rem, 24rem);
 		align-items: center;
 		gap: 0.45rem;
-		color: var(--accent);
+		color: var(--quiz-accent);
 	}
 
 	.knowledge-tools input {
@@ -2803,8 +2787,8 @@ function handleExamKeydown(event: KeyboardEvent) {
 	}
 
 	.knowledge-tools span {
-		color: var(--muted);
-		font-weight: 840;
+		color: var(--quiz-muted);
+		font-weight: 600;
 	}
 
 	.knowledge-grid {
@@ -2814,9 +2798,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 	}
 
 	.knowledge-card {
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		background: rgba(13, 16, 14, 0.46);
+		border: 1px solid var(--quiz-line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.85rem;
 	}
 
@@ -2829,9 +2813,9 @@ function handleExamKeydown(event: KeyboardEvent) {
 
 	.knowledge-card-head span,
 	.knowledge-card-head strong {
-		color: var(--accent);
+		color: var(--quiz-accent);
 		font-size: 0.76rem;
-		font-weight: 900;
+		font-weight: 600;
 	}
 
 	.knowledge-card h2 {
@@ -2843,7 +2827,7 @@ function handleExamKeydown(event: KeyboardEvent) {
 
 	.knowledge-card p {
 		margin: 0.55rem 0 0;
-		color: var(--soft);
+		color: var(--quiz-soft);
 		line-height: 1.72;
 	}
 
@@ -2967,4 +2951,40 @@ function handleExamKeydown(event: KeyboardEvent) {
 			padding: 1.35rem;
 		}
 	}
+
+	/* Paper, ink, and clear answer states follow the rest of the journal. */
+	.military-shell {
+		background: transparent !important;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+		color: var(--ink);
+		padding: 0;
+	}
+	h1 { font-weight: 500; letter-spacing: -.045em; line-height: 1.35; }
+	.eyebrow { font-family: var(--font-mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: .13em; }
+	.submit-btn { background: var(--accent); border-color: var(--accent); color: var(--paper); box-shadow: none; text-shadow: none; }
+	.submit-btn:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+	.option.selected,
+	.option[aria-pressed="true"],
+	.judge-choice.selected,
+	.judge-choice[aria-pressed="true"] {
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+		color: var(--ink);
+		box-shadow: inset 3px 0 0 var(--accent);
+	}
+	.option.correct,
+	.judge-choice.correct {
+		background: color-mix(in srgb, var(--quiz-success) 10%, var(--surface));
+		border-color: var(--quiz-success);
+		box-shadow: inset 3px 0 0 var(--quiz-success);
+	}
+	.option.wrong,
+	.judge-choice.wrong {
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
+		border-color: var(--quiz-danger);
+		box-shadow: inset 3px 0 0 var(--quiz-danger);
+	}
+	button:disabled { color: var(--muted) !important; }
 </style>

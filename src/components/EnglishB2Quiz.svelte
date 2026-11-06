@@ -653,20 +653,17 @@ function handleKeydown(event: KeyboardEvent) {
 
 <style>
 	.quiz-shell {
-		--quiz-accent: #67e8f9;
-		--quiz-accent-strong: #a7f3d0;
-		--quiz-text: #f8fafc;
-		--quiz-soft: rgba(226, 232, 240, 0.9);
-		--quiz-muted: rgba(203, 213, 225, 0.78);
+		--quiz-accent: var(--accent);
+		--quiz-accent-strong: var(--olive);
+		--quiz-text: var(--ink);
+		--quiz-soft: var(--ink);
+		--quiz-muted: var(--muted);
 		position: relative;
 		width: 100%;
 		min-height: calc(100vh - 7.5rem);
 		padding: 1rem;
-		border-radius: 1.25rem;
-		background:
-			radial-gradient(circle at 8% 0%, rgba(45, 212, 191, 0.12), transparent 23rem),
-			linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(2, 6, 23, 0.68)),
-			rgba(15, 23, 42, 0.72) !important;
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface)) !important;
 	}
 
 	.quiz-hero {
@@ -679,23 +676,23 @@ function handleKeydown(event: KeyboardEvent) {
 	.eyebrow {
 		color: var(--quiz-accent);
 		font-size: 0.76rem;
-		font-weight: 800;
+		font-weight: 600;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 	}
 
 	h1 {
 		margin: 0.25rem 0 0.55rem;
-		color: rgba(248, 250, 252, 0.96);
+		color: var(--ink);
 		font-size: clamp(1.85rem, 4vw, 2.65rem);
-		font-weight: 950;
+		font-weight: 600;
 		letter-spacing: 0;
 		line-height: 1.1;
 	}
 
 	.quiz-hero p {
 		max-width: 45rem;
-		color: rgba(203, 213, 225, 0.86);
+		color: var(--ink);
 		line-height: 1.72;
 	}
 
@@ -709,16 +706,16 @@ function handleKeydown(event: KeyboardEvent) {
 	.hero-stats > div,
 	.mini-stats > div,
 	.progress-card {
-		border: 1px solid rgba(226, 232, 240, 0.12);
-		border-radius: 1rem;
-		background: rgba(15, 23, 42, 0.42);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.85rem;
 	}
 
 	.hero-stats strong,
 	.mini-stats strong {
 		display: block;
-		color: #f8fafc;
+		color: var(--ink);
 		font-size: 1.45rem;
 		line-height: 1;
 	}
@@ -727,18 +724,18 @@ function handleKeydown(event: KeyboardEvent) {
 	.mini-stats span {
 		margin-top: 0.35rem;
 		display: block;
-		color: rgba(203, 213, 225, 0.72);
+		color: var(--muted);
 		font-size: 0.78rem;
-		font-weight: 700;
+		font-weight: 600;
 	}
 
 	.control-panel {
 		display: grid;
 		gap: 0.8rem;
 		margin-bottom: 0.9rem;
-		border: 1px solid rgba(226, 232, 240, 0.1);
-		border-radius: 1rem;
-		background: rgba(2, 6, 23, 0.22);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.75rem;
 	}
 
@@ -770,10 +767,10 @@ function handleKeydown(event: KeyboardEvent) {
 		justify-content: center;
 		gap: 0.45rem;
 		min-height: 2.55rem;
-		border-radius: 0.75rem;
-		background: rgba(148, 163, 184, 0.11);
+		border-radius: 4px;
+		background: var(--soft);
 		color: var(--quiz-soft);
-		font-weight: 800;
+		font-weight: 600;
 		transition:
 			background-color 160ms ease,
 			color 160ms ease,
@@ -784,7 +781,7 @@ function handleKeydown(event: KeyboardEvent) {
 	.unit-tabs button,
 	.mode-tabs button {
 		padding: 0 0.9rem;
-		border: 1px solid rgba(226, 232, 240, 0.1);
+		border: 1px solid var(--line);
 	}
 
 	.button-icon {
@@ -798,21 +795,17 @@ function handleKeydown(event: KeyboardEvent) {
 	.analysis-panel > button:hover,
 	.empty-card button:hover {
 		color: var(--quiz-accent);
-		background: rgba(148, 163, 184, 0.17);
+		background: var(--soft);
 	}
 
 	.unit-tabs button.active,
 	.mode-tabs button.active,
 	.submit-btn {
-		border-color: rgba(103, 232, 249, 0.55);
-		background:
-			linear-gradient(135deg, rgba(34, 211, 238, 0.3), rgba(45, 212, 191, 0.18)),
-			rgba(15, 23, 42, 0.66);
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		color: var(--quiz-text);
-		text-shadow: 0 0 14px rgba(103, 232, 249, 0.38);
-		box-shadow:
-			inset 0 0 0 1px rgba(167, 243, 208, 0.2),
-			0 0 24px rgba(34, 211, 238, 0.14);
+		text-shadow: none;
+		box-shadow: none;
 	}
 
 	.quiz-layout {
@@ -824,12 +817,10 @@ function handleKeydown(event: KeyboardEvent) {
 	.side-panel,
 	.question-card,
 	.empty-card {
-		border: 1px solid rgba(226, 232, 240, 0.12);
-		border-radius: 1.2rem;
-		background:
-			linear-gradient(135deg, rgba(15, 23, 42, 0.58), rgba(2, 6, 23, 0.42)),
-			rgba(15, 23, 42, 0.46);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--surface);
+		box-shadow: none;
 	}
 
 	.side-panel {
@@ -849,15 +840,15 @@ function handleKeydown(event: KeyboardEvent) {
 
 	.progress-title span,
 	.progress-meta {
-		color: rgba(203, 213, 225, 0.76);
+		color: var(--muted);
 		font-size: 0.82rem;
-		font-weight: 800;
+		font-weight: 600;
 	}
 
 	.progress-title strong {
 		color: var(--quiz-text);
 		font-size: 1.35rem;
-		text-shadow: 0 0 16px rgba(103, 232, 249, 0.24);
+		text-shadow: none;
 	}
 
 	.progress-track {
@@ -865,13 +856,13 @@ function handleKeydown(event: KeyboardEvent) {
 		height: 0.5rem;
 		margin: 0.8rem 0;
 		border-radius: 999px;
-		background: rgba(148, 163, 184, 0.16);
+		background: var(--soft);
 	}
 
 	.progress-track > div {
 		height: 100%;
 		border-radius: inherit;
-		background: linear-gradient(90deg, #22d3ee, var(--quiz-accent-strong));
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		transition: width 220ms ease;
 	}
 
@@ -890,27 +881,23 @@ function handleKeydown(event: KeyboardEvent) {
 	}
 
 	.tool-grid button.active-tool {
-		background:
-			linear-gradient(135deg, rgba(34, 211, 238, 0.28), rgba(45, 212, 191, 0.2)),
-			rgba(15, 23, 42, 0.62);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		color: var(--quiz-text);
-		text-shadow: 0 0 14px rgba(103, 232, 249, 0.42);
-		box-shadow:
-			inset 0 0 0 1px rgba(103, 232, 249, 0.44),
-			0 0 24px rgba(34, 211, 238, 0.14);
+		text-shadow: none;
+		box-shadow: none;
 	}
 
 	.danger-btn {
-		color: rgba(254, 202, 202, 0.88);
-		background: rgba(127, 29, 29, 0.24);
+		color: var(--quiz-danger);
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
 	}
 
 	.question-list-card {
 		display: grid;
 		gap: 0.75rem;
-		border: 1px solid rgba(226, 232, 240, 0.12);
-		border-radius: 1rem;
-		background: rgba(2, 6, 23, 0.24);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.85rem;
 	}
 
@@ -929,7 +916,7 @@ function handleKeydown(event: KeyboardEvent) {
 	.question-list-head span {
 		color: var(--quiz-muted);
 		font-size: 0.78rem;
-		font-weight: 800;
+		font-weight: 600;
 	}
 
 	.question-list {
@@ -946,9 +933,9 @@ function handleKeydown(event: KeyboardEvent) {
 		align-items: center;
 		gap: 0.55rem;
 		min-height: 2.45rem;
-		border: 1px solid rgba(226, 232, 240, 0.1);
-		border-radius: 0.75rem;
-		background: rgba(148, 163, 184, 0.08);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--soft);
 		padding: 0.35rem 0.5rem;
 		color: var(--quiz-soft);
 		text-align: left;
@@ -956,20 +943,18 @@ function handleKeydown(event: KeyboardEvent) {
 
 	.question-list button:hover,
 	.question-list button.current {
-		border-color: rgba(103, 232, 249, 0.56);
-		background:
-			linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(45, 212, 191, 0.1)),
-			rgba(15, 23, 42, 0.62);
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		color: var(--quiz-text);
 	}
 
 	.question-list button.answered:not(.current) {
-		border-color: rgba(74, 222, 128, 0.24);
+		border-color: var(--quiz-success);
 	}
 
 	.question-list button.wrong:not(.current) {
-		border-color: rgba(248, 113, 113, 0.42);
-		background: rgba(127, 29, 29, 0.18);
+		border-color: var(--quiz-danger);
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
 	}
 
 	.question-list button span {
@@ -977,29 +962,29 @@ function handleKeydown(event: KeyboardEvent) {
 		place-items: center;
 		width: 2rem;
 		height: 1.85rem;
-		border-radius: 0.55rem;
-		background: rgba(148, 163, 184, 0.14);
+		border-radius: 4px;
+		background: var(--soft);
 		color: var(--quiz-text);
 		font-size: 0.78rem;
-		font-weight: 950;
+		font-weight: 600;
 	}
 
 	.question-list button.current span {
-		background: rgba(103, 232, 249, 0.24);
-		box-shadow: 0 0 16px rgba(103, 232, 249, 0.16);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+		box-shadow: none;
 	}
 
 	.question-list button strong {
 		overflow: hidden;
 		color: inherit;
 		font-size: 0.82rem;
-		font-weight: 850;
+		font-weight: 600;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
 	.list-star {
-		color: #facc15;
+		color: var(--quiz-favorite);
 		font-size: 1rem;
 	}
 
@@ -1021,12 +1006,12 @@ function handleKeydown(event: KeyboardEvent) {
 		margin-bottom: 0.35rem;
 		color: var(--quiz-accent);
 		font-size: 0.8rem;
-		font-weight: 900;
+		font-weight: 600;
 	}
 
 	.question-head strong {
 		display: block;
-		color: #f8fafc;
+		color: var(--ink);
 		font-size: 1.2rem;
 	}
 
@@ -1035,15 +1020,15 @@ function handleKeydown(event: KeyboardEvent) {
 		place-items: center;
 		width: 2.65rem;
 		height: 2.65rem;
-		border: 1px solid rgba(226, 232, 240, 0.12);
-		border-radius: 0.8rem;
-		background: rgba(148, 163, 184, 0.11);
-		color: rgba(226, 232, 240, 0.78);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--soft);
+		color: var(--muted);
 	}
 
 	.star-btn.active {
-		color: #facc15;
-		background: rgba(250, 204, 21, 0.14);
+		color: var(--quiz-favorite);
+		background: color-mix(in srgb, var(--quiz-favorite) 10%, var(--surface));
 	}
 
 	.star-icon {
@@ -1052,9 +1037,9 @@ function handleKeydown(event: KeyboardEvent) {
 
 	.question-text {
 		margin: 0 0 1.2rem;
-		color: #eef4fb;
+		color: var(--ink);
 		font-size: clamp(1.06rem, 1.8vw, 1.22rem);
-		font-weight: 760;
+		font-weight: 600;
 		line-height: 1.82;
 	}
 
@@ -1070,11 +1055,11 @@ function handleKeydown(event: KeyboardEvent) {
 		gap: 0.85rem;
 		width: 100%;
 		min-height: 3.65rem;
-		border: 1px solid rgba(226, 232, 240, 0.1);
-		border-radius: 0.95rem;
-		background: rgba(15, 23, 42, 0.38);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.75rem;
-		color: rgba(226, 232, 240, 0.88);
+		color: var(--ink);
 		text-align: left;
 	}
 
@@ -1083,33 +1068,31 @@ function handleKeydown(event: KeyboardEvent) {
 		place-items: center;
 		width: 2.2rem;
 		height: 2.2rem;
-		border-radius: 0.7rem;
-		background: rgba(148, 163, 184, 0.15);
+		border-radius: 4px;
+		background: var(--soft);
 		color: var(--quiz-text);
-		font-weight: 950;
+		font-weight: 600;
 	}
 
 	.option strong {
 		font-size: 1rem;
-		font-weight: 780;
+		font-weight: 600;
 		line-height: 1.45;
 		word-break: break-word;
 	}
 
 	.option:hover,
 	.option-selected {
-		border-color: rgba(103, 232, 249, 0.62);
-		background:
-			linear-gradient(135deg, rgba(34, 211, 238, 0.16), rgba(45, 212, 191, 0.1)),
-			rgba(148, 163, 184, 0.14);
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		color: var(--quiz-text);
-		box-shadow: inset 0 0 0 1px rgba(103, 232, 249, 0.16);
+		box-shadow: none;
 	}
 
 	.option-selected span {
-		background: rgba(103, 232, 249, 0.22);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		color: var(--quiz-text);
-		box-shadow: 0 0 18px rgba(103, 232, 249, 0.2);
+		box-shadow: none;
 	}
 
 	.selection-banner {
@@ -1117,14 +1100,12 @@ function handleKeydown(event: KeyboardEvent) {
 		align-items: center;
 		gap: 0.8rem;
 		margin-top: 1rem;
-		border: 1px solid rgba(103, 232, 249, 0.28);
-		border-radius: 1rem;
-		background:
-			linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(45, 212, 191, 0.1)),
-			rgba(15, 23, 42, 0.42);
+		border: 1px solid var(--accent);
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
 		padding: 0.85rem 0.95rem;
 		color: var(--quiz-text);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+		box-shadow: none;
 	}
 
 	.selection-icon {
@@ -1151,13 +1132,13 @@ function handleKeydown(event: KeyboardEvent) {
 	}
 
 	.option-correct {
-		border-color: rgba(74, 222, 128, 0.75);
-		background: rgba(22, 101, 52, 0.3);
+		border-color: var(--quiz-success);
+		background: color-mix(in srgb, var(--quiz-success) 10%, var(--surface));
 	}
 
 	.option-wrong {
-		border-color: rgba(248, 113, 113, 0.78);
-		background: rgba(127, 29, 29, 0.3);
+		border-color: var(--quiz-danger);
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
 	}
 
 	.option-muted {
@@ -1179,7 +1160,7 @@ function handleKeydown(event: KeyboardEvent) {
 	button:disabled {
 		cursor: not-allowed;
 		opacity: 0.58;
-		color: rgba(226, 232, 240, 0.66) !important;
+		color: var(--muted);
 		text-shadow: none;
 	}
 
@@ -1190,7 +1171,7 @@ function handleKeydown(event: KeyboardEvent) {
 		flex-wrap: wrap;
 		gap: 0.8rem;
 		margin-top: 1rem;
-		border-radius: 1rem;
+		border-radius: 4px;
 		padding: 0.9rem;
 	}
 
@@ -1200,11 +1181,11 @@ function handleKeydown(event: KeyboardEvent) {
 
 	.result-banner button {
 		min-height: 2.25rem;
-		border-radius: 0.7rem;
-		background: rgba(255, 255, 255, 0.1);
-		color: rgba(248, 250, 252, 0.86);
+		border-radius: 4px;
+		background: var(--soft);
+		color: var(--ink);
 		padding: 0 0.8rem;
-		font-weight: 850;
+		font-weight: 600;
 	}
 
 	.result-icon {
@@ -1217,34 +1198,34 @@ function handleKeydown(event: KeyboardEvent) {
 	}
 
 	.result-banner strong {
-		color: #f8fafc;
+		color: var(--ink);
 	}
 
 	.result-banner span {
-		color: rgba(226, 232, 240, 0.76);
+		color: var(--muted);
 		font-size: 0.88rem;
 	}
 
 	.result-correct {
-		background: rgba(22, 101, 52, 0.28);
-		color: #86efac;
+		background: color-mix(in srgb, var(--quiz-success) 10%, var(--surface));
+		color: var(--quiz-success);
 	}
 
 	.result-wrong {
-		background: rgba(127, 29, 29, 0.28);
-		color: #fca5a5;
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
+		color: var(--quiz-danger);
 	}
 
 	.analysis-panel {
 		margin-top: 1rem;
-		border-radius: 1rem;
-		background: rgba(2, 6, 23, 0.28);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.75rem;
 	}
 
 	.analysis-panel > button {
 		width: 100%;
-		background: rgba(148, 163, 184, 0.1);
+		background: var(--soft);
 	}
 
 	.analysis-grid {
@@ -1254,21 +1235,21 @@ function handleKeydown(event: KeyboardEvent) {
 	}
 
 	.analysis-grid > div {
-		border-left: 3px solid rgba(103, 232, 249, 0.68);
-		border-radius: 0.8rem;
-		background: rgba(15, 23, 42, 0.34);
+		border-left: 3px solid var(--accent);
+		border-radius: 4px;
+		background: var(--surface);
 		padding: 0.85rem 0.9rem;
 	}
 
 	.analysis-grid span {
 		color: var(--quiz-accent);
 		font-size: 0.78rem;
-		font-weight: 950;
+		font-weight: 600;
 	}
 
 	.analysis-grid p {
 		margin: 0.35rem 0 0;
-		color: rgba(226, 232, 240, 0.88);
+		color: var(--ink);
 		line-height: 1.7;
 	}
 
@@ -1287,59 +1268,16 @@ function handleKeydown(event: KeyboardEvent) {
 
 	.empty-card h2 {
 		margin: 0.8rem 0 0.4rem;
-		color: #f8fafc;
+		color: var(--ink);
 	}
 
 	.empty-card p {
-		color: rgba(203, 213, 225, 0.78);
+		color: var(--muted);
 	}
 
 	.empty-card button {
 		margin-top: 1rem;
 		padding: 0 1.2rem;
-	}
-
-	:global(:root:not(.dark)) .quiz-shell {
-		color: var(--quiz-text);
-	}
-
-	:global(:root:not(.dark)) h1,
-	:global(:root:not(.dark)) .hero-stats strong,
-	:global(:root:not(.dark)) .question-head strong,
-	:global(:root:not(.dark)) .question-text,
-	:global(:root:not(.dark)) .empty-card h2 {
-		color: var(--quiz-text);
-	}
-
-	:global(:root:not(.dark)) .quiz-hero p,
-	:global(:root:not(.dark)) .hero-stats span,
-	:global(:root:not(.dark)) .mini-stats span,
-	:global(:root:not(.dark)) .progress-title span,
-	:global(:root:not(.dark)) .progress-meta,
-	:global(:root:not(.dark)) .empty-card p {
-		color: var(--quiz-muted);
-	}
-
-	:global(:root:not(.dark)) .hero-stats > div,
-	:global(:root:not(.dark)) .mini-stats > div,
-	:global(:root:not(.dark)) .progress-card,
-	:global(:root:not(.dark)) .side-panel,
-	:global(:root:not(.dark)) .question-card,
-	:global(:root:not(.dark)) .empty-card {
-		background: rgba(15, 23, 42, 0.5);
-		border-color: rgba(226, 232, 240, 0.12);
-	}
-
-	:global(:root:not(.dark)) .option,
-	:global(:root:not(.dark)) .analysis-grid > div,
-	:global(:root:not(.dark)) .analysis-panel {
-		background: rgba(15, 23, 42, 0.42);
-		border-color: rgba(226, 232, 240, 0.12);
-		color: var(--quiz-soft);
-	}
-
-	:global(:root:not(.dark)) .analysis-grid p {
-		color: var(--quiz-soft);
 	}
 
 	@media (min-width: 768px) {
@@ -1372,4 +1310,35 @@ function handleKeydown(event: KeyboardEvent) {
 			padding: 1.5rem;
 		}
 	}
+
+	/* Paper, ink, and clear answer states follow the rest of the journal. */
+	.quiz-shell {
+		background: transparent !important;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+		color: var(--ink);
+		padding: 0;
+	}
+	h1 { font-weight: 500; letter-spacing: -.045em; line-height: 1.35; }
+	.eyebrow { font-family: var(--font-mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: .13em; }
+	.submit-btn { background: var(--accent); border-color: var(--accent); color: var(--paper); box-shadow: none; text-shadow: none; }
+	.submit-btn:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+	.option-selected {
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+		color: var(--ink);
+		box-shadow: inset 3px 0 0 var(--accent);
+	}
+	.option-correct {
+		background: color-mix(in srgb, var(--quiz-success) 10%, var(--surface));
+		border-color: var(--quiz-success);
+		box-shadow: inset 3px 0 0 var(--quiz-success);
+	}
+	.option-wrong {
+		background: color-mix(in srgb, var(--quiz-danger) 10%, var(--surface));
+		border-color: var(--quiz-danger);
+		box-shadow: inset 3px 0 0 var(--quiz-danger);
+	}
+	button:disabled { color: var(--muted) !important; }
 </style>

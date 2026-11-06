@@ -29,3 +29,7 @@ yarn.lock
 # ide
 .idea
 *.iml
+
+# Local visual review artifacts
+.playwright-cli/
+output/playwright/

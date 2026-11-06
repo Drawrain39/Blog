@@ -1,23 +1,153 @@
 ---
 import type { GetStaticPaths } from "astro";
-import Pagination from "../components/control/Pagination.astro";
-import PostPage from "../components/PostPage.astro";
-import { PAGE_SIZE } from "../constants/constants";
+import { Image } from "astro:assets";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import PostPage from "../components/PostPage.astro";
+import Pagination from "../components/control/Pagination.astro";
 import { getSortedPosts } from "../utils/content-utils";
+import { getCategoryUrl, url } from "../utils/url-utils";
+import { PAGE_SIZE } from "../constants/constants";
+import { friendLinks } from "../constants/friends";
+import avatar from "../assets/images/avata.jpg";
+import nightArt from "../assets/images/re2.jpg";
+import dayArt from "../assets/images/re1.jpg";
 
-export const getStaticPaths = (async ({ paginate }) => {
-	const allBlogPosts = await getSortedPosts();
-	return paginate(allBlogPosts, { pageSize: PAGE_SIZE });
-}) satisfies GetStaticPaths;
-// https://github.com/withastro/astro/issues/6507#issuecomment-1489916992
-
+export const getStaticPaths = (async ({ paginate }) => paginate(await getSortedPosts(), { pageSize: PAGE_SIZE })) satisfies GetStaticPaths;
 const { page } = Astro.props;
-
-const len = page.data.length;
+const allPosts = await getSortedPosts();
+const posts = page.currentPage === 1 ? allPosts : page.data;
+const categories = allPosts.reduce((counts, post) => {
+  const category = post.data.category || "随记";
+  counts[category] = (counts[category] || 0) + 1;
+  return counts;
+}, {} as Record<string, number>);
+const lastUpdated = allPosts[0]?.data.published.toISOString().slice(0,10);
 ---
+<MainGridLayout homePage={true}>
+  <section slot="hero" class="home-scene" aria-labelledby="home-title" data-home-scene>
+    <Image src={nightArt} widths={[800,1280,1920]} sizes="100vw" format="webp" quality={85} loading="eager" fetchpriority="high" alt="蓝色夜空与烟火中的二次元少女，原博客背景插画" class="scene-image night-image" data-scene-image="night" />
+    <Image src={dayArt} widths={[800,1280,1920]} sizes="100vw" format="webp" quality={85} loading="lazy" alt="蓝色水面上，坐在花朵小船里的二次元少女" class="scene-image day-image" data-scene-image="day" hidden />
+    <div class="scene-shade" aria-hidden="true"></div>
+    <div class="scene-content site-container">
+      <div class="scene-greeting"><span class="little-star" aria-hidden="true">✧</span> 欢迎来到我的小站</div>
+      <h1 id="home-title">Drawrain<span class="name-dot">.</span><span class="name-note">の小站</span></h1>
+      <p class="scene-motto">Just keep drawing<br />without regrets.</p>
+      <p class="scene-description">Re / CTF / Agent(ing)<br /><span>想到什么写什么，不固定。</span></p>
+      <a href="#posts" class="scene-down"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 4v15m-5-5 5 5 5-5" /></svg> 往下看看</a>
+    </div>
+    <div class="scene-bottom site-container"><span class="scene-quote">“即使迷茫，也要前行。”</span><div class="scene-switcher" role="group" aria-label="切换首页插画"><button type="button" aria-label="切换为烟火插画" aria-pressed="true" data-scene="night"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18.8 15.4A8 8 0 0 1 8.6 5.2 8 8 0 1 0 18.8 15.4Z"/><path d="M17 3v4m-2-2h4m1 4v2m-1-1h2"/></svg></button><button type="button" aria-label="切换为晴空插画" aria-pressed="false" data-scene="day"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5"/></svg></button></div></div>
+  </section>
 
-<MainGridLayout>
-    <PostPage page={page}></PostPage>
-    <Pagination class="mx-auto onload-animation" page={page} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
+  <div class="home-layout">
+    <aside class="home-sidebar" aria-label="Drawrain 的个人空间">
+      <section class="profile-panel">
+        <div class="profile-cover"><Image src={dayArt} width={500} format="webp" alt="" /></div>
+        <a href={url("/about/")} class="profile-avatar" aria-label="关于 Drawrain"><Image src={avatar} width={100} height={100} format="webp" alt="Drawrain 的头像" /></a>
+        <h2>Drawrain <span aria-hidden="true">✧</span></h2>
+        <p class="profile-bio">计科本科在读<br />Re / CTF / Agent(ing)</p>
+        <div class="profile-tags"><a href={getCategoryUrl("CTF")}>CTF</a><a href={url("/archive/?tag=Reverse")}>Reverse</a><a href={getCategoryUrl("AI")}>AI Agent</a></div>
+        <div class="profile-stats"><a href={url("/archive/")}><strong>{allPosts.length}</strong><span>文章</span></a><a href={url("/archive/")}><strong>{Object.keys(categories).length}</strong><span>分类</span></a><a href={url("/friends/")}><strong>{friendLinks.length}</strong><span>朋友</span></a></div>
+        <div class="profile-links"><a href="https://github.com/Drawrain39" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5-6 7 6 7m8-14 6 7-6 7m-3-16-2 18" /></svg>GitHub</a></div>
+      </section>
+      <section class="sidebar-note"><h2><span aria-hidden="true">⌁</span> 这里写些什么</h2><p>平时比赛的 WP、学习相关的知识，偶尔也会写点别的。</p><a href={url("/about/")}>成分复杂，等待挖掘… <span aria-hidden="true">↗</span></a></section>
+      <section class="sidebar-topics"><h2><svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 4h6l2 2h8v11H2Z"/></svg>文章分类</h2>{Object.entries(categories).sort((a,b)=>b[1]-a[1]).map(([category,count])=><a href={getCategoryUrl(category)}><span>{category}</span><span>{count}</span></a>)}</section>
+      <a class="sidebar-song" href="https://music.163.com/#/song?id=557581315" target="_blank" rel="noopener noreferrer"><span class="song-record" aria-hidden="true"><i></i></span><div><span class="song-caption">听首歌吧 ♪</span><strong>ヒッチコック</strong><span>ヨルシカ</span></div><span aria-hidden="true">↗</span></a>
+    </aside>
+
+    <section class="home-feed" id="posts" aria-labelledby="posts-title">
+      <header class="feed-heading"><div><h2 id="posts-title">最近更新<span class="heading-star" aria-hidden="true">✦</span></h2><p>比赛、学习，还有一些日常。</p></div><a href={url("/archive/")}>全部文章 <span aria-hidden="true">→</span></a></header>
+      <PostPage posts={posts} />
+      {page.currentPage !== 1 && <Pagination page={page} class="legacy-pagination" style="" />}
+      <p class="last-update">最近一篇记录于 <time datetime={lastUpdated}>{lastUpdated}</time></p>
+    </section>
+  </div>
 </MainGridLayout>
+
+<script>
+  const scene = document.querySelector<HTMLElement>("[data-home-scene]");
+  const sceneButtons = scene?.querySelectorAll<HTMLButtonElement>("[data-scene]");
+  sceneButtons?.forEach(button => button.addEventListener("click", () => {
+    const selected = button.dataset.scene;
+    scene?.querySelectorAll<HTMLImageElement>("[data-scene-image]").forEach(image => image.hidden = image.dataset.sceneImage !== selected);
+    sceneButtons?.forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+  }));
+</script>
+
+<style>
+  .home-scene { position: relative; height: 610px; color: #f7faff; overflow: hidden; background: #193956; isolation: isolate; }
+  .scene-image { position: absolute; width: 100%; height: 100%; object-fit: cover; object-position: 65% 32%; z-index: -3; filter: saturate(.92); }
+  .day-image { object-position: center 48%; }
+  .scene-shade { position: absolute; inset: 0; z-index: -2; background: linear-gradient(90deg, #101a2ac4 0%, #17233866 35%, #17233808 70%), linear-gradient(0deg, var(--paper) 0%, #171c2708 35%, #111b2c22 100%); }
+  .scene-content { padding-top: 169px; }
+  .scene-greeting { display: flex; align-items: center; gap: 9px; font-size: 13px; letter-spacing: .13em; color: #e1eaf4; }
+  .little-star { font-size: 22px; color: #ddbfce; }
+  h1 { font-family: var(--font-sans); font-size: clamp(56px,6.5vw,88px); font-weight: 750; font-style: italic; line-height: 1.2; letter-spacing: -.065em; margin: 13px 0 13px; text-shadow: 0 4px 30px #0b183922; }
+  .name-dot { color: #ddbbcd; }
+  .name-note { display: inline-block; font-size: 18px; font-style: normal; font-weight: 400; letter-spacing: .12em; margin-left: 18px; transform: rotate(-7deg) translateY(-4px); color: #d6bccf; }
+  .scene-motto { font-size: 18px; line-height: 1.7; font-weight: 350; letter-spacing: .04em; color: #f2f4ff; margin: 0 0 17px; }
+  .scene-motto br { display: none; }
+  .scene-description { font-size: 12px; line-height: 2.1; color: #d5dfef; margin: 0; }
+  .scene-description > span { font-size: 13px; }
+  .scene-down { display: inline-flex; align-items: center; gap: 9px; margin-top: 23px; font-size: 12px; padding: 9px 16px 9px 12px; border: 1px solid #eff4ff44; border-radius: 30px; background: #1b2b4b55; backdrop-filter: blur(8px); transition: background .2s; }
+  .scene-down:hover { background: #7091bb44; }
+  .scene-bottom { position: absolute; left: 0; right: 0; bottom: 54px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+  .scene-quote { font-size: 11px; color: #c4d0e5; letter-spacing: .1em; }
+  .scene-switcher { display: flex; align-items: center; gap: 9px; }
+  .scene-switcher button { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 1px solid #d8e1ee38; border-radius: 50%; color: #c4cddd; background: #17213088; backdrop-filter: blur(10px); transition: color .2s, border-color .2s, background .2s; }
+  .scene-switcher button:hover { color: #eff2f8; border-color: #d8e1ee88; }
+  .scene-switcher button[aria-pressed="true"] { border-color: #d7b5c7a6; color: #ecd3df; background: #66506466; }
+  .home-layout { position: relative; z-index: 2; display: grid; grid-template-columns: 248px minmax(0,1fr); gap: 28px; margin-top: -30px; }
+  .home-sidebar { min-width: 0; }
+  .profile-panel { position: relative; text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; box-shadow: var(--panel-shadow); padding-bottom: 17px; }
+  .profile-cover { height: 92px; overflow: hidden; position: relative; }
+  .profile-cover img { width: 100%; height: 100%; object-fit: cover; object-position: 70% 25%; }
+  .profile-cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 15%, #16243f44); }
+  .profile-avatar { position: relative; width: 86px; height: 86px; display: block; margin: -42px auto 11px; border: 5px solid var(--surface); border-radius: 50%; overflow: hidden; transition: transform .3s; }
+  .profile-avatar:hover { transform: rotate(7deg); }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-panel h2 { font-size: 24px; line-height: 1.4; font-weight: 700; margin: 0 0 8px; }
+  .profile-panel h2 > span { font-size: 21px; margin-left: 3px; color: var(--accent); }
+  .profile-bio { color: var(--muted); font-size: 12px; line-height: 1.95; }
+  .profile-tags { display: flex; gap: 6px; justify-content: center; margin: 13px 0 20px; }
+  .profile-tags a { border: 1px solid var(--line); border-radius: 7px; font-size: 10px; color: var(--blue); padding: 3px 7px; background: var(--soft); }
+  .profile-stats { display: flex; justify-content: center; margin: 0 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+  .profile-stats > a { display: flex; flex: 1; flex-direction: column; gap: 0; line-height: 1.7; }
+  .profile-stats strong { font-size: 22px; font-weight: 600; }
+  .profile-stats a:hover strong { color: var(--accent); }
+  .profile-stats span { font-size: 10px; color: var(--muted); }
+  .profile-links { display: flex; justify-content: center; gap: 28px; margin-top: 15px; }
+  .profile-links a { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+  .profile-links a:hover { color: var(--accent); }
+  .sidebar-note, .sidebar-topics { background: var(--surface); border: 1px solid var(--line); border-radius: 17px; padding: 20px; margin-top: 18px; box-shadow: var(--panel-shadow); }
+  .sidebar-note h2, .sidebar-topics h2 { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 550; margin: 0 0 13px; }
+  .sidebar-note h2 > span { font-size: 22px; line-height: 1; color: var(--accent); }
+  .sidebar-note > p { color: var(--muted); font-size: 12px; line-height: 1.95; margin: 0 0 11px; }
+  .sidebar-note > a { font-size: 11px; color: var(--accent); }
+  .sidebar-note > a > span { margin-left: 5px; }
+  .sidebar-topics h2 svg { color: var(--blue); }
+  .sidebar-topics > a { display: flex; justify-content: space-between; font-size: 12px; padding: 7px 0; color: var(--muted); }
+  .sidebar-topics > a:hover { color: var(--accent); }
+  .sidebar-topics > a > span:last-child { font-size: 10px; border-radius: 6px; padding: 0 7px; background: var(--soft); }
+  .sidebar-song { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 17px; background: var(--surface); padding: 16px 14px; margin-top: 18px; }
+  .song-record { width: 43px; height: 43px; display: grid; place-items: center; flex-shrink: 0; border-radius: 50%; background: repeating-radial-gradient(circle, #26344e 0 2px, #0f1a2d 3px 4px); border: 1px solid #66799755; }
+  .song-record i { width: 13px; height: 13px; border-radius: 50%; background: #e7aec4; border: 5px solid #bc819a; }
+  .sidebar-song > div { display: flex; flex-direction: column; line-height: 1.6; }
+  .sidebar-song .song-caption { color: var(--accent); font-size: 9px; }
+  .sidebar-song strong { font-size: 12px; font-weight: 500; }
+  .sidebar-song div > span:last-child { color: var(--muted); font-size: 10px; }
+  .sidebar-song > span:last-child { margin-left: auto; color: var(--muted); font-size: 18px; }
+  .home-feed { padding-top: 59px; min-width: 0; scroll-margin-top: 25px; }
+  .feed-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 23px; padding-inline: 2px; gap: 12px; }
+  .feed-heading h2 { font-size: 25px; font-weight: 650; line-height: 1.3; margin: 0 0 8px; }
+  .heading-star { font-size: 14px; color: var(--accent); margin-left: 9px; vertical-align: middle; }
+  .feed-heading p { font-size: 12px; color: var(--muted); margin: 0; }
+  .feed-heading > a { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--muted); }
+  .feed-heading > a:hover { color: var(--accent); }
+  .last-update { color: var(--muted); font-size: 11px; text-align: center; margin-top: 22px; opacity: .8; }
+  :global(:root:not(.dark)) .scene-shade { background: linear-gradient(90deg,#101a2abb,#17233855 35%,#17233808 70%),linear-gradient(0deg,var(--paper) 0%,#171c2705 25%,#111b2c22 100%); }
+  :global(:root:not(.dark)) .scene-quote { color: #edf3ff; }
+  @media (min-width: 1700px) { .home-scene { height: 680px; } .scene-content { padding-top: 195px; } }
+  @media (max-width: 1000px) { .home-layout { grid-template-columns: 220px minmax(0,1fr); gap: 22px; } h1 { font-size: 70px; } .name-note { display: block; margin: 4px 0 18px 5px; font-size: 15px; transform: rotate(-5deg); } .scene-content { padding-top: 151px; } .scene-motto { font-size: 16px; } }
+  @media (max-width: 760px) { .home-scene { height: 565px; } .scene-content { padding-top: 157px; } .scene-image { object-position: 62% 30%; } .scene-shade { background: linear-gradient(90deg,#101a2ac4,#17233855 65%,#17233822),linear-gradient(0deg,var(--paper) 0%,#171c2705 35%,#111b2c22 100%); } .name-note { display: inline-block; margin-left: 12px; font-size: 15px; } h1 { font-size: 62px; } .scene-motto { font-size: 15px; } .scene-bottom { bottom: 32px; } .scene-quote { display: none; } .scene-switcher { margin-left: auto; } .home-layout { grid-template-columns: minmax(0,1fr); margin-top: 0; } .home-sidebar { display: none; } .home-feed { padding-top: 27px; } .feed-heading h2 { font-size: 23px; } }
+  @media (max-width: 420px) { .home-scene { height: 530px; } .scene-content { padding-top: 153px; } h1 { font-size: 54px; } .name-note { font-size: 12px; margin-left: 10px; } .scene-greeting { font-size: 11px; } .scene-motto { font-size: 14px; letter-spacing: .025em; } .scene-motto br { display: block; } .scene-description { font-size: 11px; } .scene-description > span { font-size: 12px; } .scene-down { margin-top: 17px; padding: 6px 12px; } .scene-bottom { bottom: 25px; } .scene-switcher button { width: 36px; height: 36px; } }
+</style>

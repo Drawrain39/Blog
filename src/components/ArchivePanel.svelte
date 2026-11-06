@@ -1,557 +1,151 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import type { PostForList } from "../utils/content-utils";
-
-import I18nKey from "../i18n/i18nKey";
-import { i18n } from "../i18n/translation";
-import { getPostUrlBySlug } from "../utils/url-utils";
+import { getPostUrlBySlug, url } from "../utils/url-utils";
 
 export let tags: string[] = [];
 export let categories: string[] = [];
 export let sortedPosts: PostForList[] = [];
 
-const quickFilters = [
-	{ key: "all", label: "全部", description: "查看全部文章" },
-	{ key: "ctf", label: "CTF", description: "筛选 CTF 题解", category: "CTF" },
-	{ key: "cpp", label: "C++", description: "筛选 C++ 与数据结构", category: "C++" },
-	{ key: "ai", label: "AI", description: "筛选 AI 与 Agent 文章", category: "AI" },
-	{ key: "notes", label: "Notes", description: "筛选笔记类文章", tag: "notes" },
-	{ key: "math", label: "Math", description: "筛选数学文章", category: "Math" },
-] as const;
+let selectedTags: string[] = [...tags];
+let selectedCategories: string[] = [...categories];
+let uncategorized = false;
+let searchQuery = "";
 
-type FilterKey = (typeof quickFilters)[number]["key"];
+const normalize = (value: string | null | undefined) => (value || "").trim().toLocaleLowerCase();
+const dateOf = (value: Date | string | number) => new Date(value);
+const fullDate = (value: Date | string | number) => dateOf(value).toISOString().slice(0, 10);
 
-interface Group {
-	year: number;
-	posts: PostForList[];
+$: categoryNames = [...new Set(sortedPosts.map((post) => post.data.category).filter((value): value is string => Boolean(value)))];
+$: allWords = sortedPosts.reduce((total, post) => total + (post.wordCount || 0), 0);
+$: wordsLabel = allWords >= 10000 ? `${(allWords / 10000).toFixed(1)} 万` : allWords.toLocaleString("zh-CN");
+$: latestDate = sortedPosts.length ? fullDate(sortedPosts.reduce((latest, post) => Math.max(latest, dateOf(post.data.updated || post.data.published).getTime()), 0)) : "—";
+$: hasFilters = Boolean(selectedTags.length || selectedCategories.length || uncategorized || searchQuery.trim());
+$: filteredPosts = sortedPosts.filter((post) => {
+	if (selectedCategories.length && !selectedCategories.some((category) => normalize(category) === normalize(post.data.category))) return false;
+	if (selectedTags.length && !selectedTags.some((tag) => post.data.tags.some((postTag) => normalize(tag) === normalize(postTag)))) return false;
+	if (uncategorized && post.data.category) return false;
+	const text = [post.data.title, post.data.description, post.data.category, ...post.data.tags].join(" ");
+	return normalize(text).includes(normalize(searchQuery));
+});
+$: groupedPosts = filteredPosts.reduce((groups, post) => {
+	const year = dateOf(post.data.published).getUTCFullYear();
+	(groups[year] ||= []).push(post);
+	return groups;
+}, {} as Record<number, PostForList[]>);
+$: years = Object.keys(groupedPosts).map(Number).sort((a, b) => b - a);
+
+function readFilters() {
+	const params = new URLSearchParams(window.location.search);
+	const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+	selectedTags = [...params.getAll("tag"), ...hashParams.getAll("tag")].map((value) => value.trim()).filter(Boolean);
+	selectedCategories = [...params.getAll("category"), ...hashParams.getAll("category")].map((value) => value.trim()).filter(Boolean);
+	uncategorized = params.has("uncategorized") || hashParams.has("uncategorized");
 }
 
-interface StatItem {
-	label: string;
-	value: string;
-}
-
-let activeFilter: FilterKey = "all";
-let queryTags: string[] = [];
-let queryCategories: string[] = [];
-let showUncategorized = false;
-
-let filteredPosts: PostForList[] = [];
-let groups: Group[] = [];
-let stats: StatItem[] = [];
-let activeFilterName = "全部";
-let hasActiveQueryFilter = false;
-
-$: hasActiveQueryFilter =
-	queryTags.length > 0 || queryCategories.length > 0 || showUncategorized;
-$: filteredPosts = filterPosts(
-	sortedPosts,
-	activeFilter,
-	queryTags,
-	queryCategories,
-	showUncategorized,
-);
-$: groups = groupPosts(filteredPosts);
-$: activeFilterName = getActiveFilterName(
-	activeFilter,
-	queryTags,
-	queryCategories,
-	showUncategorized,
-);
-$: stats = [
-	{ label: "总文章", value: `${formatNumber(sortedPosts.length)} 篇` },
-	{ label: "总字数", value: formatWords(sumWords(sortedPosts)) },
-	{ label: "最近更新", value: getLatestDate(sortedPosts) },
-	{ label: "当前结果", value: `${formatNumber(filteredPosts.length)} 篇` },
-];
-
-function cleanList(values: string[]) {
-	return values.map((value) => value.trim()).filter(Boolean);
-}
-
-function normalize(value: string | null | undefined) {
-	return (value ?? "").trim().toLowerCase();
-}
-
-function getQuickFilter(key: FilterKey) {
-	return quickFilters.find((filter) => filter.key === key);
-}
-
-function inferActiveFilter(tagList: string[], categoryList: string[]) {
-	const matched = quickFilters.find((filter) => {
-		if ("category" in filter && filter.category) {
-			return categoryList.some(
-				(category) => normalize(category) === normalize(filter.category),
-			);
-		}
-		if ("tag" in filter && filter.tag) {
-			return tagList.some((tag) => normalize(tag) === normalize(filter.tag));
-		}
-		return false;
-	});
-
-	return matched?.key ?? "all";
-}
-
-function isQuickFilterActive(
-	key: FilterKey,
-	selectedFilter: FilterKey,
-	hasQueryFilter: boolean,
-) {
-	if (key === "all") return selectedFilter === "all" && !hasQueryFilter;
-	return selectedFilter === key;
-}
-
-function postMatchesCategory(post: PostForList, category: string) {
-	return normalize(post.data.category) === normalize(category);
-}
-
-function postMatchesTag(post: PostForList, tag: string) {
-	return (
-		Array.isArray(post.data.tags) &&
-		post.data.tags.some((postTag) => normalize(postTag) === normalize(tag))
-	);
-}
-
-function filterPosts(
-	posts: PostForList[],
-	selectedFilter: FilterKey,
-	tagList: string[],
-	categoryList: string[],
-	uncategorized: boolean,
-) {
-	let nextPosts = posts;
-
-	if (tagList.length > 0) {
-		nextPosts = nextPosts.filter((post) =>
-			tagList.some((tag) => postMatchesTag(post, tag)),
-		);
-	}
-
-	if (categoryList.length > 0) {
-		nextPosts = nextPosts.filter((post) =>
-			categoryList.some((category) => postMatchesCategory(post, category)),
-		);
-	}
-
-	if (uncategorized) {
-		nextPosts = nextPosts.filter((post) => !post.data.category);
-	}
-
-	const quickFilter = getQuickFilter(selectedFilter);
-	if (quickFilter && "category" in quickFilter && quickFilter.category) {
-		nextPosts = nextPosts.filter((post) =>
-			postMatchesCategory(post, quickFilter.category),
-		);
-	}
-	if (quickFilter && "tag" in quickFilter && quickFilter.tag) {
-		nextPosts = nextPosts.filter((post) =>
-			postMatchesTag(post, quickFilter.tag),
-		);
-	}
-
-	return nextPosts;
-}
-
-function groupPosts(posts: PostForList[]) {
-	const grouped = posts.reduce(
-		(acc, post) => {
-			const year = toDate(post.data.published).getFullYear();
-			if (!acc[year]) acc[year] = [];
-			acc[year].push(post);
-			return acc;
-		},
-		{} as Record<number, PostForList[]>,
-	);
-
-	return Object.keys(grouped)
-		.map((yearStr) => {
-			const year = Number.parseInt(yearStr, 10);
-			return {
-				year,
-				posts: grouped[year].sort(
-					(a, b) =>
-						toDate(b.data.published).getTime() -
-						toDate(a.data.published).getTime(),
-				),
-			};
-		})
-		.sort((a, b) => b.year - a.year);
-}
-
-function toDate(date: Date | string | number) {
-	if (date instanceof Date) return date;
-	return new Date(date);
-}
-
-function formatDate(date: Date | string | number) {
-	const normalizedDate = toDate(date);
-	const month = (normalizedDate.getMonth() + 1).toString().padStart(2, "0");
-	const day = normalizedDate.getDate().toString().padStart(2, "0");
-	return `${month}-${day}`;
-}
-
-function formatFullDate(date: Date | string | number) {
-	const normalizedDate = toDate(date);
-	const month = (normalizedDate.getMonth() + 1).toString().padStart(2, "0");
-	const day = normalizedDate.getDate().toString().padStart(2, "0");
-	return `${normalizedDate.getFullYear()}-${month}-${day}`;
-}
-
-function formatNumber(value: number) {
-	return new Intl.NumberFormat("zh-CN").format(value);
-}
-
-function formatWords(value: number) {
-	const count = Math.round(value);
-	if (count >= 10000) {
-		return `${(count / 10000).toFixed(1).replace(/\.0$/, "")} 万字`;
-	}
-	return `${formatNumber(count)} 字`;
-}
-
-function formatTag(tagList: string[]) {
-	return tagList.map((tag) => `#${tag}`).join(" ");
-}
-
-function sumWords(posts: PostForList[]) {
-	return posts.reduce((sum, post) => sum + (post.wordCount ?? 0), 0);
-}
-
-function getLatestDate(posts: PostForList[]) {
-	let latestTime = 0;
-
-	for (const post of posts) {
-		const candidate = toDate(post.data.updated ?? post.data.published).getTime();
-		if (candidate > latestTime) latestTime = candidate;
-	}
-
-	return latestTime > 0 ? formatFullDate(latestTime) : "-";
-}
-
-function getActiveFilterName(
-	selectedFilter: FilterKey,
-	tagList: string[],
-	categoryList: string[],
-	uncategorized: boolean,
-) {
-	if (selectedFilter !== "all") {
-		return getQuickFilter(selectedFilter)?.label ?? "全部";
-	}
-
-	const labels = [
-		...categoryList.map((category) => `分类：${category}`),
-		...tagList.map((tag) => `#${tag}`),
-	];
-
-	if (uncategorized) labels.push("未分类");
-	return labels.length > 0 ? labels.join(" / ") : "全部";
-}
-
-function setQuickFilter(key: FilterKey) {
-	activeFilter = key;
-	queryTags = [];
-	queryCategories = [];
-	showUncategorized = false;
-	updateArchiveUrl(key);
-}
-
-function clearFilters() {
-	setQuickFilter("all");
-}
-
-function updateArchiveUrl(key: FilterKey) {
-	if (typeof window === "undefined") return;
-
-	const url = new URL(window.location.href);
-	url.search = "";
-
-	const filter = getQuickFilter(key);
-	if (filter && "category" in filter && filter.category) {
-		url.searchParams.set("category", filter.category);
-	}
-	if (filter && "tag" in filter && filter.tag) {
-		url.searchParams.set("tag", filter.tag);
-	}
-
-	window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+function setCategory(category: string | null) {
+	selectedCategories = category ? [category] : [];
+	selectedTags = [];
+	uncategorized = false;
+	searchQuery = "";
+	const nextUrl = new URL(window.location.href);
+	for (const key of ["category", "tag", "uncategorized"]) nextUrl.searchParams.delete(key);
+	if (category) nextUrl.searchParams.set("category", category);
+	if (/^#(?:category|tag|uncategorized)=/.test(nextUrl.hash)) nextUrl.hash = "";
+	window.history.replaceState(null, "", `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
 }
 
 onMount(() => {
-	const params = new URLSearchParams(window.location.search);
-
-	queryTags = params.has("tag") ? cleanList(params.getAll("tag")) : cleanList(tags);
-	queryCategories = params.has("category")
-		? cleanList(params.getAll("category"))
-		: cleanList(categories);
-	showUncategorized = params.has("uncategorized");
-	activeFilter = inferActiveFilter(queryTags, queryCategories);
+	readFilters();
+	window.addEventListener("popstate", readFilters);
+	window.addEventListener("hashchange", readFilters);
+	return () => {
+		window.removeEventListener("popstate", readFilters);
+		window.removeEventListener("hashchange", readFilters);
+	};
 });
 </script>
 
-<div class="card-base archive-shell px-5 py-5 md:px-8 md:py-6">
-	<div class="archive-head">
-		<div class="min-w-0">
-			<div class="text-xs font-bold uppercase text-[var(--primary)]">Archive</div>
-			<div class="mt-1 flex min-w-0 flex-wrap items-center gap-2">
-				<h1 class="text-2xl font-black text-90">文章归档</h1>
-				<span class="active-filter-label">{activeFilterName}</span>
+<div class="archive-page">
+	<header class="archive-cover">
+		<img class="cover-art" src={url("/images/re2.jpg")} alt="夜空烟花下的少女" />
+		<div class="cover-shade"></div>
+		<div class="cover-copy"><span class="page-location">首页 / 归档</span><h1>文章归档 <span aria-hidden="true">✧</span></h1><p>CTF 题解、学习笔记和日常记录</p></div>
+	</header>
+	<div class="archive-stats" aria-label="归档统计"><div><strong>{sortedPosts.length}</strong><span>篇文章</span></div><div><strong>{wordsLabel}</strong><span>累计字数</span></div><div><strong>{categoryNames.length}</strong><span>个分类</span></div><div class="latest-stat"><strong>{latestDate}</strong><span>最近更新</span></div></div>
+	<section class="archive-panel" aria-label="文章列表">
+		<div class="archive-toolbar">
+			<div class="archive-filters" role="group" aria-label="按分类筛选文章">
+				<button type="button" class:active={!selectedCategories.length && !selectedTags.length && !uncategorized} aria-pressed={!selectedCategories.length && !selectedTags.length && !uncategorized} on:click={() => setCategory(null)}>全部 <span>{sortedPosts.length}</span></button>
+				{#each categoryNames as category}<button type="button" class:active={selectedCategories.includes(category)} aria-pressed={selectedCategories.includes(category)} on:click={() => setCategory(category)}>{category} <span>{sortedPosts.filter((post) => post.data.category === category).length}</span></button>{/each}
 			</div>
-			<p class="mt-2 text-sm text-50">
-				共 {formatNumber(sortedPosts.length)} 篇，当前 {formatNumber(filteredPosts.length)} 篇
-			</p>
+			<label class="archive-search"><span aria-hidden="true">⌕</span><input type="search" aria-label="搜索归档中的文章" placeholder="搜索文章…" bind:value={searchQuery} /></label>
 		</div>
-
-		<div class="stat-strip" aria-label="归档统计">
-			{#each stats as stat}
-				<div class="stat-pill">
-					<span>{stat.label}</span>
-					<strong>{stat.value}</strong>
-				</div>
-			{/each}
-		</div>
-	</div>
-
-	<div class="filter-row" aria-label="快速筛选">
-		{#each quickFilters as filter}
-			<button
-				type="button"
-				class="filter-btn"
-				class:filter-btn-active={isQuickFilterActive(filter.key, activeFilter, hasActiveQueryFilter)}
-				aria-pressed={isQuickFilterActive(filter.key, activeFilter, hasActiveQueryFilter)}
-				title={filter.description}
-				on:click={() => setQuickFilter(filter.key)}
-			>
-				{filter.label}
-			</button>
-		{/each}
-	</div>
-
-	{#if hasActiveQueryFilter && activeFilter === "all"}
-		<div class="query-strip">
-			<span class="truncate">{activeFilterName}</span>
-			<button type="button" on:click={clearFilters}>清除</button>
-		</div>
-	{/if}
-
-	{#if groups.length === 0}
-		<div class="empty-state">
-			<div class="text-lg font-black text-75">当前筛选没有文章</div>
-			<div class="mt-1 text-sm text-50">换一个方向看看。</div>
-		</div>
-	{:else}
-		<div class="archive-timeline">
-			{#each groups as group}
-				<div>
-					<div class="flex h-[3.75rem] w-full flex-row items-center">
-						<div class="w-[15%] text-right text-2xl font-bold text-75 transition md:w-[10%]">
-							{group.year}
-						</div>
-						<div class="w-[15%] md:w-[10%]">
-							<div
-								class="z-50 mx-auto h-3 w-3 rounded-full bg-none outline outline-3 -outline-offset-[2px] outline-[var(--primary)]"
-							></div>
-						</div>
-						<div class="w-[70%] text-left text-50 transition md:w-[80%]">
-							{group.posts.length} {i18n(group.posts.length === 1 ? I18nKey.postCount : I18nKey.postsCount)}
-						</div>
-					</div>
-
-					{#each group.posts as post}
-						<a
-							href={getPostUrlBySlug(post.slug)}
-							aria-label={post.data.title}
-							class="group btn-plain !block h-10 w-full rounded-lg hover:text-[initial]"
-						>
-							<div class="flex h-full flex-row items-center justify-start">
-								<div class="w-[15%] text-right text-sm text-50 transition md:w-[10%]">
-									{formatDate(post.data.published)}
-								</div>
-
-								<div class="dash-line relative flex h-full w-[15%] items-center md:w-[10%]">
-									<div
-										class="z-50 mx-auto h-1 w-1 rounded bg-[oklch(0.5_0.05_var(--hue))] outline outline-4 outline-[var(--card-bg)] transition-all group-hover:h-5 group-hover:bg-[var(--primary)] group-hover:outline-[var(--btn-plain-bg-hover)] group-active:outline-[var(--btn-plain-bg-active)]"
-									></div>
-								</div>
-
-								<div
-									class="w-[70%] overflow-hidden overflow-ellipsis whitespace-nowrap pr-8 text-left font-bold text-75 transition-all group-hover:translate-x-1 group-hover:text-[var(--primary)] md:w-[55%] md:max-w-[55%]"
-								>
-									{post.data.title}
-								</div>
-
-								<div class="hidden min-w-0 items-center gap-2 text-left text-xs text-30 transition md:flex md:w-[25%]">
-									{#if post.data.category}
-										<span class="category-chip">{post.data.category}</span>
-									{/if}
-									<span class="truncate">{formatTag(post.data.tags)}</span>
-								</div>
-							</div>
-						</a>
-					{/each}
-				</div>
-			{/each}
-		</div>
-	{/if}
+		<div class="archive-result-note" aria-live="polite"><span>{selectedTags.length ? selectedTags.map((tag) => `#${tag}`).join(" / ") : uncategorized ? "未分类" : selectedCategories.join(" / ") || "全部文章"} · {filteredPosts.length} 篇</span>{#if hasFilters}<button type="button" on:click={() => setCategory(null)}>清除筛选 ×</button>{:else}<span>最新发布在前</span>{/if}</div>
+		{#if !filteredPosts.length}
+			<div class="empty-archive"><span aria-hidden="true">⌕</span><h2>没有找到相关的文章</h2><p>试试其他关键词，或者清除筛选条件。</p><button type="button" on:click={() => setCategory(null)}>查看全部文章</button></div>
+		{:else}
+			<div class="archive-years">
+				{#each years as year}
+					<section class="year-section" aria-labelledby={`archive-year-${year}`}><div class="year-heading"><h2 id={`archive-year-${year}`}>{year} 年</h2><span>{groupedPosts[year].length} 篇文章</span></div><div class="year-posts">{#each groupedPosts[year] as post}<a class="archive-entry" href={getPostUrlBySlug(post.slug)}><time datetime={fullDate(post.data.published)}>{fullDate(post.data.published).slice(5).replace("-", ".")}</time><div class="entry-copy"><h3>{post.data.title}</h3><p>{post.data.tags.slice(0, 3).map((tag) => `#${tag}`).join("  ")}</p></div><span class="entry-category">{post.data.category || "未分类"}</span><span class="entry-arrow" aria-hidden="true">→</span></a>{/each}</div></section>
+				{/each}
+			</div>
+		{/if}
+	</section>
 </div>
 
 <style>
-	.archive-shell {
-		border: 1px solid rgba(255, 255, 255, 0.08);
-	}
-
-	.archive-head {
-		display: grid;
-		gap: 1rem;
-		border-bottom: 1px solid var(--line-divider);
-		padding-bottom: 1rem;
-	}
-
-	.stat-strip {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 0.5rem;
-	}
-
-	.stat-pill {
-		min-width: 0;
-		border-radius: 0.5rem;
-		border: 1px solid rgba(255, 255, 255, 0.16);
-		background: rgba(18, 16, 30, 0.42);
-		padding: 0.55rem 0.7rem;
-		backdrop-filter: blur(12px) saturate(1.08);
-		-webkit-backdrop-filter: blur(12px) saturate(1.08);
-	}
-
-	.stat-pill span {
-		display: block;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 0.72rem;
-		font-weight: 700;
-		color: rgba(255, 255, 255, 0.72);
-	}
-
-	.stat-pill strong {
-		display: block;
-		margin-top: 0.15rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 0.95rem;
-		font-weight: 900;
-		color: rgba(255, 255, 255, 0.96);
-	}
-
-	.active-filter-label {
-		max-width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		border-radius: 999px;
-		background: var(--btn-regular-bg);
-		padding: 0.25rem 0.65rem;
-		font-size: 0.8rem;
-		font-weight: 800;
-		color: var(--primary);
-	}
-
-	.filter-row {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		padding-top: 1rem;
-	}
-
-	.filter-btn {
-		height: 2.25rem;
-		border-radius: 0.5rem;
-		background: var(--btn-regular-bg);
-		padding: 0 0.85rem;
-		font-size: 0.9rem;
-		font-weight: 800;
-		color: var(--btn-content);
-		transition:
-			transform 150ms ease,
-			background 150ms ease,
-			color 150ms ease;
-	}
-
-	.filter-btn:hover {
-		background: var(--btn-regular-bg-hover);
-		color: var(--primary);
-	}
-
-	.filter-btn:active {
-		transform: scale(0.97);
-		background: var(--btn-regular-bg-active);
-	}
-
-	.filter-btn-active,
-	.filter-btn-active:hover {
-		background: var(--primary);
-		color: var(--deep-text);
-	}
-
-	.query-strip {
-		margin-top: 0.75rem;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.75rem;
-		border-radius: 0.5rem;
-		background: var(--btn-plain-bg-hover);
-		padding: 0.55rem 0.7rem;
-		font-size: 0.85rem;
-		font-weight: 700;
-		color: var(--btn-content);
-	}
-
-	.query-strip button {
-		flex-shrink: 0;
-		border-radius: 0.45rem;
-		padding: 0.2rem 0.5rem;
-		color: var(--primary);
-		transition: background 150ms ease;
-	}
-
-	.query-strip button:hover {
-		background: var(--btn-plain-bg-active);
-	}
-
-	.archive-timeline {
-		padding-top: 1rem;
-	}
-
-	.empty-state {
-		margin-top: 1rem;
-		border-top: 1px dashed var(--line-divider);
-		padding: 3rem 1rem;
-		text-align: center;
-	}
-
-	.category-chip {
-		max-width: 5.5rem;
-		flex-shrink: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		border-radius: 0.35rem;
-		background: var(--btn-regular-bg);
-		padding: 0.15rem 0.4rem;
-		font-weight: 800;
-		color: var(--btn-content);
-	}
-
-	@media (min-width: 768px) {
-		.archive-head {
-			grid-template-columns: minmax(0, 1fr) minmax(24rem, 32rem);
-			align-items: end;
-		}
-
-		.stat-strip {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-		}
-	}
+	.archive-page { padding-top: 30px; }
+	.archive-cover { position: relative; min-height: 245px; overflow: hidden; border-radius: 24px; border: 1px solid var(--line); background: var(--surface); }
+	.cover-art { position: absolute; inset: 0; height: 100%; width: 100%; object-fit: cover; object-position: center 35%; }
+	.cover-shade { position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--surface) 95%, transparent), color-mix(in srgb, var(--surface) 20%, transparent) 95%), linear-gradient(0deg, var(--surface), transparent 85%); }
+	.cover-copy { position: relative; padding: 38px; }
+	.page-location { color: var(--muted); font-size: 11px; }
+	.cover-copy h1 { font-size: 38px; font-weight: 700; margin: 23px 0 10px; color: var(--ink); }
+	.cover-copy h1 > span { color: var(--accent); font-size: 25px; vertical-align: middle; }
+	.cover-copy p { color: var(--muted); font-size: 13px; }
+	.archive-stats { display: grid; grid-template-columns: repeat(3, 1fr) 1.3fr; gap: 15px; margin: 22px 0; }
+	.archive-stats > div { display: flex; flex-direction: column; align-items: center; padding: 18px 15px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+	.archive-stats strong { color: var(--accent); font-size: 27px; line-height: 1.3; font-weight: 600; }
+	.archive-stats span { font-size: 11px; color: var(--muted); margin-top: 8px; }
+	.archive-stats .latest-stat strong { font-size: 22px; padding-top: 4px; }
+	.archive-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px; }
+	.archive-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+	.archive-filters { display: flex; flex-wrap: wrap; gap: 7px; }
+	.archive-filters button { padding: 6px 11px; border-radius: 9px; border: 1px solid transparent; font-size: 12px; transition: background .2s, color .2s; color: var(--muted); background: var(--soft); }
+	.archive-filters button:hover { color: var(--accent); }
+	.archive-filters button.active { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+	.archive-filters button span { font-size: 10px; margin-left: 4px; opacity: .7; }
+	.archive-search { display: flex; align-items: center; gap: 7px; flex: 0 0 190px; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 7px 12px; background: var(--paper); color: var(--muted); }
+	.archive-search > span { font-size: 22px; line-height: 1; }
+	.archive-search input { width: 100%; min-width: 0; background: transparent; font-size: 12px; color: var(--ink); border: 0; outline-offset: 5px; }
+	.archive-search input::placeholder { color: var(--muted); }
+	.archive-result-note { display: flex; justify-content: space-between; gap: 20px; color: var(--muted); font-size: 11px; padding: 21px 0 18px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
+	.archive-result-note button { color: var(--accent); }
+	.year-section { padding: 17px 0 15px; }
+	.year-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+	.year-heading::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 10%, transparent); margin: 0 5px; }
+	.year-heading h2 { font-size: 22px; font-weight: 600; }
+	.year-heading > span { font-size: 11px; color: var(--muted); }
+	.year-posts { border-left: 1px solid var(--line); margin-left: 9px; padding-left: 24px; }
+	.archive-entry { position: relative; display: flex; align-items: center; gap: 18px; min-width: 0; padding: 19px 10px; border-bottom: 1px solid var(--line); transition: color .2s, background .2s; border-radius: 9px; }
+	.archive-entry::before { content: ""; position: absolute; left: -28px; top: 28px; width: 7px; height: 7px; border: 2px solid var(--muted); border-radius: 50%; background: var(--surface); }
+	.archive-entry:last-child { border-bottom-color: transparent; }
+	.archive-entry time { color: var(--muted); font-size: 11px; flex: 0 0 42px; }
+	.entry-copy { flex: 1; min-width: 0; }
+	.entry-copy h3 { font-size: 15px; font-weight: 500; line-height: 1.7; transition: color .2s; }
+	.entry-copy p { color: var(--muted); font-size: 10px; margin-top: 6px; overflow-wrap: anywhere; }
+	.entry-category { font-size: 10px; color: var(--accent); flex-shrink: 0; border-radius: 6px; background: var(--soft); padding: 4px 9px; }
+	.entry-arrow { color: var(--muted); font-size: 20px; flex-shrink: 0; transition: transform .2s, color .2s; }
+	.archive-entry:hover { background: color-mix(in srgb, var(--accent) 3%, var(--surface)); }
+	.archive-entry:hover h3, .archive-entry:hover .entry-arrow { color: var(--accent); }
+	.archive-entry:hover::before { border-color: var(--accent); }
+	.archive-entry:hover .entry-arrow { transform: translateX(3px); }
+	.empty-archive { text-align: center; padding: 4rem 1rem; }
+	.empty-archive > span { font-size: 48px; color: var(--accent); }
+	.empty-archive h2 { font-size: 19px; font-weight: 500; margin: 1rem 0; }
+	.empty-archive p { font-size: 13px; color: var(--muted); }
+	.empty-archive button { color: var(--accent); font-size: 12px; margin-top: 1.5rem; padding: 8px 15px; background: var(--soft); border-radius: 9px; }
+	@media (max-width: 900px) { .archive-toolbar { flex-wrap: wrap; } .archive-search { flex-basis: 100%; } .entry-category { display: none; } .archive-stats .latest-stat strong { font-size: 19px; } }
+	@media (max-width: 600px) { .archive-page { padding-top: 20px; } .archive-cover { min-height: 225px; border-radius: 18px; } .cover-copy { padding: 25px; } .cover-copy h1 { font-size: 32px; } .archive-stats { grid-template-columns: 1fr 1fr; gap: 12px; margin: 17px 0; } .archive-stats strong { font-size: 25px; } .archive-stats .latest-stat strong { font-size: 21px; } .archive-panel { padding: 20px 16px; } .archive-filters { gap: 6px; } .archive-filters button { padding: 6px 8px; font-size: 11px; } .year-heading h2 { font-size: 21px; } .year-posts { padding-left: 15px; margin-left: 8px; } .archive-entry { gap: 12px; padding: 17px 0 17px 6px; } .archive-entry::before { left: -19px; } .entry-copy h3 { font-size: 13px; } .archive-entry time { font-size: 10px; flex-basis: 33px; } .entry-arrow { display: none; } }
 </style>
