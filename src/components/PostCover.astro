@@ -1,0 +1,18 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ImageWrapper from "./misc/ImageWrapper.astro";
+import { getDir, url } from "../utils/url-utils";
+import { getPostCoverVisual, getPostVisual } from "../utils/post-visuals";
+interface Props { entry: CollectionEntry<"posts">; class?: string; }
+const { entry, class: className = "" } = Astro.props;
+const kind = getPostVisual(entry.data);
+const coverVisual = getPostCoverVisual(entry.data, entry.slug);
+---
+<div class:list={["post-visual", className]} data-kind={kind} data-variant={entry.data.image ? undefined : coverVisual} data-cover-source={entry.data.image ? "custom" : "generated"} aria-hidden="true">
+  {entry.data.image ? <ImageWrapper src={entry.data.image} basePath={`content/posts/${getDir(entry.id)}`} alt="" class="cover-image" /> : <img src={url(`/covers/${coverVisual}.svg`)} width="640" height="360" alt="" loading="lazy" decoding="async" />}
+</div>
+<style>
+.post-visual { background: #142333; overflow: hidden; height: 100%; }
+.post-visual > img, .post-visual :global(.cover-image) { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
+:global(a:hover) .post-visual > img, :global(a:hover) .post-visual :global(.cover-image) { transform: scale(1.025); }
+</style>

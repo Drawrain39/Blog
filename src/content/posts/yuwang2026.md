@@ -1,5 +1,7 @@
 ---
 title: 第十届御网杯 2026
+featured: true
+featuredOrder: 3
 published: 2026-05-30
 description: Reverse + Pwn方向个人题解
 tags: [CTF, Writeup, Reverse,Pwn]
@@ -8,19 +10,13 @@ series: CTF Writeup
 seriesOrder: 5
 draft: false
 ---
-不予置评
-
-比赛办的很好，下回别办了
-
-难度非常低 但是超大规模py + 连不上的破烂靶机 + 不明意义的大粪题 + 史一样的奖项规则 + wp的奇妙截图模版
-
-谁懂VERY_SECRET_KEY!，我不懂
+比赛挺烂的
 
 # Reverse
 
 ## Rerere
 
-sub\_140001480是核心加密函数 
+sub\_140001480是核心加密函数
 
 ```c
 __int64 __fastcall sub_140001480(__int64 a1, int a2)
@@ -100,7 +96,6 @@ flag{7fa6888d8465734047572ccf7a140b74}
 ```
 
 ## 字节码迷踪
-
 
 https://pylingual\.io/
 
@@ -193,8 +188,6 @@ int __userpurge sub_25720@<eax>(int a1, int a2, unsigned int i_1)
 }
 ```
 
-
-
 chacha20流密码直接反解 提取unk\_F2CB
 
 ```python
@@ -260,12 +253,7 @@ print(flag.decode())
 flag{qjf}
 ```
 
-
-
-
-
 ## CrackMe\_2
-
 
 依旧改后缀解压看so层
 
@@ -344,6 +332,7 @@ b'flag{b527e2621131134ec22251cfbca75e8c9f5ae4f41371871fd55911927f66a1b4}\x02\x02
 ```python
 flag{b527e2621131134ec22251cfbca75e8c9f5ae4f41371871fd55911927f66a1b4}
 ```
+
 # PWN
 
 ## PWN\-Authenticate
@@ -446,7 +435,6 @@ flag{3f48c7a7f6563f3a043f940f6809d599}
 ```
 
 ## PWN\-NoteService
-
 
 开NX不开PIE
 
@@ -598,4 +586,3 @@ io.interactive()
 打穿
 
 `flag{38ad58a6ba4b17899788e836368d2ace}`
-

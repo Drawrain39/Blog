@@ -30,6 +30,9 @@ const posts = (await getSortedPosts()).filter((post) => !post.data.draft).map((p
 		</nav>
 		<div class="header-actions">
 			<Search {posts} client:load />
+			<button class="icon-button music-switch" data-music-toggle type="button" aria-label="打开音乐播放器" aria-controls="drawrain-music-panel" aria-expanded="false" title="听首歌">
+				<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 18V5l11-2v13M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2.5"/><ellipse cx="17" cy="16" rx="3" ry="2.5"/></svg>
+			</button>
 			<span class="action-divider" aria-hidden="true"></span>
 			<button class="icon-button theme-switch" id="journal-theme-switch" type="button" aria-label="切换到深色模式" title="切换到深色模式">
 				<svg class="moon-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20.8 13.1A8.8 8.8 0 0 1 10.9 3.2 8.8 8.8 0 1 0 20.8 13.1Z" /></svg>
@@ -50,25 +53,35 @@ const posts = (await getSortedPosts()).filter((post) => !post.data.draft).map((p
 </header>
 
 <script>
-	const themeButton = document.getElementById("journal-theme-switch");
-	function updateThemeButton() {
-		const label = document.documentElement.classList.contains("dark") ? "切换到浅色模式" : "切换到深色模式";
-		themeButton?.setAttribute("aria-label", label);
-		themeButton?.setAttribute("title", label);
-	}
-	updateThemeButton();
-	themeButton?.addEventListener("click", () => {
-		const dark = document.documentElement.classList.toggle("dark");
-		try { localStorage.setItem("drawrain-theme-v2", dark ? "dark" : "light"); } catch { /* Browsing remains available when storage is disabled. */ }
+	let navigationController: AbortController | undefined;
+	function initializeNavigation() {
+		navigationController?.abort();
+		navigationController = new AbortController();
+		const { signal } = navigationController;
+		const themeButton = document.getElementById("journal-theme-switch");
+		const mobileMenu = document.getElementById("journal-mobile-menu") as HTMLDetailsElement | null;
+		function updateThemeButton() {
+			const label = document.documentElement.classList.contains("dark") ? "切换到浅色模式" : "切换到深色模式";
+			themeButton?.setAttribute("aria-label", label);
+			themeButton?.setAttribute("title", label);
+		}
 		updateThemeButton();
-	});
-	const mobileMenu = document.getElementById("journal-mobile-menu") as HTMLDetailsElement | null;
-	document.addEventListener("click", (event) => {
-		if (event.target instanceof Node && !mobileMenu?.contains(event.target)) mobileMenu?.removeAttribute("open");
-	});
-	document.addEventListener("keydown", (event) => {
-		if (event.key === "Escape") mobileMenu?.removeAttribute("open");
-	});
+		themeButton?.addEventListener("click", () => {
+			const dark = document.documentElement.classList.toggle("dark");
+			try { localStorage.setItem("drawrain-theme-v2", dark ? "dark" : "light"); } catch { /* Storage can be disabled by the browser. */ }
+			updateThemeButton();
+			document.dispatchEvent(new Event("drawrain:theme-change"));
+		}, { signal });
+		document.addEventListener("drawrain:theme-change", updateThemeButton, { signal });
+		document.addEventListener("click", (event) => {
+			if (event.target instanceof Node && !mobileMenu?.contains(event.target)) mobileMenu?.removeAttribute("open");
+		}, { signal });
+		document.addEventListener("keydown", (event) => {
+			if (event.key === "Escape") mobileMenu?.removeAttribute("open");
+		}, { signal });
+	}
+	initializeNavigation();
+	document.addEventListener("astro:page-load", initializeNavigation);
 </script>
 
 <style>
@@ -91,15 +104,14 @@ const posts = (await getSortedPosts()).filter((post) => !post.data.draft).map((p
 	:global(.dark) .moon-icon { display: none; }
 	:global(.dark) .sun-icon { display: block; }
 	.mobile-menu { display: none; }
-	:global(.home-page) .journal-header { position: absolute; inset: 0 0 auto; width: 100%; background: linear-gradient(180deg, #111722d4, #11172230); border-bottom-color: #b4c0d51f; backdrop-filter: none; --paper: #171c27; --surface: #202736; --ink: #e4e9f2; --muted: #bac5d5; --accent: #d5a9bc; --line: #b4c0d51f; --soft: #293244; }
+	:global(.home-page) .journal-header { position: absolute; inset: 0 0 auto; width: 100%; background: linear-gradient(180deg, #111722d4, #11172230); border-bottom-color: #b4c0d51f; backdrop-filter: none; --paper: #171c27; --surface: #202736; --ink: #e4e9f2; --muted: #bac5d5; --accent: #67d7e2; --line: #b4c0d51f; --soft: #293244; }
 	@media (max-width: 1000px) {
 		.desktop-navigation { gap: 4px; margin-right: 12px; }
 		.desktop-navigation a { padding-right: 12px; padding-left: 12px; }
 		.header-inner { gap: 15px; }
 		.brand-caption { font-size: 9px; }
 	}
-	@media (min-width: 651px) and (max-width: 740px) { .brand-caption { display: none; } .header-actions { gap: 4px; } }
-	@media (max-width: 650px) {
+	@media (max-width: 760px) {
 		.header-inner { width: calc(100% - 32px); min-height: 72px; gap: 12px; }
 		.brand-symbol { width: 36px; height: 36px; border-radius: 12px; }
 		.brand-symbol svg { width: 24px; height: 27px; }
@@ -116,5 +128,5 @@ const posts = (await getSortedPosts()).filter((post) => !post.data.draft).map((p
 		.mobile-menu nav a[aria-current="page"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
 		.mobile-menu nav a > span:last-child { color: var(--muted); }
 	}
-	@media (max-width: 420px) { .brand-caption { display: none; } .wordmark { gap: 9px; } }
+	@media (max-width: 420px) { .brand-caption, .brand-symbol { display: none; } .wordmark { gap: 9px; } }
 </style>

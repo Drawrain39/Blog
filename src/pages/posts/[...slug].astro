@@ -118,6 +118,11 @@ const jsonLd = {
 </MainGridLayout>
 
 <script>
+	let articleController: AbortController | undefined;
+	function initializeArticle() {
+	articleController?.abort();
+	articleController = new AbortController();
+	const { signal } = articleController;
 	const progress = document.getElementById("reading-progress-fill");
 	const article = document.getElementById("post-container");
 	const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>("[data-article-heading]")];
@@ -141,12 +146,12 @@ const jsonLd = {
 	}
 	window.addEventListener("scroll", () => {
 		if (!scrollQueued) { scrollQueued = true; requestAnimationFrame(updateReadingPosition); }
-	}, { passive: true });
-	window.addEventListener("resize", updateReadingPosition);
+	}, { passive: true, signal });
+	window.addEventListener("resize", updateReadingPosition, { signal });
 	updateReadingPosition();
 
 	document.querySelectorAll<HTMLAnchorElement>(".article-mobile-contents a").forEach((link) => {
-		link.addEventListener("click", () => { document.querySelector<HTMLDetailsElement>(".article-mobile-contents")?.removeAttribute("open"); });
+		link.addEventListener("click", () => { document.querySelector<HTMLDetailsElement>(".article-mobile-contents")?.removeAttribute("open"); }, { signal });
 	});
 	document.getElementById("copy-article-link")?.addEventListener("click", async (event) => {
 		const button = event.currentTarget as HTMLButtonElement;
@@ -160,5 +165,8 @@ const jsonLd = {
 			button.textContent = "请复制浏览器地址";
 			if (status) status.textContent = "请从浏览器地址栏复制文章链接";
 		}
-	});
+	}, { signal });
+	}
+	initializeArticle();
+	document.addEventListener("astro:page-load", initializeArticle);
 </script>

@@ -11,10 +11,11 @@ const className = Astro.props.class;
     <!--<div class="prose dark:prose-invert max-w-none custom-md">-->
     <!--<div class="max-w-none custom-md">-->
     <slot/>
+    <span class="sr-only" role="status" aria-live="polite" data-code-copy-status data-pagefind-ignore></span>
 </div>
 
 <script>
-document.addEventListener("click", function (e: MouseEvent) {
+document.addEventListener("click", async function (e: MouseEvent) {
     const target = e.target instanceof Element ? e.target.closest<HTMLElement>(".copy-btn") : null;
     if (target) {
         const preEle = target.closest("pre");
@@ -23,22 +24,27 @@ document.addEventListener("click", function (e: MouseEvent) {
             .map(el => el.textContent)
             .map(t => t === "\n" ? "" : t)
             .join("\n");
-        navigator.clipboard.writeText(code).catch(() => {
-            target.classList.remove("success");
-        });
-
         const timeoutId = target.getAttribute("data-timeout-id");
         if (timeoutId) {
             clearTimeout(parseInt(timeoutId));
         }
 
-        target.classList.add("success");
-
-        // 设置新的timeout并保存ID到按钮的自定义属性中
+        const status = target.closest(".custom-md")?.querySelector("[data-code-copy-status]");
+        try {
+            await navigator.clipboard.writeText(code);
+            target.classList.add("success");
+            target.setAttribute("aria-label", "代码已复制");
+            if (status) status.textContent = "代码已复制到剪贴板";
+        } catch {
+            target.classList.remove("success");
+            target.setAttribute("aria-label", "复制失败，请手动选择代码");
+            if (status) status.textContent = "复制失败，请手动选择代码";
+        }
         const newTimeoutId = setTimeout(() => {
             target.classList.remove("success");
-        }, 1000);
-
+            target.setAttribute("aria-label", "复制代码");
+            if (status) status.textContent = "";
+        }, 2000);
         target.setAttribute("data-timeout-id", newTimeoutId.toString());
     }
 });

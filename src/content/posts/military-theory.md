@@ -1,5 +1,6 @@
 ---
 title: 军事理论期末复习题库
+hideInHome: true
 published: 2026-06-22
 description: 整理军事理论第一至五章知识点与题库，覆盖选择、填空、判断、简答和论述题
 tags: [军事理论, 期末复习]

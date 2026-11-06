@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#91a4ec" stroke-opacity=".09"/></pattern></defs>
+  <rect width="640" height="360" fill="#1a2341"/><rect width="640" height="360" fill="url(#grid)"/>
+  <g font-family="ui-monospace,Consolas,monospace">
+    <path d="M142 181H254m132 0h112M320 112V68m0 226v-44" stroke="#7c99dc" stroke-width="3" stroke-dasharray="8 8"/>
+    <rect x="245" y="112" width="150" height="140" rx="24" fill="#2d3c68" stroke="#a5b7f1"/>
+    <path d="m290 173 12 12-12 12m28 0h31" stroke="#d0daff" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="137" cy="181" r="30" fill="#273b5f" stroke="#7dbbd9"/><circle cx="501" cy="181" r="30" fill="#273b5f" stroke="#7dbbd9"/>
+    <path d="M125 181h24m-12-12v24m355-24 9 9-9 9" stroke="#9bdae8" stroke-width="3"/>
+    <circle cx="320" cy="60" r="8" fill="#d5b4e6"/><circle cx="320" cy="301" r="8" fill="#d5b4e6"/>
+    <text x="28" y="33" font-size="11" letter-spacing="2" fill="#b4c6ff">AI / AGENT</text>
+    <text x="518" y="337" font-size="10" fill="#8d9dc2">DRAWRAIN</text>
+  </g>
+</svg>

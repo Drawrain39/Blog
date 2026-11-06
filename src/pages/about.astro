@@ -1,84 +1,80 @@
 ---
-import { getEntry, render } from "astro:content";
-import Markdown from "@components/misc/Markdown.astro";
 import ImageWrapper from "@components/misc/ImageWrapper.astro";
+import CopyButton from "@components/CopyButton.astro";
+import { Icon } from "astro-icon/components";
+import { getCollection } from "astro:content";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { profileConfig } from "../config";
-
-const aboutPost = await getEntry("spec", "about");
-if (!aboutPost) throw new Error("About page content not found");
-const { Content } = await render(aboutPost);
+import { url } from "../utils/url-utils";
+const milestones=[{date:"2025.09",title:"搭起自己的博客",text:"从 Astro 和 Markdown 开始，记录学习与折腾。",slug:"blog",icon:"fa6-solid:rocket"},{date:"2025.12",title:"第一次打国赛",text:"CISCN 长城杯 2026，留下第一份国赛记录。",slug:"ccb2025",icon:"fa6-solid:flag-checkered"},{date:"2026.04",title:"继续折腾 Agent",text:"整理 CC-Switch、Codex 和 Claude Code 的使用笔记。",slug:"learncodex",icon:"fa6-solid:robot"},{date:"2026.05",title:"记录 DEFCON CTF",text:"把比赛中 Reverse 方向的分析过程写下来。",slug:"defconctf2026",icon:"fa6-solid:code"}];
+const availablePostSlugs = new Set((await getCollection("posts")).filter(post => !post.data.draft).map(post => post.slug));
+const skills = [
+  { name: "Python", icon: "python", detail: "脚本与日常工具" },
+  { name: "C++", icon: "cpp", detail: "程序设计与数据结构" },
+  { name: "Rust", icon: "rust", detail: "系统编程" },
+  { name: "Linux", icon: "linux", detail: "开发环境" },
+  { name: "Docker", icon: "docker", detail: "容器部署" },
+  { name: "VS Code", icon: "vscode", detail: "代码编辑" },
+  { name: "Vim", icon: "vim", detail: "终端编辑" },
+];
 ---
-
-<MainGridLayout title="关于我" description="Drawrain 的个人介绍、联系方式，以及一些平时的兴趣。">
-	<div class="about-page">
-		<header class="about-cover">
-			<ImageWrapper src="assets/images/re1.jpg" alt="水面上的少女与小船" class="cover-art" />
-			<div class="cover-shade"></div>
-			<div class="cover-copy"><span class="page-location">首页 / 关于</span><h1>关于我</h1><p>Re / CTF / Agent(ing)</p></div>
-			<div class="cover-profile"><ImageWrapper src={profileConfig.avatar || "assets/images/avata.jpg"} alt="Drawrain 的头像" class="profile-avatar" /><span>Drawrain</span></div>
-		</header>
-		<div class="about-columns">
-			<section class="about-card bio-card"><Markdown class="about-markdown"><Content /></Markdown></section>
-			<aside class="about-sidebar">
-				<section class="about-card social-card"><h2><span aria-hidden="true">✧</span> 也可以在这里找到我</h2><a href="https://github.com/Drawrain39" target="_blank" rel="noopener noreferrer"><span class="social-symbol">&lt;/&gt;</span><div><strong>GitHub</strong><small>@Drawrain39</small></div><span>↗</span></a><a href="https://b23.tv/JE7bvKR" target="_blank" rel="noopener noreferrer"><span class="social-symbol">▣</span><div><strong>哔哩哔哩</strong><small>Drawrain 的 B 站主页</small></div><span>↗</span></a><a href="https://music.163.com/#/user/home?id=1704265550" target="_blank" rel="noopener noreferrer"><span class="social-symbol">♫</span><div><strong>网易云音乐</strong><small>Drawrain 的听歌主页</small></div><span>↗</span></a><a href="mailto:858617595@qq.com"><span class="social-symbol">✉</span><div><strong>联系邮箱</strong><small>858617595@qq.com</small></div><span>↗</span></a></section>
-				<section class="about-card music-card"><h2><span aria-hidden="true">♫</span> 在听的歌</h2><div class="song-info"><div class="record" aria-hidden="true"><span></span></div><div><h3>ヒッチコック</h3><p>ヨルシカ · Yorushika</p><a href="https://music.163.com/#/song?id=557581315" target="_blank" rel="noopener noreferrer">去网易云听 ↗</a></div></div><button id="load-about-player" type="button" class="load-player"><span aria-hidden="true">▶</span> 加载播放器</button><iframe id="about-music-player" title="网易云音乐：ヒッチコック" data-src="https://music.163.com/outchain/player?type=2&id=557581315&auto=0&height=66" class="music-player" hidden></iframe></section>
-			</aside>
-		</div>
-	</div>
+<MainGridLayout title="关于我" description="Drawrain 的个人介绍、技术栈、写作记录和联系方式。">
+<div class="about-page">
+<header class="about-cover"><ImageWrapper src="assets/images/re1.jpg" alt="水面上的少女与小船" class="cover-art"/><div class="cover-shade"></div><div class="cover-copy"><h1>关于我</h1><p>Re / CTF / Agent(ing)</p></div><a class="cover-profile" href="https://github.com/Drawrain39" target="_blank" rel="noopener noreferrer"><ImageWrapper src={profileConfig.avatar||"assets/images/avata.jpg"} alt="Drawrain 的头像" class="profile-avatar"/><strong>Drawrain</strong></a></header>
+<div class="about-columns"><div class="about-main">
+<section class="about-card bio-card" aria-label="个人简介"><p>计科本科在读，Re / CTF / Agent(ing)。</p><p>平时主要写比赛的 WP 和学习笔记，偶尔也会写点别的。想到什么写什么，不固定。</p><p>成分复杂，等待挖掘…</p><blockquote>即使迷茫，也要前行。</blockquote></section>
+<section class="about-card skill-section" aria-labelledby="tech-stack-title">
+  <h2 id="tech-stack-title">技术栈</h2>
+  <div class="tech-stack-icons">{skills.map(skill => <skill-tooltip class="tech-skill" tabindex="0" role="img" aria-label={skill.name} aria-describedby={`skill-tip-${skill.icon}`}><img src={url(`/icons/skills/stack-${skill.icon}.svg`)} width="48" height="48" alt="" loading="lazy" /><span class="skill-tooltip" id={`skill-tip-${skill.icon}`} role="tooltip">{skill.name} · {skill.detail}</span></skill-tooltip>)}</div>
+</section>
+<section class="about-card timeline-section"><div class="section-heading"><h2>走过的一些节点</h2><span>来自已有的文章记录</span></div><ol class="growth-timeline">{milestones.map(item=><li><span class="timeline-node" aria-hidden="true"><Icon name={item.icon} width={13} height={13}/></span><time>{item.date}</time><div>{availablePostSlugs.has(item.slug) ? <a href={url(`/posts/${item.slug}/`)}>{item.title}<span aria-hidden="true"> ↗</span></a> : <span class="milestone-title">{item.title}</span>}<p>{item.text}</p></div></li>)}</ol></section>
+</div><aside class="about-sidebar">
+<section class="about-card contact-card"><h2>找到我</h2><div class="contact-copy"><span class="contact-icon qq"><Icon name="fa6-brands:qq" width={22} height={22}/></span><div><strong>QQ</strong><span>858617595</span></div><CopyButton text="858617595" label="复制 QQ"/></div><div class="contact-email"><div><Icon name="fa6-regular:envelope" width={18} height={18}/><a href="mailto:858617595@qq.com">858617595@qq.com</a></div><CopyButton text="858617595@qq.com" label="复制邮箱"/></div><nav class="social-links" aria-label="我的其他主页"><a href="https://github.com/Drawrain39" target="_blank" rel="noopener noreferrer"><Icon name="fa6-brands:github" width={19} height={19}/><span>GitHub</span><span>↗</span></a><a href="https://music.163.com/#/user/home?id=1704265550" target="_blank" rel="noopener noreferrer"><Icon name="fa6-solid:music" width={18} height={18}/><span>网易云音乐</span><span>↗</span></a></nav></section>
+<section class="about-card music-card" aria-label="音乐播放器"><div class="song-info"><div class="record" aria-hidden="true">♪</div><div><h3>ヒッチコック</h3><p>ヨルシカ · Yorushika</p></div></div><button class="open-music" data-music-toggle type="button"><Icon name="fa6-solid:play" width={12} height={12}/> 打开播放器</button><a class="external-song" href="https://music.163.com/#/song?id=557581315" target="_blank" rel="noopener noreferrer">去网易云收听 ↗</a></section>
+</aside></div></div>
 </MainGridLayout>
-
 <script>
-	const playerButton = document.getElementById("load-about-player");
-	const musicPlayer = document.getElementById("about-music-player") as HTMLIFrameElement | null;
-	playerButton?.addEventListener("click", () => {
-		if (!musicPlayer || !musicPlayer.dataset.src) return;
-		musicPlayer.src = musicPlayer.dataset.src;
-		musicPlayer.hidden = false;
-		playerButton.hidden = true;
-	});
+class SkillTooltip extends HTMLElement {
+  connectedCallback() {
+    const position = () => {
+      const tooltip = this.querySelector<HTMLElement>("[role=tooltip]");
+      if (!tooltip) return;
+      this.style.setProperty("--tooltip-shift", "0px");
+      const bounds = tooltip.getBoundingClientRect();
+      const shift = bounds.left < 12 ? 12 - bounds.left : Math.min(0, window.innerWidth - 12 - bounds.right);
+      this.style.setProperty("--tooltip-shift", `${shift}px`);
+    };
+    this.onpointerenter = position;
+    this.onfocus = position;
+  }
+  disconnectedCallback() {
+    this.onpointerenter = null;
+    this.onfocus = null;
+  }
+}
+if (!customElements.get("skill-tooltip")) customElements.define("skill-tooltip", SkillTooltip);
 </script>
-
 <style>
-	.about-page { padding-top: 30px; }
-	.about-cover { position: relative; min-height: 245px; overflow: hidden; border-radius: 24px; border: 1px solid var(--line); background: var(--surface); }
-	.about-cover :global(.cover-art) { position: absolute; inset: 0; width: 100%; height: 100%; }
-	.about-cover :global(.cover-art img) { object-position: center 58%; }
-	.cover-shade { position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--surface) 95%, transparent), color-mix(in srgb, var(--surface) 20%, transparent) 75%), linear-gradient(0deg, var(--surface), transparent 80%); }
-	.cover-copy { position: relative; padding: 38px; }
-	.page-location { color: var(--muted); font-size: 11px; }
-	.cover-copy h1 { font-size: 38px; font-weight: 700; margin: 23px 0 7px; color: var(--ink); }
-	.cover-copy p { font-size: 13px; color: var(--accent); }
-	.cover-profile { position: absolute; right: 38px; bottom: 28px; display: flex; align-items: center; gap: 13px; font-size: 18px; font-weight: 600; }
-	.cover-profile :global(.profile-avatar) { width: 68px; height: 68px; border: 3px solid color-mix(in srgb, var(--ink) 65%, transparent); border-radius: 50%; }
-	.about-columns { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(260px, 1fr); gap: 24px; margin-top: 24px; align-items: start; }
-	.about-card { border: 1px solid var(--line); border-radius: 20px; background: var(--surface); padding: 27px; }
-	.bio-card { padding: 32px; }
-	.bio-card :global(.custom-md) { font-size: 14px; line-height: 1.95; }
-	.bio-card :global(.custom-md h1) { margin-top: 0; font-size: 23px; font-weight: 600; }
-	.bio-card :global(.custom-md h3) { font-size: 18px; }
-	.bio-card :global(.custom-md blockquote) { border-radius: 12px; margin-bottom: 0; }
-	.about-sidebar { display: grid; gap: 22px; min-width: 0; }
-	.about-card h2 { margin: 0 0 20px; font-size: 15px; font-weight: 600; }
-	.about-card h2 > span { color: var(--accent); margin-right: 5px; }
-	.social-card > a { display: flex; align-items: center; gap: 11px; padding: 13px 0; color: var(--ink); border-bottom: 1px solid var(--line); }
-	.social-card > a:last-child { padding-bottom: 0; border-bottom: 0; }
-	.social-card > a > div { flex: 1; min-width: 0; }
-	.social-symbol { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 12px; background: var(--soft); color: var(--accent); font-size: 18px; }
-	.social-card strong { display: block; font-size: 13px; font-weight: 500; }
-	.social-card small { display: block; margin-top: 3px; font-size: 10px; color: var(--muted); overflow-wrap: anywhere; }
-	.social-card > a > span:last-child { color: var(--muted); font-size: 18px; }
-	.social-card > a:hover strong, .social-card > a:hover > span:last-child { color: var(--accent); }
-	.song-info { display: flex; gap: 16px; align-items: center; }
-	.record { display: grid; place-items: center; width: 76px; height: 76px; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 50%; background: repeating-radial-gradient(circle, var(--paper) 0px, var(--paper) 2px, var(--soft) 3px, var(--paper) 4px); }
-	.record span { width: 26px; height: 26px; border: 10px solid var(--accent); border-radius: 50%; background: var(--paper); }
-	.song-info h3 { font-size: 17px; font-weight: 500; margin: 0 0 5px; }
-	.song-info p { font-size: 10px; color: var(--muted); }
-	.song-info a { display: inline-block; margin-top: 10px; font-size: 11px; color: var(--accent); }
-	.load-player { width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--soft); padding: 12px; margin-top: 22px; font-size: 12px; color: var(--ink); }
-	.load-player span { color: var(--accent); margin-right: 7px; }
-	.load-player:hover { border-color: var(--accent); }
-	.music-player { width: 100%; height: 86px; border: 0; margin-top: 18px; border-radius: 10px; }
-	@media (max-width: 850px) { .about-columns { grid-template-columns: 1fr; } .about-sidebar { grid-template-columns: 1fr 1fr; align-items: start; } .about-card { padding: 23px; } }
-	@media (max-width: 600px) { .about-page { padding-top: 20px; } .about-cover { min-height: 235px; border-radius: 18px; } .cover-copy { padding: 25px; } .cover-copy h1 { font-size: 32px; margin-top: 22px; } .cover-profile { right: 23px; bottom: 22px; font-size: 13px; } .cover-profile > span { display: none; } .cover-profile :global(.profile-avatar) { width: 48px; height: 48px; } .about-sidebar { grid-template-columns: 1fr; } .about-columns { gap: 18px; margin-top: 18px; } .bio-card { padding: 24px; } }
+.about-page { padding-top:30px; } .about-cover { position:relative;min-height:245px;overflow:hidden;border-radius:24px;border:1px solid var(--line);background:var(--surface); }
+.about-cover :global(.cover-art) { position:absolute;inset:0;height:100%; } .about-cover :global(.cover-art img) { object-position:center 43%; }
+.cover-shade { position:absolute;inset:0;background:linear-gradient(90deg,color-mix(in srgb,var(--surface) 95%,transparent),color-mix(in srgb,var(--surface) 15%,transparent) 95%),linear-gradient(0deg,var(--surface),transparent 90%); }
+.cover-copy { position:relative;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-height:inherit;padding:38px; } h1 { font-size:38px;font-weight:700;margin:0 0 10px; } .cover-copy p { color:var(--accent);font-size:13px; }
+.cover-profile { position:absolute;right:38px;bottom:28px;display:flex;align-items:center;gap:14px; } .cover-profile :global(.profile-avatar) { width:66px;height:66px;border-radius:50%;border:3px solid #d6e3eeaa; } .cover-profile strong { font-size:17px; }
+.about-columns { display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;margin-top:24px; } .about-main,.about-sidebar { min-width:0; } .about-card { padding:28px;background:var(--surface);border:1px solid var(--line);border-radius:20px;margin-bottom:24px; } h2 { font-size:20px;font-weight:650;margin-bottom:18px; } .bio-card p { font-size:15px;line-height:1.95;color:var(--muted);margin:15px 0; } blockquote { border-left:2px solid var(--accent);padding:10px 16px;background:var(--soft);border-radius:0 8px 8px 0;margin-top:22px;color:var(--ink);font-size:15px; }
+.bio-card p:first-child { margin-top:0; }
+.section-heading { display:flex;justify-content:space-between;align-items:baseline;gap:12px; } .section-heading>span { font-size:11px;color:var(--muted); }
+.tech-stack-icons { display:flex;flex-wrap:wrap;align-items:center;gap:14px;max-width:100%;padding:4px 2px; }
+.tech-skill { position:relative;display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid var(--line);border-radius:17px;background:var(--codeblock-bg);outline-offset:5px;transition:background .18s ease,border-color .18s ease; }
+.tech-skill img { display:block;width:48px;height:48px;max-width:none;transition:transform .18s ease; }
+.tech-skill:hover,.tech-skill:focus-visible { border-color:color-mix(in srgb,var(--accent) 60%,var(--line));background:color-mix(in srgb,var(--codeblock-bg) 88%,var(--accent)); }
+.tech-skill:hover img,.tech-skill:focus-visible img { transform:scale(1.1); }
+.skill-tooltip { position:absolute;z-index:5;bottom:calc(100% + 13px);left:50%;transform:translateX(calc(-50% + var(--tooltip-shift,0px)));width:max-content;max-width:calc(100vw - 24px);padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--soft);color:var(--ink);box-shadow:var(--panel-shadow);font-size:11px;line-height:1.5;white-space:normal;text-align:center;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .15s ease; }
+.tech-skill:hover .skill-tooltip,.tech-skill:focus .skill-tooltip { opacity:1;visibility:visible; }
+.growth-timeline { list-style:none;padding:0;margin:12px 0 0 13px; } .growth-timeline li { position:relative;display:grid;grid-template-columns:75px minmax(0,1fr);gap:20px;padding:0 0 27px 25px;border-left:2px dashed color-mix(in srgb,var(--muted) 28%,transparent); } .growth-timeline li:last-child { padding-bottom:0; } .timeline-node { position:absolute;left:-15px;top:-2px;display:grid;place-items:center;width:28px;height:28px;border-radius:10px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));background:color-mix(in srgb,var(--accent) 7%,var(--surface));color:var(--accent);box-shadow:0 0 0 3px var(--surface); } time { font-size:12px;color:var(--muted);padding-top:2px; } .growth-timeline a,.milestone-title { font-size:15px;font-weight:550; } .growth-timeline a:hover { color:var(--accent); } .growth-timeline p { color:var(--muted);font-size:13px;margin-top:7px;line-height:1.8; }
+.contact-card h2 { margin-bottom:22px; } .contact-copy { display:flex;align-items:center;gap:10px; } .contact-icon { display:grid;place-items:center;flex-shrink:0;width:38px;height:38px;border-radius:10px;background:var(--soft);color:var(--accent); } .contact-copy>div { flex:1;min-width:0; } .contact-copy strong,.contact-copy span { display:block; } .contact-copy strong { font-size:13px; } .contact-copy div>span { color:var(--muted);font-size:12px; } .contact-copy :global(copy-button button) { padding:8px 9px; }
+.contact-email { padding:20px 0;border-bottom:1px solid var(--line); } .contact-email>div { display:flex;gap:8px;align-items:center;font-size:12px;margin-bottom:12px; } .contact-email a { overflow-wrap:anywhere; } .social-links { padding-top:10px; } .social-links a { display:flex;align-items:center;gap:11px;padding:12px 0;font-size:13px;color:var(--muted); } .social-links a>span:last-child { margin-left:auto; } .social-links a:hover { color:var(--accent); }
+.song-info { display:flex;align-items:center;gap:15px; } .record { display:grid;place-items:center;width:51px;height:51px;flex-shrink:0;border-radius:50%;background:repeating-radial-gradient(circle,#222c3c 0 3px,#354259 4px 5px);font-size:22px;color:var(--rose); } .song-info h3 { font-size:16px;font-weight:550; } .song-info p { color:var(--muted);font-size:11px;margin-top:6px; } .open-music { display:flex;justify-content:center;align-items:center;gap:9px;width:100%;padding:11px;margin-top:20px;color:var(--accent);background:var(--soft);border:1px solid var(--line);border-radius:10px;font-size:13px; } .external-song { display:block;color:var(--muted);font-size:11px;text-align:center;margin-top:14px; }
+@media(max-width:1000px) { .about-columns { grid-template-columns:minmax(0,1fr) 290px;gap:18px; } .about-card { padding:23px; } }
+@media(max-width:760px) { .about-page { padding-top:20px; } .about-columns { grid-template-columns:1fr; } .about-cover { min-height:225px; } .cover-copy { padding:25px; } h1 { font-size:32px; } .cover-profile { right:24px;bottom:20px; } .cover-profile :global(.profile-avatar) { width:52px;height:52px; } .about-sidebar { display:grid;grid-template-columns:1fr 1fr;gap:18px; } .about-card { padding:22px; } .section-heading { display:block; } .section-heading>span { display:block;margin:-10px 0 18px; } }
+@media(max-width:540px) { .about-sidebar { display:block; } .cover-profile strong { display:none; } .growth-timeline li { grid-template-columns:60px minmax(0,1fr);gap:14px; } }
 </style>

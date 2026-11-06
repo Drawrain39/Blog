@@ -80,3 +80,10 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	// Please select a dark theme, as this blog theme currently only supports dark background color
 	theme: "github-dark",
 };
+
+export const musicConfig = {
+	title: "ヒッチコック",
+	artist: "ヨルシカ",
+	externalUrl: "https://music.163.com/#/song?id=557581315",
+	source: import.meta.env.PUBLIC_MUSIC_URL || "https://music.163.com/song/media/outer/url?id=557581315.mp3",
+};

@@ -1,5 +1,7 @@
 ---
 title: DEFCON CTF 2026
+featured: true
+featuredOrder: 1
 published: 2026-05-24
 description: Reverse方向个人题解
 tags: [CTF, Writeup, Reverse]
@@ -9,8 +11,6 @@ seriesOrder: 4
 draft: false
 ---
 顶级国际大比赛，难度很高，尽力了，别的方向题没做
-
-谁懂BBbird
 
 # Reverse
 
@@ -31,8 +31,6 @@ draft: false
 事已至此，那就把game\.z64丢进IDA看
 
 关键逻辑就在CODE段中，用AI辅助阅读ELF LOAD 数据即可
-
-
 
 程序映射到RDRAM
 
@@ -91,8 +89,6 @@ index = ((x * 16 + y) * 32 + z)
 
 方块id有效范围为1\-7
 
-
-
 隐藏数据的约束含义为
 
 ```python
@@ -109,8 +105,6 @@ if value != seq:
 grid\[a\]必须放方块，当前seq不等于grid\[a\]则对应的grid\[b\]也必须放方块，并且grid\[b\]的方块类型不能等于grid\[a\]，变成7色图着色求解
 
 整体分布为 10 \+ 10 \+ 412 \+ 204 \+108 \+10 \+179 = 933 所以要搭建933方块，在游戏里肯定搓不到
-
-
 
 求出来grid后按约束复算一下hash seed
 
@@ -164,9 +158,6 @@ fd364d4a685433acb6b55184392740db84c9c544d43f7e56ba58357d4fa4c11f
 打穿了
 
 **`bbb{r5p_gr4ph_c0l0r_0n_n64}`**
-
-
-
 
 ## My Favorite Instructions
 
@@ -353,7 +344,6 @@ ATDcm6d4
 hPe25PNGBdT9MK0}
 ```
 
-
 ```text
 bbb{kQMM2FhlSBO4fEYFho5azaRrlTdxPsRx6ue7npnjATDcm6d4hPe25PNGBdT9MK0}
 ```
@@ -362,25 +352,17 @@ bbb{kQMM2FhlSBO4fEYFho5azaRrlTdxPsRx6ue7npnjATDcm6d4hPe25PNGBdT9MK0}
 
 **bbb\{kQMM2FhlSBO4fEYFho5azaRrlTdxPsRx6ue7npnjATDcm6d4hPe25PNGBdT9MK0\}**
 
-
-
 ## Pixels and Nicotine
 
-> Vapes are cheap\. Easy to buy, easy to mod, easy 
-> 
-> to leave somewhere\. Nicotine optional\. Reverse 
-> 
+> Vapes are cheap\. Easy to buy, easy to mod, easy
+>
+> to leave somewhere\. Nicotine optional\. Reverse
+>
 > engineering required :\)
-> 
-> 
-> 
+>
 > Note: You will need to wrap the flag with bbb\{\.\.\.\} before submitting it\.
-> 
-> 
 
 \[pixels\-n\-nicotine\-8fe8fd754ee1fbc3577adeab4d95a844\.tar\.gz\]
-
-
 
 附件给了个bin文件，Pixels，题目与像素有关系
 
@@ -399,8 +381,6 @@ Vapes，电子烟固件逆向？  ~~🔇I Got Smoke🚭~~
 提取，构建新文件 新文件头4E 45 53 1A 01 01 00 00 00 00 00 00 00 00 00 00\+复制过来的0x6000字节
 
 模拟\.nes，用Mesen打开恢复即可成功，我们得到了一份nes游戏的ROM（被修改过的）记一下，作为hidden\.nes
-
-
 
 同样的，base = 0x60000 length = 0x6000再扣一个\.nes（未修改过的）未改变的，记一下original\.nes
 
@@ -423,7 +403,7 @@ CA36: 4C CA E8     JMP $E8CA
 D090: 4C C2 E7     JMP $E7C2
 ```
 
-用Mesen看hidden\.nes 
+用Mesen看hidden\.nes
 
 跳E8CA看
 
@@ -480,8 +460,6 @@ perm = 04 09 01 07 03 08 05 02 06
 ```
 
 断E8CA E7C2调试看RAM $00CD值为AA
-
-
 
 ```text
 DA3B: A5 17        LDA $17
@@ -570,8 +548,6 @@ CD = AA
 ![Image](/images/posts/defconctf2026/07-hidden-text.png)
 
 ![Image](/images/posts/defconctf2026/08-tile-glyph-map.png)
-
-
 
 tile映射打表
 

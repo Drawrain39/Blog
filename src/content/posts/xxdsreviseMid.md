@@ -1,5 +1,6 @@
 ---
 title: 线性代数期中复习
+hideInHome: true
 published: 2026-05-31
 description: 线性代数期中复习（前四章）
 tags: [线性代数, notes]

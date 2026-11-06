@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#c6a568" stroke-opacity=".09"/></pattern></defs>
+  <rect width="640" height="360" fill="#302519"/><rect width="640" height="360" fill="url(#grid)"/>
+  <g font-family="ui-monospace,Consolas,monospace">
+    <path d="M118 80h404v216H118z" fill="#403323" stroke="#ac8e58"/>
+    <path d="M140 108h360m-360 28h360m-360 28h360m-360 28h360m-360 28h360m-360 28h360" stroke="#ad956b" stroke-opacity=".22"/>
+    <text x="165" y="174" fill="#edcf8f" font-size="46" font-style="italic">Ax = b</text>
+    <text x="330" y="243" fill="#ddcfb5" font-size="35">Σ xᵢ²</text>
+    <path d="M166 218h102m-51-36v72" stroke="#c3a66b" stroke-width="2"/>
+    <text x="28" y="33" font-size="11" letter-spacing="2" fill="#d9b974">MATH / NOTES</text>
+    <text x="518" y="337" font-size="10" fill="#ab9470">DRAWRAIN</text>
+  </g>
+</svg>

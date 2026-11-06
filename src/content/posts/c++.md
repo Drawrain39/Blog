@@ -1,5 +1,6 @@
 ---
 title: 高级语言程序设计C++基础
+hideInHome: true
 published: 2025-09-29
 description: C++学习记录
 tags: [C++]

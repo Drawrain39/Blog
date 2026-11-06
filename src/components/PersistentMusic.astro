@@ -1,0 +1,162 @@
+---
+import { musicConfig } from "../config";
+---
+
+<drawrain-music id="drawrain-music" transition:persist="drawrain-music" data-pagefind-ignore>
+	<audio preload="none" src={musicConfig.source} aria-label={`${musicConfig.title} · ${musicConfig.artist}`}></audio>
+	<button class="music-launcher" data-music-toggle type="button" aria-label="打开音乐播放器" aria-expanded="false" aria-controls="drawrain-music-panel" title="听首歌">
+		<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 18V5l11-2v13M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2.5"/><ellipse cx="17" cy="16" rx="3" ry="2.5"/></svg>
+		<span class="playing-dot" aria-hidden="true"></span>
+	</button>
+	<section id="drawrain-music-panel" class="music-panel" aria-label="音乐播放器" hidden>
+		<div class="music-heading"><span>听首歌</span><button class="small-button" data-minimize type="button" aria-label="收起播放器（音乐继续播放）" title="收起"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 10h12"/></svg></button></div>
+		<div class="song-row"><div class="song-record" aria-hidden="true"><span></span></div><div class="song-copy"><strong>{musicConfig.title}</strong><span>{musicConfig.artist}</span></div><button class="play-button" data-play-toggle type="button" aria-label={`播放 ${musicConfig.title}`}><svg class="play-symbol" width="18" height="18" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="m6 3 11 7L6 17V3Z"/></svg><svg class="pause-symbol" width="18" height="18" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 3h3v14H5zm7 0h3v14h-3z"/></svg></button></div>
+		<label class="sr-only" for="music-progress">播放进度</label><input id="music-progress" class="progress-range" data-progress type="range" min="0" max="1000" step="1" value="0" disabled />
+		<div class="time-row"><span><span data-current-time>0:00</span> <span class="time-divider">/</span> <span data-duration>--:--</span></span><div class="volume-control"><button class="small-button" data-mute type="button" aria-label="静音" title="静音"><svg class="volume-symbol" width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 4 5 7H2v6h3l4 3V4Zm4 3a4 4 0 0 1 0 6m2-8a7 7 0 0 1 0 10"/></svg><svg class="muted-symbol" width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 4 5 7H2v6h3l4 3V4Zm4 3 5 6m0-6-5 6"/></svg></button><label class="sr-only" for="music-volume">音量</label><input id="music-volume" data-volume type="range" min="0" max="100" value="45" step="1" /></div></div>
+		<div class="music-bottom"><span data-status role="status">点击播放</span><a href={musicConfig.externalUrl} target="_blank" rel="noopener noreferrer">网易云打开 <span aria-hidden="true">↗</span></a></div>
+	</section>
+</drawrain-music>
+
+<script>
+	class PersistentMusic extends HTMLElement {
+		private initialized = false;
+		private expanded = false;
+		private audio!: HTMLAudioElement;
+		private panel!: HTMLElement;
+		private launcher!: HTMLButtonElement;
+		private progress!: HTMLInputElement;
+		private volume!: HTMLInputElement;
+		private status!: HTMLElement;
+
+		connectedCallback() {
+			if (this.initialized) { this.syncControls(); return; }
+			this.initialized = true;
+			this.audio = this.querySelector("audio")!;
+			this.panel = this.querySelector(".music-panel")!;
+			this.launcher = this.querySelector(".music-launcher")!;
+			this.progress = this.querySelector("[data-progress]")!;
+			this.volume = this.querySelector("[data-volume]")!;
+			this.status = this.querySelector("[data-status]")!;
+			this.audio.volume = .45;
+			this.querySelector("[data-play-toggle]")?.addEventListener("click", () => { void this.togglePlayback(); });
+			this.querySelector("[data-minimize]")?.addEventListener("click", () => this.setExpanded(false));
+			this.querySelector("[data-mute]")?.addEventListener("click", () => { this.audio.muted = !this.audio.muted; });
+			this.volume.addEventListener("input", () => { this.audio.volume = Number(this.volume.value) / 100; this.audio.muted = this.audio.volume === 0; });
+			this.progress.addEventListener("input", () => {
+				if (Number.isFinite(this.audio.duration) && this.audio.duration > 0) this.audio.currentTime = this.audio.duration * Number(this.progress.value) / 1000;
+			});
+			this.addEventListener("keydown", (event) => {
+				if (event.key === "Escape" && this.expanded) { event.preventDefault(); this.setExpanded(false); }
+			});
+			for (const eventName of ["timeupdate", "durationchange", "loadedmetadata", "play", "pause", "ended", "volumechange"]) this.audio.addEventListener(eventName, () => this.syncControls());
+			this.audio.addEventListener("playing", () => { this.status.textContent = "正在播放"; this.syncControls(); });
+			this.audio.addEventListener("pause", () => { if (!this.audio.error) this.status.textContent = this.audio.ended ? "播放结束" : "已暂停"; });
+			this.audio.addEventListener("waiting", () => { if (!this.audio.paused) this.status.textContent = "缓冲中…"; });
+			this.audio.addEventListener("error", () => this.showSourceError());
+			this.syncControls();
+		}
+
+		togglePanel() { this.setExpanded(!this.expanded); }
+
+		private setExpanded(expanded: boolean) {
+			const focusInPanel = this.panel.contains(document.activeElement);
+			this.expanded = expanded;
+			this.panel.hidden = !expanded;
+			this.launcher.hidden = expanded;
+			this.toggleAttribute("data-expanded", expanded);
+			this.syncControls();
+			if (expanded) this.querySelector<HTMLButtonElement>("[data-play-toggle]")?.focus();
+			else if (focusInPanel) this.launcher.focus();
+		}
+
+		private async togglePlayback() {
+			if (!this.audio.paused) { this.audio.pause(); return; }
+			this.removeAttribute("data-error");
+			this.status.textContent = "加载中…";
+			if (this.audio.error) this.audio.load();
+			try { await this.audio.play(); }
+			catch (error) {
+				if (error instanceof DOMException && error.name === "AbortError") return;
+				if (error instanceof DOMException && error.name === "NotAllowedError") this.status.textContent = "请再次点击播放";
+				else this.showSourceError();
+			}
+		}
+
+		private showSourceError() {
+			this.setAttribute("data-error", "");
+			this.status.textContent = "音源暂时无法播放，可到网易云收听";
+			this.syncControls();
+		}
+
+		syncControls() {
+			if (!this.initialized) return;
+			const duration = Number.isFinite(this.audio.duration) && this.audio.duration > 0 ? this.audio.duration : 0;
+			const playing = !this.audio.paused && !this.audio.ended;
+			this.toggleAttribute("data-playing", playing);
+			this.toggleAttribute("data-muted", this.audio.muted || this.audio.volume === 0);
+			this.progress.disabled = duration === 0;
+			this.progress.value = duration ? String(this.audio.currentTime / duration * 1000) : "0";
+			this.progress.setAttribute("aria-valuetext", `${this.formatTime(this.audio.currentTime)} / ${duration ? this.formatTime(duration) : "时长未知"}`);
+			this.querySelector("[data-current-time]")!.textContent = this.formatTime(this.audio.currentTime);
+			this.querySelector("[data-duration]")!.textContent = duration ? this.formatTime(duration) : "--:--";
+			this.querySelector("[data-play-toggle]")?.setAttribute("aria-label", playing ? "暂停音乐" : "播放音乐");
+			this.querySelector("[data-mute]")?.setAttribute("aria-label", this.audio.muted ? "取消静音" : "静音");
+			this.volume.value = String(Math.round(this.audio.volume * 100));
+			for (const trigger of document.querySelectorAll("[data-music-toggle]")) {
+				trigger.setAttribute("aria-expanded", String(this.expanded));
+				trigger.setAttribute("aria-label", this.expanded ? "收起音乐播放器" : "打开音乐播放器");
+			}
+		}
+
+		private formatTime(value: number) {
+			const seconds = Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+			return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+		}
+	}
+	if (!customElements.get("drawrain-music")) customElements.define("drawrain-music", PersistentMusic);
+	document.addEventListener("click", (event) => {
+		if (!(event.target instanceof Element) || !event.target.closest("[data-music-toggle]")) return;
+		event.preventDefault();
+		document.querySelector<PersistentMusic>("drawrain-music")?.togglePanel();
+	});
+	document.addEventListener("astro:page-load", () => document.querySelector<PersistentMusic>("drawrain-music")?.syncControls());
+</script>
+
+<style>
+	drawrain-music { position: fixed; right: 24px; bottom: 24px; z-index: 90; display: block; font-family: var(--font-sans); color: var(--ink); }
+	audio, [hidden] { display: none !important; }
+	button { cursor: pointer; font: inherit; }
+	.music-launcher { position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 15px; color: var(--accent); background: var(--surface); box-shadow: 0 6px 22px #080d1733; }
+	.music-launcher:hover { background: var(--soft); }
+	.playing-dot { display: none; position: absolute; right: 7px; top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+	[data-playing] .playing-dot { display: block; }
+	.music-panel { width: 320px; max-width: calc(100vw - 32px); border: 1px solid var(--line); border-radius: 20px; background: var(--surface); padding: 17px 20px 16px; box-shadow: 0 10px 45px #080d173b; }
+	.music-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 13px; color: var(--muted); font-size: 11px; }
+	.small-button { display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 6px; color: var(--muted); background: transparent; padding: 4px; }
+	.small-button:hover { color: var(--accent); background: var(--soft); }
+	.song-row { display: flex; align-items: center; gap: 12px; }
+	.song-record { display: flex; justify-content: center; align-items: center; width: 47px; height: 47px; flex-shrink: 0; border-radius: 50%; background: repeating-radial-gradient(circle at center, #1b202e 0 3px, #313a4e 4px 5px); border: 1px solid #56627c66; }
+	.song-record span { width: 17px; height: 17px; border-radius: 50%; border: 5px solid var(--accent); background: #202736; }
+	.song-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+	.song-copy strong { font-size: 15px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	.song-copy > span { color: var(--muted); font-size: 11px; }
+	.play-button { width: 37px; height: 37px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: var(--accent); color: var(--surface); }
+	.play-symbol { margin-left: 2px; }
+	.pause-symbol, .muted-symbol { display: none; }
+	[data-playing] .play-symbol, [data-muted] .volume-symbol { display: none; }
+	[data-playing] .pause-symbol, [data-muted] .muted-symbol { display: block; }
+	input[type="range"] { height: 4px; accent-color: var(--accent); cursor: pointer; padding: 0; }
+	.progress-range { display: block; width: 100%; margin: 20px 0 10px; }
+	.progress-range:disabled { cursor: default; opacity: .5; }
+	.time-row { display: flex; align-items: center; justify-content: space-between; font: 10px/1.5 var(--font-mono); color: var(--muted); }
+	.time-divider { margin: 0 3px; opacity: .6; }
+	.volume-control { display: flex; align-items: center; gap: 5px; }
+	.volume-control input { width: 62px; }
+	.music-bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 13px; margin-top: 12px; border-top: 1px solid var(--line); font-size: 10px; }
+	.music-bottom > span { color: var(--muted); line-height: 1.6; }
+	.music-bottom a { flex-shrink: 0; color: var(--accent); text-decoration: none; }
+	.music-bottom a:hover { text-decoration: underline; }
+	[data-error] .music-bottom { align-items: flex-start; }
+	.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+	@media (max-width: 650px) { drawrain-music { right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); } .music-panel { width: 300px; padding: 16px 18px; } }
+</style>

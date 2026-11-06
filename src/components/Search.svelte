@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, tick } from "svelte";
+	import { navigate } from "astro:transitions/client";
 	import { url } from "../utils/url-utils";
 
 	type SearchPost = { title: string; url: string; description: string; category: string; tags: string[] };
@@ -14,6 +15,7 @@
 	let requestId = 0;
 	let pagefindPromise: Promise<Pagefind | null> | undefined;
 	let debounce: ReturnType<typeof setTimeout>;
+	let shortcutLabel = "Ctrl K";
 
 	async function openSearch() {
 		document.getElementById("journal-mobile-menu")?.removeAttribute("open");
@@ -80,11 +82,14 @@
 			if (firstResult) { event.preventDefault(); firstResult.focus(); }
 		}
 		if (event.key === "Enter" && event.target === input && results[0]) {
-			window.location.href = results[0].url;
+			event.preventDefault();
+			dialog.close();
+			void navigate(results[0].url);
 		}
 	}
 
 	onMount(() => {
+		shortcutLabel = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘ K" : "Ctrl K";
 		const shortcut = (event: KeyboardEvent) => {
 			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
 				event.preventDefault();
@@ -92,13 +97,20 @@
 			}
 		};
 		document.addEventListener("keydown", shortcut);
-		return () => { document.removeEventListener("keydown", shortcut); clearTimeout(debounce); };
+		const closeBeforeNavigation = () => { if (dialog.open) dialog.close(); };
+		document.addEventListener("astro:before-preparation", closeBeforeNavigation);
+		return () => {
+			document.removeEventListener("keydown", shortcut);
+			document.removeEventListener("astro:before-preparation", closeBeforeNavigation);
+			clearTimeout(debounce);
+			requestId++;
+		};
 	});
 </script>
 
 <button type="button" class="search-trigger" aria-label="搜索文章（Ctrl 或 Command + K）" on:click={openSearch}>
 	<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
-	<span class="search-label">搜索</span><kbd>⌘ K</kbd>
+	<span class="search-label">搜索</span><kbd>{shortcutLabel}</kbd>
 </button>
 
 <dialog bind:this={dialog} class="search-dialog" aria-label="搜索博客文章" on:keydown={handleDialogKeydown} on:click={(event) => { if (event.target === dialog) dialog.close(); }}>

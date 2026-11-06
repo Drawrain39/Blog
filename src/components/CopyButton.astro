@@ -1,0 +1,28 @@
+---
+import { Icon } from "astro-icon/components";
+interface Props { text: string; label?: string; icon?: string; class?: string; variant?: "default" | "ghost"; }
+const { text, label="复制", icon="fa6-regular:copy", class:className="", variant="default" }=Astro.props;
+---
+<copy-button data-value={text} data-label={label} data-variant={variant} class={className}><button type="button"><Icon name={icon} width={16} height={16} /><span data-copy-label>{label}</span></button><span class="copy-status" role="status" aria-live="polite"></span></copy-button>
+<script>
+class CopyButton extends HTMLElement {
+  connectedCallback() {
+    const button=this.querySelector<HTMLButtonElement>("button");
+    if(!button) return;
+    button.onclick=async()=>{
+      const label=this.querySelector<HTMLElement>("[data-copy-label]");
+      const status=this.querySelector<HTMLElement>("[role=status]");
+      try { await navigator.clipboard.writeText(this.dataset.value||""); if(label)label.textContent="已复制 ✓";if(status)status.textContent="已复制到剪贴板";this.setAttribute("data-copied",""); }
+      catch {if(status)status.textContent="复制未成功，请手动选择内容";if(label)label.textContent="请手动复制";}
+      window.setTimeout(()=>{if(label)label.textContent=this.dataset.label||"复制";this.removeAttribute("data-copied");},2200);
+    };
+  }
+}
+if(!customElements.get("copy-button"))customElements.define("copy-button",CopyButton);
+</script>
+<style>
+copy-button { display:inline-block; } button { display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--soft);color:var(--ink);font-size:12px;min-height:38px; } button:hover,copy-button[data-copied] button { color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line)); } .copy-status { position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%); }
+copy-button[data-variant="ghost"] button { gap:6px;padding:6px 8px;min-height:32px;background:transparent;border-color:transparent;color:var(--muted);font-size:11px;white-space:nowrap; }
+copy-button[data-variant="ghost"] button:hover,copy-button[data-variant="ghost"] button:focus-visible,copy-button[data-variant="ghost"][data-copied] button { background:var(--soft);color:var(--accent); }
+@media(max-width:600px) { copy-button[data-variant="ghost"] button { padding:6px;font-size:10px; } }
+</style>

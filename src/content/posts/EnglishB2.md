@@ -1,5 +1,6 @@
 ---
 title: 大学英语 B2 期末复习
+hideInHome: true
 published: 2026-06-06
 description: 整理大学英语 B2 期末复习 1-5 单元重点单词与雨课堂词汇练习题
 tags: [大学英语, English]

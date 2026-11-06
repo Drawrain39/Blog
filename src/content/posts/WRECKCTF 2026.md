@@ -1,5 +1,7 @@
 ---
 title: WRECKCTF 2026
+featured: true
+featuredOrder: 2
 published: 2026-04-19
 description: Reverse方向个人题解
 tags: [CTF, Writeup, Reverse]
@@ -8,9 +10,8 @@ series: CTF Writeup
 seriesOrder: 3
 draft: false
 ---
-> 国外小众简单赛事罢了，最后ban完后结榜个人打了第二，还不错，AK except 3\(包括一个过本地但是远程靶机坏了的pwn\.\.\.）
 
-全方向但仅放Re，美国比赛so write up in English.
+仅截取re方向
 
 # Reverse
 
@@ -29,10 +30,9 @@ if len(flag) == len(T) and all(
     print("correct!")
 else:
     print("nope")
-
 ```
 
-There's nothing much to say, just directly reverse one step back, so easy 
+There's nothing much to say, just directly reverse one step back, so easy
 
 ```python
 #!/usr/bin/env python3
@@ -55,24 +55,15 @@ The problem essentially involves feeding the input 32 ByteDance flag into `_Q`'s
 Most operations are clearly reversible
 
 - `_0`: XOR by key, and the inverse operation is still itself
-
 - `_1`: Add by key, and the inverse operation is subtract
-
 - `_2`: Subtract by key, and the inverse operation is addition
-
 - `_3`: Circular left shift, and its inverse operation is circular right shift
-
 - `_4`: Permutation, and its inverse operation is inverse permutation
-
 - `_5`: S\-box substitution, and the inverse operation is reverse lookup table
-
 - `_6`: reverse, the inverse operation is still itself
-
 - `_7`: Swap the front and back halves, and the inverse operation is still itself
-
 - `_8`: Prefix XOR, the inverse operation satisfies `orig[i] = out[i] ^ out[i - 1]`
-
-- `_9`: Just find the multiplicative inverse modulo `256` by multiplying with an odd constant 
+- `_9`: Just find the multiplicative inverse modulo `256` by multiplying with an odd constant
 
 What is truly less straightforward is `_A` and `_B`
 
@@ -82,24 +73,20 @@ d = hash(c).digest()[:3]
 x[i:i + 3] = bytes(p ^ q for p, q in zip(c, d))
 ```
 
-They only affect 3 consecutive ByteDance, so when reaching the corresponding position during the reverse process, all `2^24` possible inputs can be enumerated for the current target 3 ByteDance to find the ones that satisfy 
+They only affect 3 consecutive ByteDance, so when reaching the corresponding position during the reverse process, all `2^24` possible inputs can be enumerated for the current target 3 ByteDance to find the ones that satisfy
 
 ```python
 chunk ^ hash(chunk)[:3] == target
 ```
 
-preimage 
+preimage
 
 There are two key pieces of information here
 
 - `_B` has only one preimage for the target `f51d49`: `4c94db`
-
-- `_A`'s target `cfafe4` has three preimages: 
-
- - `79335e`
-
+- `_A`'s target `cfafe4` has three preimages:
+- `79335e`
 - `a44c66`
-
 - `e28388`
 
 Bringing these three candidates back to the entire inverse chain respectively, only `e28388` can ultimately restore a valid flag that satisfies `_c()`\.
@@ -370,7 +357,6 @@ def solve():
 
 if __name__ == "__main__":
     print(solve().decode())
-
 ```
 
 wreck\{h4shing\_1n\_my\_p1p3l1n3???\}
@@ -379,9 +365,9 @@ wreck\{h4shing\_1n\_my\_p1p3l1n3???\}
 
 First look at `main`
 
-The input length must be ` 39 `\. 
+The input length must be `39`\.
 
-The end does not involve byte\-by\-byte comparison; instead, it first runs a large segment of arithmetic/XOR obfuscation, and finally checks several sets of 32\-bit states: 
+The end does not involve byte\-by\-byte comparison; instead, it first runs a large segment of arithmetic/XOR obfuscation, and finally checks several sets of 32\-bit states:
 
 ```c
 if ( v16 != -2103969039 )
@@ -399,13 +385,13 @@ Although there are many branches in the middle, most of them only depend on a fe
 
 `s` corresponds to the first 4 ByteDance
 
-`v19` corresponds to Bytes 5 to 8 
+`v19` corresponds to Bytes 5 to 8
 
 `v27` corresponds to the last 3 ByteDance
 
-The flag format is ` wreck{...} ` Subsequent consideration of constrained blasting 
+The flag format is `wreck{...}` Subsequent consideration of constrained blasting
 
-After ` wreck{ ` is stuffed into the first few 32\-bit blocks in little\-endian, many bit judgments will be directly fixed: 
+After `wreck{` is stuffed into the first few 32\-bit blocks in little\-endian, many bit judgments will be directly fixed:
 
 `(s & 0x04000000)!= 0` is false
 
@@ -423,11 +409,11 @@ After ` wreck{ ` is stuffed into the first few 32\-bit blocks in little\-endian,
 
 `(v19 & 0x80) == 0` is true
 
-Additionally, since the end must be `}`, ` the corresponding position of v27 ` will also be fixed, so the main chain only has one feasible and successful path left\. 
+Additionally, since the end must be `}`, `the corresponding position of v27` will also be fixed, so the main chain only has one feasible and successful path left\.
 
-It has changed from a messy goto obfuscation to a fixed single path, and then collected the bit vector expressions on the path 
+It has changed from a messy goto obfuscation to a fixed single path, and then collected the bit vector expressions on the path
 
-Request the remaining 33 characters 
+Request the remaining 33 characters
 
 ```python
 from __future__ import annotations

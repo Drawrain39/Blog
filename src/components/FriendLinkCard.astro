@@ -5,12 +5,16 @@ interface Props { friend: FriendLinkItem; }
 const { friend } = Astro.props;
 ---
 <a href={friend.url} target="_blank" rel="noopener noreferrer" aria-label={`访问 ${friend.siteName || friend.name}`} class="friend-card">
+	<span class="friend-preview" aria-hidden="true"><strong>{friend.siteName || friend.name}</strong><span>{friend.description.trim() || new URL(friend.url).hostname}</span><small>在新窗口访问 ↗</small></span>
 	<div class="friend-identity"><div class="friend-avatar"><ImageWrapper src={friend.avatar} alt={`${friend.name} 的头像`} class="friend-avatar-image" /></div><div class="friend-name"><h2>{friend.name}</h2><p>{friend.siteName || new URL(friend.url).hostname}</p></div><span class="friend-arrow" aria-hidden="true">↗</span></div>
 	{friend.description.trim() && <p class="friend-description">{friend.description}</p>}
 	<div class="friend-domain"><span>{new URL(friend.url).hostname}</span><span>去串门 →</span></div>
 </a>
 <style>
-	.friend-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); padding: 25px; transition: border-color .2s, transform .2s, background .2s; }
+	.friend-card { position:relative;display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); padding: 25px; transition: border-color .2s, transform .2s, background .2s; }
+	.friend-preview { position:absolute;left:12px;right:12px;bottom:calc(100% + 12px);padding:15px 18px;border:1px solid var(--line);border-radius:13px;background:var(--surface);box-shadow:0 10px 30px #080d1744;opacity:0;visibility:hidden;transform:translateY(5px);pointer-events:none;transition:opacity .18s,transform .18s,visibility .18s;z-index:5;display:flex;flex-direction:column;gap:5px; }
+	.friend-preview strong { font-size:14px; } .friend-preview>span { color:var(--muted);font-size:12px; } .friend-preview small { color:var(--accent);font-size:11px; }
+	.friend-card:hover .friend-preview,.friend-card:focus-visible .friend-preview { opacity:1;visibility:visible;transform:translateY(0); }
 	.friend-card:hover { background: color-mix(in srgb, var(--accent) 4%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); transform: translateY(-4px); }
 	.friend-identity { display: flex; align-items: center; gap: 15px; }
 	.friend-avatar { width: 58px; height: 58px; flex: 0 0 auto; overflow: hidden; border-radius: 18px; background: var(--soft); border: 1px solid var(--line); transition: transform .2s; }

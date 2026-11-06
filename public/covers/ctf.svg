@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#ba6258" stroke-opacity=".1"/></pattern></defs>
+  <rect width="640" height="360" fill="#271a1d"/><rect width="640" height="360" fill="url(#grid)"/>
+  <g font-family="ui-monospace,Consolas,monospace">
+    <rect x="102" y="78" width="438" height="214" rx="12" fill="#1b181b" stroke="#936046"/>
+    <path d="M102 116h438" stroke="#936046"/>
+    <circle cx="123" cy="97" r="4" fill="#da766d"/><circle cx="139" cy="97" r="4" fill="#bd9559"/><circle cx="155" cy="97" r="4" fill="#826f58"/>
+    <text x="136" y="163" font-size="22" fill="#ec9083">0x39 &gt; disassemble</text>
+    <text x="136" y="201" font-size="18" fill="#bca99a">xor eax, eax</text>
+    <text x="136" y="235" font-size="18" fill="#d7b66b">call decode_flag</text>
+    <path d="M440 163h54m-27-27v54" stroke="#d7b66b" stroke-width="3"/>
+    <text x="425" y="244" font-size="14" fill="#9c7056">0100 1011</text>
+    <text x="28" y="33" font-size="11" letter-spacing="2" fill="#d7b66b">CTF / WRITEUP</text>
+    <text x="518" y="337" font-size="10" fill="#a08377">DRAWRAIN</text>
+  </g>
+</svg>

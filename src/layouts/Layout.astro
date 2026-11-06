@@ -1,6 +1,10 @@
 ---
 import { profileConfig, siteConfig } from "@/config";
 import { Image } from "astro:assets";
+import { ClientRouter } from "astro:transitions";
+import PersistentMusic from "@components/PersistentMusic.astro";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
 import backgroundArt from "../assets/images/re2.jpg";
 import { url } from "@utils/url-utils";
 import "katex/dist/katex.css";
@@ -23,6 +27,8 @@ const { title, description, lang, setOGTypeArticle = false, bodyClass = "" } = A
 const pageTitle = title ? `${title} · Drawrain's Blog` : "Drawrain's Blog · Just keep drawing without regrets";
 const pageDescription = description || "Drawrain 的个人博客，记录比赛题解、学习笔记，以及一些想到什么就写什么的东西。";
 const canonical = new URL(Astro.url.pathname, Astro.site || Astro.url.origin);
+const routeParts = Astro.url.pathname.split("/").filter(Boolean);
+const ogImage = new URL(routeParts[0] === "posts" ? `/og/${routeParts.slice(1).join("/")}.png` : "/og/index.png", canonical);
 ---
 
 <!doctype html>
@@ -40,27 +46,37 @@ const canonical = new URL(Astro.url.pathname, Astro.site || Astro.url.origin);
     <meta property="og:description" content={pageDescription} />
     <meta property="og:type" content={setOGTypeArticle ? "article" : "website"} />
     <meta property="og:url" content={canonical} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={pageTitle} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href={url("/favicon.svg")} type="image/svg+xml" />
-    <script is:inline>
+    <script is:inline data-astro-rerun>
       try {
         document.documentElement.classList.toggle("dark", localStorage.getItem("drawrain-theme-v2") !== "light");
       } catch { document.documentElement.classList.add("dark"); }
     </script>
     <slot name="head" />
+    <ClientRouter fallback="swap" />
   </head>
   <body id="top" class={bodyClass}>
     <div class="site-backdrop" aria-hidden="true"><Image src={backgroundArt} width={1400} format="webp" quality={65} alt="" /></div>
     <a class="skip-link" href="#main-content">跳至正文</a>
     <slot />
+    <PersistentMusic />
   </body>
 </html>
 
 <script>
   import PhotoSwipeLightbox from "photoswipe/lightbox";
   import "photoswipe/style.css";
-  const lightbox = new PhotoSwipeLightbox({
+  let lightbox: PhotoSwipeLightbox | undefined;
+  function initializeLightbox() {
+  lightbox?.destroy();
+  lightbox = new PhotoSwipeLightbox({
     gallery: ".custom-md img, #post-cover img",
     pswpModule: () => import("photoswipe"),
     padding: { top: 24, bottom: 24, left: 24, right: 24 },
@@ -81,4 +97,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site || Astro.url.origin);
     return itemData;
   });
   lightbox.init();
+  }
+  initializeLightbox();
+  document.addEventListener("astro:page-load", initializeLightbox);
 </script>

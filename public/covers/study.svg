@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#a9bc77" stroke-opacity=".09"/></pattern></defs>
+  <rect width="640" height="360" fill="#272d20"/><rect width="640" height="360" fill="url(#grid)"/>
+  <g font-family="ui-monospace,Consolas,monospace">
+    <path d="M130 103q95-34 190 13 95-47 190-13v161q-95-35-190 12-95-47-190-12Z" fill="#3b452c" stroke="#a3b778" stroke-width="2"/>
+    <path d="M320 119v152m-160-133q64-17 128 11m-128 12q64-17 128 11m-128 12q64-17 128 11m-128 12q64-17 128 11m64-70q64-28 128-11m-128 34q64-28 128-11m-128 34q64-28 128-11" stroke="#becd98" stroke-width="3" fill="none"/>
+    <path d="M433 90v94l16-12 16 12V86Z" fill="#dfc58f"/>
+    <text x="28" y="33" font-size="11" letter-spacing="2" fill="#bfce94">STUDY / NOTES</text>
+    <text x="518" y="337" font-size="10" fill="#94a17c">DRAWRAIN</text>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#ba6258" stroke-opacity=".1"/></pattern></defs>
+  <rect width="640" height="360" fill="#271a1d"/><rect width="640" height="360" fill="url(#grid)"/>
+  <g font-family="ui-monospace,Consolas,monospace">
+    <text x="113" y="91" font-size="12" letter-spacing="2" fill="#bca99a">MEMORY / HEX</text>
+    <path d="M112 108h415M112 273h415M207 108v165" fill="none" stroke="#936046"/>
+    <rect x="113" y="175" width="413" height="33" rx="5" fill="#8d4b3b" fill-opacity=".3"/>
+    <g font-size="15" fill="#a78362">
+      <text x="126" y="136">0x0040</text><text x="126" y="167">0x0050</text>
+      <text x="126" y="198" fill="#d7b66b">0x0060</text><text x="126" y="229">0x0070</text><text x="126" y="260">0x0080</text>
+    </g>
+    <g font-size="17" fill="#bca99a" letter-spacing="1">
+      <text x="228" y="136">55 48 89 E5 41 57</text>
+      <text x="228" y="167">48 83 EC 20 31 C0</text>
+      <text x="228" y="198" fill="#ec9083">66 6C 61 67 7B 39</text>
+      <text x="228" y="229">30 78 33 39 5F 7D</text>
+      <text x="228" y="260">48 83 C4 20 5D C3</text>
+    </g>
+    <text x="114" y="301" font-size="11" fill="#a78362">01000110 01001100 01000001 01000111</text>
+    <text x="28" y="33" font-size="11" letter-spacing="2" fill="#d7b66b">CTF / WRITEUP</text>
+    <text x="518" y="337" font-size="10" fill="#a08377">DRAWRAIN</text>
+  </g>
+</svg>

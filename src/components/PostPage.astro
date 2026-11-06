@@ -28,7 +28,10 @@ function group(category: string | null) {
   <div class="feed-bottom"><span data-post-count>共 {posts.length} 篇文章</span><button type="button" class="load-more" hidden>加载更多 <span aria-hidden="true">↓</span></button><span class="feed-end" hidden>已经到底啦 <span aria-hidden="true">✧</span></span></div>
 </div>
 <script>
+function initializePostBrowsers() {
   document.querySelectorAll<HTMLElement>("[data-post-browser]").forEach(browser => {
+    if(browser.dataset.bound) return;
+    browser.dataset.bound="true";
     const entries = Array.from(browser.querySelectorAll<HTMLElement>(".post-entry"));
     const buttons = browser.querySelectorAll<HTMLButtonElement>("[data-filter]");
     const loadMore = browser.querySelector<HTMLButtonElement>(".load-more");
@@ -51,6 +54,9 @@ function group(category: string | null) {
     loadMore?.addEventListener("click",()=>{ limit += 6; update(); });
     update();
   });
+}
+initializePostBrowsers();
+document.addEventListener("astro:page-load",initializePostBrowsers);
 </script>
 <style>
   .post-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 20px; }
