@@ -11,7 +11,7 @@ const postUrl = getPostUrlBySlug(entry.slug);
 <article class="anime-post">
   <div class="post-copy">
     <div class="post-meta"><a class="category-pill" href={getCategoryUrl(category)}>{category || "随记"}</a><time datetime={date}>{date.replaceAll("-", ".")}</time>{entry.data.draft && <span class="draft-badge">草稿</span>}</div>
-    <h3><a href={postUrl}>{title}</a></h3>
+    <h3><a href={postUrl}><span class="post-title-text">{title}</span></a></h3>
     <p class="post-description">{description || remarkPluginFrontmatter.excerpt}</p>
     <div class="post-bottom"><div class="post-tags">{tags.slice(0,2).map(tag=><a href={getTagUrl(tag)}>#{tag}</a>)}</div><span class="reading-time">{remarkPluginFrontmatter.minutes || 1} 分钟</span><a class="post-arrow" href={postUrl} aria-label={`打开文章：${title}`}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a></div>
   </div>
@@ -29,6 +29,9 @@ const postUrl = getPostUrlBySlug(entry.slug);
   h3 { font-size: 21px; font-weight: 600; line-height: 1.55; margin: 13px 0 9px; letter-spacing: -.02em; overflow-wrap: anywhere; }
   h3 a { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   h3 a:hover { color: var(--accent); }
+  .post-title-text { background: linear-gradient(color-mix(in srgb,var(--accent) 65%,transparent),color-mix(in srgb,var(--accent) 65%,transparent)) 0 calc(100% - 1px)/0 1px no-repeat; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size .25s ease; }
+  .anime-post:focus-within .post-title-text { background-size: 100% 1px; }
+  @media (hover: hover) and (pointer: fine) { .anime-post:hover .post-title-text { background-size: 100% 1px; } }
   .post-description { color: var(--muted); font-size: 13px; line-height: 1.85; margin: 0 0 17px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .post-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 12px; margin-top: auto; font-size: 10px; color: var(--muted); }
   .post-tags { display: flex; flex-wrap: wrap; gap: 6px 10px; min-width: 0; overflow-wrap: anywhere; }
@@ -36,11 +39,13 @@ const postUrl = getPostUrlBySlug(entry.slug);
   .post-tags a:hover,.post-tags a:focus-visible { color: var(--accent); }
   .reading-time { white-space: nowrap; }
   .post-arrow { display: grid; place-items: center; color: var(--blue); margin-left: auto; width: 26px; height: 26px; border-radius: 50%; background: var(--soft); }
-  .post-arrow:hover { color: var(--accent); }
-  .post-arrow svg { transition: transform .2s; }
-  .post-arrow:hover svg,.post-arrow:focus-visible svg { transform: translateX(2px); }
+  .post-arrow { transition: color .2s,background .2s; }
+  .post-arrow svg { transition: transform .22s ease; }
+  .anime-post:focus-within .post-arrow { color: var(--accent); background: color-mix(in srgb,var(--accent) 13%,var(--soft)); }
+  .anime-post:focus-within .post-arrow svg { transform: translateX(3px); }
+  @media (hover: hover) and (pointer: fine) { .anime-post:hover .post-arrow { color: var(--accent); background: color-mix(in srgb,var(--accent) 13%,var(--soft)); } .anime-post:hover .post-arrow svg { transform: translateX(3px); } }
   @media (max-width: 1000px) { .post-copy { padding: 23px 24px 21px; } h3 { font-size: 20px; } }
   @media (max-width: 760px) { .post-copy { padding: 20px; } }
   @media (max-width: 480px) { .anime-post { border-radius: 14px; } h3 { font-size: 19px; margin: 12px 0 8px; } .post-description { margin-bottom: 15px; } .post-meta { gap: 7px 10px; } .category-pill { padding: 2px 8px; } .post-tags { gap: 6px 8px; } .post-arrow { width: 26px; height: 26px; } }
-  @media (prefers-reduced-motion: reduce) { .anime-post,.post-arrow svg { transform: none !important; transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .anime-post,.post-arrow,.post-arrow svg,.post-title-text { transform: none !important; transition: none; } }
 </style>

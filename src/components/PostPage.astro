@@ -19,6 +19,7 @@ function group(category: string | null) {
 ---
 <div class="post-browser" data-post-browser>
   <div class="post-filters" role="group" aria-label="筛选文章分类">
+    <span class="filter-indicator" aria-hidden="true"></span>
     {filters.map(filter => <button type="button" data-filter={filter.value} aria-pressed={filter.value === "all"}>{filter.name}<span>{posts.filter(post=>filter.value === "all" || group(post.data.category) === filter.value).length}</span></button>)}
   </div>
   <div class="post-entries" aria-live="polite">
@@ -28,41 +29,80 @@ function group(category: string | null) {
   <div class="feed-bottom"><span data-post-count>共 {posts.length} 篇文章</span><button type="button" class="load-more" hidden>加载更多 <span aria-hidden="true">↓</span></button><span class="feed-end" hidden>已经到底啦 <span aria-hidden="true">✧</span></span></div>
 </div>
 <script>
+let cleanupPostBrowsers: (() => void) | undefined;
 function initializePostBrowsers() {
+  cleanupPostBrowsers?.();
+  const cleanups: (() => void)[] = [];
   document.querySelectorAll<HTMLElement>("[data-post-browser]").forEach(browser => {
-    if(browser.dataset.bound) return;
     browser.dataset.bound="true";
+    const controller = new AbortController();
+    const { signal } = controller;
     const entries = Array.from(browser.querySelectorAll<HTMLElement>(".post-entry"));
     const buttons = browser.querySelectorAll<HTMLButtonElement>("[data-filter]");
+    const filterBar = browser.querySelector<HTMLElement>(".post-filters");
+    const indicator = browser.querySelector<HTMLElement>(".filter-indicator");
     const loadMore = browser.querySelector<HTMLButtonElement>(".load-more");
     const count = browser.querySelector<HTMLElement>("[data-post-count]");
     const end = browser.querySelector<HTMLElement>(".feed-end");
     const empty = browser.querySelector<HTMLElement>(".empty-entries");
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+    const animations = new Map<HTMLElement, Animation>();
     let active = "all";
     let limit = 6;
-    function update() {
+    function stopAnimations() { animations.forEach(animation => animation.cancel()); animations.clear(); }
+    function positionIndicator(animate = false) {
+      const selected = Array.from(buttons).find(button => button.dataset.filter === active);
+      if (!indicator || !filterBar || !selected) return;
+      indicator.style.transition = animate && !reducedMotion.matches ? "transform 200ms ease, width 200ms ease, height 200ms ease" : "none";
+      indicator.style.transform = `translate(${selected.offsetLeft}px, ${selected.offsetTop}px)`;
+      indicator.style.width = `${selected.offsetWidth}px`;
+      indicator.style.height = `${selected.offsetHeight}px`;
+      filterBar.dataset.indicatorReady = "true";
+    }
+    function update(reason?: "filter" | "more") {
+      const previouslyVisible = new Set(entries.filter(entry => !entry.hidden));
+      stopAnimations();
       const matching = entries.filter(entry => active === "all" || entry.dataset.group === active);
+      const visible = matching.slice(0,limit);
       entries.forEach(entry => entry.hidden = true);
-      matching.slice(0,limit).forEach(entry => entry.hidden = false);
+      visible.forEach(entry => entry.hidden = false);
       buttons.forEach(button => button.setAttribute("aria-pressed", String(button.dataset.filter === active)));
       if (count) count.textContent = `已展示 ${Math.min(limit, matching.length)} / ${matching.length} 篇记录`;
       if (loadMore) loadMore.hidden = matching.length <= limit;
       if (end) end.hidden = matching.length > limit || matching.length === 0;
       if (empty) empty.hidden = matching.length !== 0;
+      positionIndicator(reason === "filter");
+      if (!reason || reducedMotion.matches) return;
+      const entering = reason === "filter" ? visible : visible.filter(entry => !previouslyVisible.has(entry));
+      entering.forEach(entry => {
+        const animation = entry.animate([{ opacity: .65, transform: "translateY(3px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: 160, easing: "ease-out" });
+        animations.set(entry, animation);
+        animation.onfinish = () => { if (animations.get(entry) === animation) animations.delete(entry); };
+      });
     }
-    buttons.forEach(button => button.addEventListener("click",()=>{ active = button.dataset.filter || "all"; limit = 6; update(); }));
-    loadMore?.addEventListener("click",()=>{ limit += 6; update(); });
+    buttons.forEach(button => button.addEventListener("click",()=>{ const next = button.dataset.filter || "all"; if (active === next) return; active = next; limit = 6; update("filter"); }, { signal }));
+    loadMore?.addEventListener("click",()=>{ limit += 6; update("more"); }, { signal });
+    reducedMotion.addEventListener("change", () => { stopAnimations(); positionIndicator(); }, { signal });
+    const observer = new ResizeObserver(() => positionIndicator());
+    if (filterBar) observer.observe(filterBar);
+    buttons.forEach(button => observer.observe(button));
+    cleanups.push(() => { controller.abort(); observer.disconnect(); stopAnimations(); });
     update();
   });
+  cleanupPostBrowsers = () => cleanups.forEach(cleanup => cleanup());
 }
 initializePostBrowsers();
 document.addEventListener("astro:page-load",initializePostBrowsers);
+document.addEventListener("astro:before-swap",()=>{ cleanupPostBrowsers?.(); cleanupPostBrowsers = undefined; });
 </script>
 <style>
-  .post-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 20px; }
-  .post-filters button { border: 1px solid transparent; border-radius: 9px; background: transparent; padding: 7px 13px; font-size: 12px; color: var(--muted); transition: color .2s, background .2s; }
+  .post-filters { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 20px; }
+  .filter-indicator { position: absolute; top: 0; left: 0; border-radius: 9px; background: color-mix(in srgb,var(--accent) 15%,transparent); pointer-events: none; opacity: 0; }
+  .post-filters[data-indicator-ready="true"] .filter-indicator { opacity: 1; }
+  .post-filters button { position: relative; border: 1px solid transparent; border-radius: 9px; background: transparent; padding: 7px 13px; font-size: 12px; color: var(--muted); transition: color .2s, background .2s; }
   .post-filters button span { margin-left: 7px; font-size: 9px; opacity: .65; }
   .post-filters button[aria-pressed="true"] { background: color-mix(in srgb,var(--accent) 15%,transparent); color: var(--accent); }
+  .post-filters[data-indicator-ready="true"] button[aria-pressed="true"] { background: transparent; }
   .post-filters button:hover { border-color: var(--line); }
   .post-filters button[aria-pressed="false"]:hover { color: var(--accent); }
   .post-entries { display: flex; flex-direction: column; gap: 19px; }
@@ -73,4 +113,5 @@ document.addEventListener("astro:page-load",initializePostBrowsers);
   .feed-end span { color: var(--accent); margin-left: 7px; }
   .empty-entries { padding: 35px 0; color: var(--muted); font-size: 13px; }
   @media (max-width: 480px) { .post-filters { gap: 3px; padding: 7px; } .post-filters button { padding: 6px 8px; font-size: 11px; } .post-filters button span { margin-left: 4px; font-size: 8px; } .post-entries { gap: 14px; } }
+  @media (prefers-reduced-motion: reduce) { .filter-indicator,.post-filters button { transition: none !important; } }
 </style>

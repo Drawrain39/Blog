@@ -29,9 +29,10 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
 <MainGridLayout homePage={true}>
   <section slot="hero" class="home-scene" aria-labelledby="home-title">
     <div class="scene-art">
-      <Image src={dayArt} widths={[800,1280,1920]} sizes="100vw" format="webp" quality={85} loading="eager" fetchpriority="high" alt="晴空下的白发少女与水面倒映的云朵、相机和画具" class="scene-image" />
+      <Image src={dayArt} widths={[800,1280,1600,1920]} sizes="(max-width: 420px) 720px, (max-width: 760px) 782px, (max-width: 1000px) 992px, 100vw" format="webp" quality={95} loading="eager" fetchpriority="high" alt="晴空下的白发少女与水面倒映的云朵、相机和画具" class="scene-image" />
     </div>
     <div class="scene-shade" aria-hidden="true"></div>
+    <div class="sky-glints" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span></div>
     <div class="scene-content site-container">
       <div class="scene-copy">
       <div class="scene-greeting"><span class="little-star" aria-hidden="true">✧</span> 欢迎来到我的小站</div>
@@ -41,7 +42,7 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
       <a href="#posts" class="scene-down"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 4v15m-5-5 5 5 5-5" /></svg> 往下看看</a>
       </div>
     </div>
-    <div class="scene-bottom site-container"><span class="scene-quote">“即使迷茫，也要前行。”</span></div>
+    <div class="scene-bottom site-container"><span class="scene-quote">“即使迷茫，也要前行。”</span><button class="scene-motion-toggle" type="button" aria-label="暂停背景动画" title="暂停背景动画" data-motion-toggle><svg class="motion-pause" viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M5 4h3v12H5zm7 0h3v12h-3z"/></svg><svg class="motion-play" viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="m6 4 9 6-9 6z"/></svg></button></div>
   </section>
 
   <div class="home-layout">
@@ -80,6 +81,36 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
 <script>
   let sceneController: AbortController | undefined;
 
+  function initializeAmbient(scene: HTMLElement, signal: AbortSignal) {
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+    const button = scene.querySelector<HTMLButtonElement>("[data-motion-toggle]");
+    let paused = false;
+    let visible = scene.getBoundingClientRect().bottom > 0;
+    try { paused = localStorage.getItem("drawrain-motion-v1") === "paused"; } catch { /* The control also works without storage. */ }
+    const sync = () => {
+      scene.toggleAttribute("data-ambient-running", visible && !document.hidden && !paused && !reducedMotion.matches);
+      scene.toggleAttribute("data-ambient-paused", paused);
+      if (button) {
+        button.hidden = reducedMotion.matches;
+        const label = paused ? "播放背景动画" : "暂停背景动画";
+        button.setAttribute("aria-label", label);
+        button.title = label;
+      }
+      scene.dispatchEvent(new Event("drawrain:motion-change"));
+    };
+    const observer = new IntersectionObserver(entries => { visible = entries[0]?.isIntersecting ?? false; sync(); });
+    observer.observe(scene);
+    button?.addEventListener("click", () => {
+      paused = !paused;
+      try { localStorage.setItem("drawrain-motion-v1", paused ? "paused" : "playing"); } catch { /* Keep this preference for the current page. */ }
+      sync();
+    }, { signal });
+    document.addEventListener("visibilitychange", sync, { signal });
+    reducedMotion.addEventListener("change", sync, { signal });
+    signal.addEventListener("abort", () => { observer.disconnect(); scene.removeAttribute("data-ambient-running"); }, { once: true });
+    sync();
+  }
+
   function initializeParallax(scene: HTMLElement, signal: AbortSignal) {
     const desktopMotion = matchMedia("(min-width: 1001px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)");
     let frame = 0;
@@ -87,12 +118,12 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
     const cancelFrame = () => { cancelAnimationFrame(frame); frame = 0; };
     const paint = () => {
       frame = 0;
-      if (!desktopMotion.matches || document.hidden || !visible) return;
+      if (!desktopMotion.matches || document.hidden || !visible || scene.hasAttribute("data-ambient-paused")) return;
       const offset = Math.min(12, Math.max(0, -scene.getBoundingClientRect().top * .025));
       scene.style.setProperty("--scene-drift", `${offset.toFixed(2)}px`);
     };
     const queue = () => {
-      if (!frame && desktopMotion.matches && visible && !document.hidden) frame = requestAnimationFrame(paint);
+      if (!frame && desktopMotion.matches && visible && !document.hidden && !scene.hasAttribute("data-ambient-paused")) frame = requestAnimationFrame(paint);
     };
     const resetOrQueue = () => {
       if (!desktopMotion.matches) { cancelFrame(); scene.style.removeProperty("--scene-drift"); }
@@ -104,6 +135,7 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
     });
     observer.observe(scene);
     window.addEventListener("scroll", queue, { passive: true, signal });
+    scene.addEventListener("drawrain:motion-change", () => scene.hasAttribute("data-ambient-paused") ? cancelFrame() : queue(), { signal });
     window.addEventListener("resize", resetOrQueue, { passive: true, signal });
     desktopMotion.addEventListener("change", resetOrQueue, { signal });
     document.addEventListener("visibilitychange", () => document.hidden ? cancelFrame() : queue(), { signal });
@@ -119,6 +151,7 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
     if (!scene) return;
     sceneController = new AbortController();
     const { signal } = sceneController;
+    initializeAmbient(scene, signal);
     initializeParallax(scene, signal);
   }
 
@@ -129,9 +162,15 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
 
 <style>
   .home-scene { --scene-rain: #b8f3ed; --scene-star: #bef2e1; --scene-soft: #245a6966; position: relative; height: 610px; color: #f7faff; overflow: hidden; background: var(--paper); isolation: isolate; }
-  .scene-art { position: absolute; inset: 0; z-index: -3; background: #258bd5; -webkit-mask-image: linear-gradient(to bottom,#000 55%,#000e 70%,#0008 86%,transparent 100%); mask-image: linear-gradient(to bottom,#000 55%,#000e 70%,#0008 86%,transparent 100%); }
-  .scene-image { position: absolute; top: 76px; left: 0; width: 100%; height: calc(100% - 52px); object-fit: cover; object-position: center top; filter: saturate(.98); }
-  .scene-shade { position: absolute; inset: 0; z-index: -2; background: linear-gradient(90deg,transparent 24%,#082b4a12 48%,#102b4d80 78%,#0a294b8a),linear-gradient(0deg,var(--paper),#102b4d00 35%); -webkit-mask-image: linear-gradient(#000 65%,transparent 100%); mask-image: linear-gradient(#000 65%,transparent 100%); }
+  .scene-art { position: absolute; inset: 0; z-index: -3; background: #258bd5; -webkit-mask-image: linear-gradient(to bottom,#000 70%,#000d 84%,#0006 94%,transparent 100%); mask-image: linear-gradient(to bottom,#000 70%,#000d 84%,#0006 94%,transparent 100%); }
+  .scene-image { position: absolute; top: 76px; left: 0; width: 100%; height: calc(100% - 52px); object-fit: cover; object-position: center top; }
+  .scene-shade { position: absolute; inset: 0; z-index: -2; background: linear-gradient(90deg,transparent 30%,#082b4a08 48%,#102b4d70 78%,#0a294b7a),linear-gradient(0deg,var(--paper),#102b4d00 30%); -webkit-mask-image: linear-gradient(#000 65%,transparent 100%); mask-image: linear-gradient(#000 65%,transparent 100%); }
+  .sky-glints { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .sky-glints span { position: absolute; left: 46%; top: 25%; color: #e7fff9; font-size: 11px; line-height: 1; opacity: .45; animation: sky-glint 3.6s ease-in-out infinite; animation-play-state: paused; }
+  .sky-glints span:nth-child(2) { left: 89%; top: 24%; font-size: 9px; animation-delay: -1.2s; }
+  .sky-glints span:nth-child(3) { left: 84%; top: 65%; font-size: 8px; animation-delay: -2.4s; }
+  [data-ambient-running] .sky-glints span { animation-play-state: running; }
+  @keyframes sky-glint { 0%,100% { transform: translate3d(0,0,0) rotate(-6deg) scale(.9); opacity: .4; } 50% { transform: translate3d(3px,-6px,0) rotate(10deg) scale(1.12); opacity: .85; } }
   .scene-content { padding-top: 169px; }
   .scene-copy { max-width: 540px; width: 44%; margin-left: auto; text-shadow: 0 1px 8px #0c3b6799; }
   .scene-greeting { display: flex; align-items: center; gap: 9px; font-size: 13px; letter-spacing: .13em; color: #e1eaf4; }
@@ -145,11 +184,18 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
   .scene-description { font-size: 12px; line-height: 2.1; color: #d5dfef; margin: 0; }
   .scene-description > span { font-size: 13px; }
   .scene-down { display: inline-flex; align-items: center; gap: 9px; margin-top: 23px; font-size: 12px; padding: 9px 16px 9px 12px; border: 1px solid color-mix(in srgb, var(--scene-rain) 40%, transparent); border-radius: 30px; background: var(--scene-soft); backdrop-filter: blur(8px); transition: background .2s, border-color .2s; }
-  .scene-down svg { color: var(--scene-rain); transition: color .2s; }
+  .scene-down svg { color: var(--scene-rain); transition: color .2s; animation: scene-arrow 3.6s ease-in-out infinite; animation-play-state: paused; }
+  [data-ambient-running] .scene-down svg { animation-play-state: running; }
+  @keyframes scene-arrow { 0%,70%,100% { transform: translateY(0); } 35% { transform: translateY(3px); } }
   .scene-down:hover { background: color-mix(in srgb, var(--scene-rain) 18%, var(--scene-soft)); border-color: color-mix(in srgb, var(--scene-rain) 65%, transparent); }
   .scene-down:focus-visible { outline-color: var(--scene-rain); }
   .scene-bottom { position: absolute; left: 0; right: 0; bottom: 54px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
   .scene-quote { font-size: 11px; color: #c4d0e5; letter-spacing: .1em; }
+  .scene-motion-toggle { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; margin-left: auto; padding: 0; border: 1px solid #d9f6ff4d; border-radius: 50%; background: #163b5466; color: #d9f7f1; backdrop-filter: blur(8px); transition: background .18s,border-color .18s; }
+  .scene-motion-toggle:hover,.scene-motion-toggle:focus-visible { background: #163b5499; border-color: #d9f6ff99; }
+  .motion-play { display: none; margin-left: 1px; }
+  [data-ambient-paused] .motion-play { display: block; }
+  [data-ambient-paused] .motion-pause { display: none; }
   .home-layout { position: relative; z-index: 2; display: grid; grid-template-columns: 248px minmax(0,1fr); gap: 28px; margin-top: -30px; }
   .home-sidebar { min-width: 0; position: sticky; top: 20px; align-self: start; max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; padding-right: 3px; padding-bottom: 3px; }
   .profile-panel { position: relative; text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; box-shadow: var(--panel-shadow); padding-bottom: 17px; transition: border-color .2s,box-shadow .2s; }
@@ -197,7 +243,7 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
   @media (max-width: 1000px) { .home-layout { grid-template-columns: 220px minmax(0,1fr); gap: 22px; } h1 { font-size: clamp(50px,6vw,70px); } .scene-copy { width: 45%; } .name-note { display: block; margin: 4px 0 18px 5px; font-size: 15px; transform: rotate(-5deg); } .scene-content { padding-top: 151px; } .scene-motto { font-size: 16px; } }
   @media (max-width: 760px) {
     .home-scene { height: 565px; }
-    .scene-image { top: 78px; height: calc(100% - 125px); object-position: 18% top; -webkit-mask-image: linear-gradient(to bottom,transparent,#000 9%,#000 80%,transparent 100%); mask-image: linear-gradient(to bottom,transparent,#000 9%,#000 80%,transparent 100%); }
+    .scene-image { top: 78px; height: calc(100% - 125px); object-position: 18% top; -webkit-mask-image: linear-gradient(to bottom,transparent,#000 9%,#000 88%,transparent 100%); mask-image: linear-gradient(to bottom,transparent,#000 9%,#000 88%,transparent 100%); }
     .scene-shade { background: linear-gradient(0deg,var(--paper),#102f52de 14%,#103b658a 37%,#123b5b00 63%); }
     .scene-content { padding-top: 308px; }
     .scene-greeting { line-height: 22px; }
@@ -207,7 +253,10 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
     .scene-motto { font-size: 14px; margin-bottom: 10px; }
     .scene-description { line-height: 1.8; }
     .scene-down { margin-top: 12px; padding-block: 6px; }
-    .scene-bottom { display: none; }
+    .scene-bottom { bottom: 24px; }
+    .scene-quote { display: none; }
+    .sky-glints span:first-child { left: 86%; top: 30%; font-size: 8px; }
+    .sky-glints span:not(:first-child) { display: none; }
     .home-layout { grid-template-columns: minmax(0,1fr); margin-top: 0; }
     .home-sidebar { display: none; }
     .home-feed { padding-top: 27px; }
@@ -215,5 +264,5 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
   }
   @media (max-width: 420px) { .home-scene { height: 530px; } .scene-content { padding-top: 280px; } h1 { font-size: clamp(44px,13.8vw,54px); } h1 :global(.scene-wordmark) { width: min(4.8em,calc(100vw - 118px)); } .name-note { font-size: 12px; margin-left: 10px; } .scene-greeting { font-size: 11px; } .scene-motto { letter-spacing: .025em; } .scene-description { font-size: 11px; } .scene-description > span { font-size: 12px; } .scene-down { padding-inline: 12px; } }
   @media (min-width: 1001px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) { .scene-image { transform: translate3d(0,var(--scene-drift,0px),0); } }
-  @media (prefers-reduced-motion: reduce) { .scene-image,.profile-avatar:hover { transform: none; } .scene-down,.scene-down svg,.little-star,.name-note,.profile-panel,.sidebar-note,.sidebar-topics,.profile-avatar { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .scene-image,.profile-avatar:hover { transform: none; } .sky-glints span,.scene-down svg { animation: none; } .scene-motion-toggle { display: none; } .scene-down,.scene-down svg,.little-star,.name-note,.profile-panel,.sidebar-note,.sidebar-topics,.profile-avatar { transition: none; } }
 </style>
