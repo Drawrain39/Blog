@@ -1,15 +1,16 @@
 ---
 import FriendLinkCard from "@components/FriendLinkCard.astro";
-import ImageWrapper from "@components/misc/ImageWrapper.astro";
+import { Image } from "astro:assets";
 import { friendLinks } from "../constants/friends";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import CopyButton from "../components/CopyButton.astro";
+import fireworks from "../assets/images/re2.jpg";
 const siteInfo = `站名：Drawrain's Blog\n网址：https://drawrain.me/\n头像：https://drawrain.me/images/avatar.webp\n简介：Just keep drawing without regrets.\n邮箱：858617595@qq.com`;
 ---
 
 <MainGridLayout title="友情链接" description="Drawrain 的友情链接，欢迎互换友链。">
 	<div class="friends-page">
-		<header class="friends-cover"><ImageWrapper src="assets/images/tam.png" alt="幻想风格的角色插画" class="cover-art" /><div class="cover-shade"></div><div class="cover-copy"><span class="page-location">首页 / 友链</span><h1>友情链接<span aria-hidden="true"> ✧</span></h1><p>欢迎找我互换友链！QQ：858617595</p></div></header>
+		<header class="friends-cover"><Image src={fireworks} widths={[640,960,1440,1920]} sizes="(max-width: 760px) calc(100vw - 32px), (max-width: 1304px) calc(100vw - 64px), 1240px" format="webp" quality={85} loading="eager" alt="蓝色夜空下，烟火映照着微笑的少女" class="cover-art" /><div class="cover-shade"></div><div class="cover-copy"><span class="page-location">首页 / 友链</span><h1>友情链接<span aria-hidden="true"> ✧</span></h1><p>欢迎找我互换友链！QQ：858617595</p></div></header>
 		<div class="friends-heading"><h2>我的朋友们</h2><span>{friendLinks.length} 位朋友</span></div>
 		<section class="friend-grid" aria-label="友情链接">{friendLinks.map((friend) => <FriendLinkCard friend={friend} />)}</section>
 		<section class="exchange-card" aria-labelledby="exchange-title"><div class="exchange-rules"><h2 id="exchange-title"><span aria-hidden="true">✉</span> 申请友链</h2><ul><li>站点需可正常访问而且在更新即可</li><li>内容不限，看到了就会加上</li><li>记得给我个介绍即可（最好）</li></ul><a href="mailto:858617595@qq.com" class="exchange-contact">QQ · 858617595 <span>↗</span></a></div><div class="site-details"><div class="site-details-heading"><h3>我的站点信息</h3><CopyButton text={siteInfo} label="复制本站信息" variant="ghost" /></div><dl><dt>站名</dt><dd>Drawrain's Blog</dd><dt>介绍</dt><dd>Just keep drawing without regrets.</dd><dt>邮箱</dt><dd><a href="mailto:858617595@qq.com">858617595@qq.com</a></dd></dl></div></section>
@@ -19,9 +20,9 @@ const siteInfo = `站名：Drawrain's Blog\n网址：https://drawrain.me/\n头�
 <style>
 	.friends-page { padding-top: 30px; }
 	.friends-cover { position: relative; min-height: 245px; overflow: hidden; border-radius: 24px; border: 1px solid var(--line); background: var(--surface); }
-	.friends-cover :global(.cover-art) { position: absolute; inset: 0; height: 100%; }
-	.friends-cover :global(.cover-art img) { object-position: center 42%; }
-	.cover-shade { position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--surface) 96%, transparent), color-mix(in srgb, var(--surface) 15%, transparent) 95%), linear-gradient(0deg, var(--surface), transparent 90%); }
+	.cover-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+	.cover-shade { position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb,var(--surface) 88%,transparent), color-mix(in srgb,var(--surface) 58%,transparent) 19%, color-mix(in srgb,var(--surface) 12%,transparent) 37%, transparent 53%), linear-gradient(0deg,color-mix(in srgb,var(--surface) 32%,transparent),transparent 50%); }
+	:global(:root:not(.dark)) .cover-shade { background:linear-gradient(90deg,color-mix(in srgb,var(--surface) 94%,transparent),color-mix(in srgb,var(--surface) 75%,transparent) 19%,color-mix(in srgb,var(--surface) 15%,transparent) 37%,transparent 53%),linear-gradient(0deg,color-mix(in srgb,var(--surface) 22%,transparent),transparent 50%); }
 	.cover-copy { position: relative; padding: 38px; }
 	.page-location { color: var(--muted); font-size: 11px; }
 	.cover-copy h1 { font-size: 38px; font-weight: 700; margin: 23px 0 10px; color: var(--ink); }
@@ -46,5 +47,6 @@ const siteInfo = `站名：Drawrain's Blog\n网址：https://drawrain.me/\n头�
 	.site-details dd { margin: 0; overflow-wrap: anywhere; }
 	.site-details a:hover { color: var(--accent); }
 	@media (max-width: 950px) { .friend-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .exchange-card { gap: 25px; } .site-details { padding-left: 25px; } }
-	@media (max-width: 600px) { .friends-page { padding-top: 20px; } .friends-cover { min-height: 225px; border-radius: 18px; } .cover-copy { padding: 25px; } .cover-copy h1 { font-size: 32px; } .cover-copy p { max-width: 220px; line-height: 1.9; } .friend-grid { grid-template-columns: 1fr; gap: 15px; } .exchange-card { grid-template-columns: 1fr; gap: 25px; padding: 25px; } .site-details { border-left: 0; border-top: 1px solid var(--line); padding: 25px 0 0; } .site-details h3 { font-size:14px; } }
+	@media (max-width: 600px) { .friends-page { padding-top: 20px; } .friends-cover { min-height: 225px; border-radius: 18px; } .cover-copy { min-height:225px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;padding:25px; } .cover-copy h1 { font-size:32px;line-height:1.25;margin:12px 0 8px; } .cover-copy p { max-width:220px;line-height:1.9; } .friend-grid { grid-template-columns: 1fr; gap: 15px; } .exchange-card { grid-template-columns: 1fr; gap: 25px; padding: 25px; } .site-details { border-left: 0; border-top: 1px solid var(--line); padding: 25px 0 0; } .site-details h3 { font-size:14px; } }
+	@media (max-width: 600px) { .cover-shade,:global(:root:not(.dark)) .cover-shade { background:linear-gradient(90deg,color-mix(in srgb,var(--surface) 80%,transparent),transparent 75%),linear-gradient(0deg,color-mix(in srgb,var(--surface) 92%,transparent),transparent 82%); } }
 </style>

@@ -1,0 +1,136 @@
+<drawrain-sparkles aria-hidden="true"><canvas hidden></canvas></drawrain-sparkles>
+
+<script>
+  interface Sparkle {
+    x: number;
+    y: number;
+    dx: number;
+    dy: number;
+    size: number;
+    color: string;
+    born: number;
+    duration: number;
+  }
+
+  class DrawrainSparkles extends HTMLElement {
+    private controller?: AbortController;
+    private canvas?: HTMLCanvasElement;
+    private context?: CanvasRenderingContext2D | null;
+    private particles: Sparkle[] = [];
+    private frame = 0;
+    private previousBurst = -Infinity;
+    private press?: { id: number; x: number; y: number };
+    private motion = matchMedia("(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)");
+
+    connectedCallback() {
+      this.controller?.abort();
+      this.controller = new AbortController();
+      const { signal } = this.controller;
+      this.canvas = this.querySelector("canvas") || undefined;
+      this.context = this.canvas?.getContext("2d");
+      document.addEventListener("pointerdown", event => {
+        this.press = event.isPrimary && event.button === 0 && event.pointerType === "mouse"
+          ? { id: event.pointerId, x: event.clientX, y: event.clientY } : undefined;
+      }, { passive: true, signal });
+      document.addEventListener("pointermove", event => {
+        if (this.press && event.pointerId === this.press.id &&
+          Math.hypot(event.clientX - this.press.x, event.clientY - this.press.y) > 6) this.press = undefined;
+      }, { passive: true, signal });
+      document.addEventListener("pointerup", event => {
+        const press = this.press;
+        this.press = undefined;
+        if (!press || press.id !== event.pointerId || !this.motion.matches || document.hidden ||
+          Math.hypot(event.clientX - press.x, event.clientY - press.y) > 6 ||
+          !window.getSelection()?.isCollapsed || !(event.target instanceof Element) ||
+          event.target.closest("input, textarea, select, [contenteditable], dialog, [role=dialog], .pswp")) return;
+        this.burst(event.clientX, event.clientY, event.target);
+      }, { passive: true, signal });
+      document.addEventListener("pointercancel", () => { this.press = undefined; }, { signal });
+      document.addEventListener("visibilitychange", () => { if (document.hidden) this.clear(); }, { signal });
+      document.addEventListener("astro:before-swap", () => this.clear(), { signal });
+      this.motion.addEventListener("change", () => this.clear(), { signal });
+      window.addEventListener("resize", () => this.clear(), { passive: true, signal });
+    }
+
+    disconnectedCallback() {
+      this.controller?.abort();
+      this.clear();
+    }
+
+    private burst(x: number, y: number, target: Element) {
+      const now = performance.now();
+      if (!this.canvas || !this.context || now - this.previousBurst < 120) return;
+      this.previousBurst = now;
+      if (!this.particles.length) {
+        const ratio = Math.min(devicePixelRatio || 1, 1.5);
+        this.canvas.width = Math.round(innerWidth * ratio);
+        this.canvas.height = Math.round(innerHeight * ratio);
+        this.context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      }
+      const scene = target.closest(".home-scene");
+      const colors = getComputedStyle(scene || this);
+      const rain = colors.getPropertyValue(scene ? "--scene-rain" : "--accent").trim();
+      const star = colors.getPropertyValue(scene ? "--scene-star" : "--rose").trim();
+      for (let i = 0; i < 3; i++) {
+        const angle = i * Math.PI * 2 / 3 - Math.PI / 2 + .2;
+        const distance = 19 + i * 4;
+        this.particles.push({ x, y, dx: Math.cos(angle) * distance, dy: Math.sin(angle) * distance,
+          size: 3 + i * .6, color: i === 1 ? star : rain, born: now, duration: 460 + i * 55 });
+      }
+      this.particles = this.particles.slice(-12);
+      this.canvas.hidden = false;
+      if (!this.frame) this.frame = requestAnimationFrame(this.draw);
+    }
+
+    private draw = (now: number) => {
+      this.frame = 0;
+      const context = this.context;
+      if (!context || !this.canvas || document.hidden || !this.motion.matches) { this.clear(); return; }
+      context.clearRect(0, 0, innerWidth, innerHeight);
+      this.particles = this.particles.filter(particle => now - particle.born < particle.duration);
+      for (const particle of this.particles) {
+        const progress = Math.max(0, (now - particle.born) / particle.duration);
+        const travel = 1 - (1 - progress) ** 2;
+        const size = particle.size * (1 - progress * .45);
+        context.save();
+        context.translate(particle.x + particle.dx * travel, particle.y + particle.dy * travel);
+        context.rotate(progress * .45);
+        context.globalAlpha = .65 * (1 - progress) ** 2;
+        context.fillStyle = particle.color;
+        context.beginPath();
+        context.moveTo(0, -size);
+        context.lineTo(size * .24, -size * .24);
+        context.lineTo(size, 0);
+        context.lineTo(size * .24, size * .24);
+        context.lineTo(0, size);
+        context.lineTo(-size * .24, size * .24);
+        context.lineTo(-size, 0);
+        context.lineTo(-size * .24, -size * .24);
+        context.closePath();
+        context.fill();
+        context.restore();
+      }
+      if (this.particles.length) this.frame = requestAnimationFrame(this.draw);
+      else this.canvas.hidden = true;
+    };
+
+    private clear() {
+      cancelAnimationFrame(this.frame);
+      this.frame = 0;
+      this.press = undefined;
+      this.particles = [];
+      this.context?.clearRect(0, 0, innerWidth, innerHeight);
+      if (this.canvas) this.canvas.hidden = true;
+    }
+  }
+
+  if (!customElements.get("drawrain-sparkles")) customElements.define("drawrain-sparkles", DrawrainSparkles);
+</script>
+
+<style>
+  drawrain-sparkles { position: fixed; inset: 0; z-index: 70; pointer-events: none; contain: strict; }
+  canvas { display: block; width: 100%; height: 100%; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+    drawrain-sparkles { display: none; }
+  }
+</style>

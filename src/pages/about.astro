@@ -1,31 +1,33 @@
 ---
 import ImageWrapper from "@components/misc/ImageWrapper.astro";
+import { Image } from "astro:assets";
 import CopyButton from "@components/CopyButton.astro";
 import { Icon } from "astro-icon/components";
 import { getCollection } from "astro:content";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { profileConfig } from "../config";
 import { url } from "../utils/url-utils";
+import goldenBlooms from "../assets/images/golden-blooms.png";
 const milestones=[{date:"2025.09",title:"搭起自己的博客",text:"从 Astro 和 Markdown 开始，记录学习与折腾。",slug:"blog",icon:"fa6-solid:rocket"},{date:"2025.12",title:"第一次打国赛",text:"CISCN 长城杯 2026，留下第一份国赛记录。",slug:"ccb2025",icon:"fa6-solid:flag-checkered"},{date:"2026.04",title:"继续折腾 Agent",text:"整理 CC-Switch、Codex 和 Claude Code 的使用笔记。",slug:"learncodex",icon:"fa6-solid:robot"},{date:"2026.05",title:"记录 DEFCON CTF",text:"把比赛中 Reverse 方向的分析过程写下来。",slug:"defconctf2026",icon:"fa6-solid:code"}];
 const availablePostSlugs = new Set((await getCollection("posts")).filter(post => !post.data.draft).map(post => post.slug));
 const skills = [
-  { name: "Python", icon: "python", detail: "脚本与日常工具" },
-  { name: "C++", icon: "cpp", detail: "程序设计与数据结构" },
-  { name: "Rust", icon: "rust", detail: "系统编程" },
-  { name: "Linux", icon: "linux", detail: "开发环境" },
-  { name: "Docker", icon: "docker", detail: "容器部署" },
-  { name: "VS Code", icon: "vscode", detail: "代码编辑" },
-  { name: "Vim", icon: "vim", detail: "终端编辑" },
+  { name: "Python", icon: "python", detail: "脚本与日常工具", color: "#eac96d" },
+  { name: "C++", icon: "cpp", detail: "程序设计与数据结构", color: "#75b9ec" },
+  { name: "Rust", icon: "rust", detail: "系统编程", color: "#d69a7b" },
+  { name: "Linux", icon: "linux", detail: "开发环境", color: "#d2c6a2" },
+  { name: "Docker", icon: "docker", detail: "容器部署", color: "#70c6ec" },
+  { name: "VS Code", icon: "vscode", detail: "代码编辑", color: "#73b8ed" },
+  { name: "Vim", icon: "vim", detail: "终端编辑", color: "#8dcca2" },
 ];
 ---
 <MainGridLayout title="关于我" description="Drawrain 的个人介绍、技术栈、写作记录和联系方式。">
 <div class="about-page">
-<header class="about-cover"><ImageWrapper src="assets/images/re1.jpg" alt="水面上的少女与小船" class="cover-art"/><div class="cover-shade"></div><div class="cover-copy"><h1>关于我</h1><p>Re / CTF / Agent(ing)</p></div><a class="cover-profile" href="https://github.com/Drawrain39" target="_blank" rel="noopener noreferrer"><ImageWrapper src={profileConfig.avatar||"assets/images/avata.jpg"} alt="Drawrain 的头像" class="profile-avatar"/><strong>Drawrain</strong></a></header>
+<header class="about-cover"><Image src={goldenBlooms} widths={[640,960,1440,1920]} sizes="(max-width: 760px) calc(100vw - 32px), (max-width: 1304px) calc(100vw - 64px), 1240px" format="webp" quality={85} loading="eager" alt="金色花簇间，举着相机的少女" class="cover-art"/><div class="cover-shade"></div><div class="cover-copy"><span class="cover-eyebrow" aria-hidden="true">✦ PROFILE &amp; CONTACT</span><h1>关于我</h1><p>Re / CTF / Agent(ing)</p></div><a class="cover-profile" href="https://github.com/Drawrain39" target="_blank" rel="noopener noreferrer"><ImageWrapper src={profileConfig.avatar||"assets/images/avata.jpg"} alt="Drawrain 的头像" class="profile-avatar"/><strong>Drawrain</strong></a></header>
 <div class="about-columns"><div class="about-main">
 <section class="about-card bio-card" aria-label="个人简介"><p>计科本科在读，Re / CTF / Agent(ing)。</p><p>平时主要写比赛的 WP 和学习笔记，偶尔也会写点别的。想到什么写什么，不固定。</p><p>成分复杂，等待挖掘…</p><blockquote>即使迷茫，也要前行。</blockquote></section>
 <section class="about-card skill-section" aria-labelledby="tech-stack-title">
   <h2 id="tech-stack-title">技术栈</h2>
-  <div class="tech-stack-icons">{skills.map(skill => <skill-tooltip class="tech-skill" tabindex="0" role="img" aria-label={skill.name} aria-describedby={`skill-tip-${skill.icon}`}><img src={url(`/icons/skills/stack-${skill.icon}.svg`)} width="48" height="48" alt="" loading="lazy" /><span class="skill-tooltip" id={`skill-tip-${skill.icon}`} role="tooltip">{skill.name} · {skill.detail}</span></skill-tooltip>)}</div>
+  <div class="tech-stack-icons">{skills.map(skill => <skill-tooltip class="tech-skill" style={`--skill-color:${skill.color}`} tabindex="0" role="img" aria-label={skill.name} aria-describedby={`skill-tip-${skill.icon}`}><img src={url(`/icons/skills/stack-${skill.icon}.svg`)} width="48" height="48" alt="" loading="lazy" /><span class="skill-tooltip" id={`skill-tip-${skill.icon}`} role="tooltip">{skill.name} · {skill.detail}</span></skill-tooltip>)}</div>
 </section>
 <section class="about-card timeline-section"><div class="section-heading"><h2>走过的一些节点</h2><span>来自已有的文章记录</span></div><ol class="growth-timeline">{milestones.map(item=><li><span class="timeline-node" aria-hidden="true"><Icon name={item.icon} width={13} height={13}/></span><time>{item.date}</time><div>{availablePostSlugs.has(item.slug) ? <a href={url(`/posts/${item.slug}/`)}>{item.title}<span aria-hidden="true"> ↗</span></a> : <span class="milestone-title">{item.title}</span>}<p>{item.text}</p></div></li>)}</ol></section>
 </div><aside class="about-sidebar">
@@ -56,25 +58,31 @@ if (!customElements.get("skill-tooltip")) customElements.define("skill-tooltip",
 </script>
 <style>
 .about-page { padding-top:30px; } .about-cover { position:relative;min-height:245px;overflow:hidden;border-radius:24px;border:1px solid var(--line);background:var(--surface); }
-.about-cover :global(.cover-art) { position:absolute;inset:0;height:100%; } .about-cover :global(.cover-art img) { object-position:center 43%; }
-.cover-shade { position:absolute;inset:0;background:linear-gradient(90deg,color-mix(in srgb,var(--surface) 95%,transparent),color-mix(in srgb,var(--surface) 15%,transparent) 95%),linear-gradient(0deg,var(--surface),transparent 90%); }
+.cover-art { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%; }
+.cover-shade { position:absolute;inset:0;background:linear-gradient(90deg,color-mix(in srgb,var(--surface) 82%,transparent),color-mix(in srgb,var(--surface) 52%,transparent) 18%,color-mix(in srgb,var(--surface) 12%,transparent) 34%,transparent 48%),linear-gradient(0deg,color-mix(in srgb,var(--surface) 34%,transparent),transparent 48%); }
+:global(:root:not(.dark)) .cover-shade { background:linear-gradient(90deg,color-mix(in srgb,var(--surface) 91%,transparent),color-mix(in srgb,var(--surface) 68%,transparent) 18%,color-mix(in srgb,var(--surface) 12%,transparent) 36%,transparent 50%),linear-gradient(0deg,color-mix(in srgb,var(--surface) 22%,transparent),transparent 48%); }
 .cover-copy { position:relative;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-height:inherit;padding:38px; } h1 { font-size:38px;font-weight:700;margin:0 0 10px; } .cover-copy p { color:var(--accent);font-size:13px; }
+.cover-eyebrow { color:var(--muted);font:500 10px/1.4 var(--font-mono);letter-spacing:.16em;margin-bottom:7px; }
 .cover-profile { position:absolute;right:38px;bottom:28px;display:flex;align-items:center;gap:14px; } .cover-profile :global(.profile-avatar) { width:66px;height:66px;border-radius:50%;border:3px solid #d6e3eeaa; } .cover-profile strong { font-size:17px; }
+:global(:root.dark) .cover-profile strong { text-shadow:0 1px 5px #18212bcc,0 2px 12px #18212b88; }
 .about-columns { display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;margin-top:24px; } .about-main,.about-sidebar { min-width:0; } .about-card { padding:28px;background:var(--surface);border:1px solid var(--line);border-radius:20px;margin-bottom:24px; } h2 { font-size:20px;font-weight:650;margin-bottom:18px; } .bio-card p { font-size:15px;line-height:1.95;color:var(--muted);margin:15px 0; } blockquote { border-left:2px solid var(--accent);padding:10px 16px;background:var(--soft);border-radius:0 8px 8px 0;margin-top:22px;color:var(--ink);font-size:15px; }
 .bio-card p:first-child { margin-top:0; }
 .section-heading { display:flex;justify-content:space-between;align-items:baseline;gap:12px; } .section-heading>span { font-size:11px;color:var(--muted); }
 .tech-stack-icons { display:flex;flex-wrap:wrap;align-items:center;gap:14px;max-width:100%;padding:4px 2px; }
-.tech-skill { position:relative;display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid var(--line);border-radius:17px;background:var(--codeblock-bg);outline-offset:5px;transition:background .18s ease,border-color .18s ease; }
+.tech-skill { position:relative;display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid var(--line);border-radius:17px;background:var(--codeblock-bg);outline-offset:5px;transition:background .2s ease,border-color .2s ease,box-shadow .2s ease; }
 .tech-skill img { display:block;width:48px;height:48px;max-width:none;transition:transform .18s ease; }
-.tech-skill:hover,.tech-skill:focus-visible { border-color:color-mix(in srgb,var(--accent) 60%,var(--line));background:color-mix(in srgb,var(--codeblock-bg) 88%,var(--accent)); }
+.tech-skill:hover,.tech-skill:focus-visible { border-color:color-mix(in srgb,var(--skill-color) 55%,var(--line));background:color-mix(in srgb,var(--codeblock-bg) 94%,var(--skill-color));box-shadow:0 0 18px color-mix(in srgb,var(--skill-color) 14%,transparent); }
 .tech-skill:hover img,.tech-skill:focus-visible img { transform:scale(1.1); }
 .skill-tooltip { position:absolute;z-index:5;bottom:calc(100% + 13px);left:50%;transform:translateX(calc(-50% + var(--tooltip-shift,0px)));width:max-content;max-width:calc(100vw - 24px);padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--soft);color:var(--ink);box-shadow:var(--panel-shadow);font-size:11px;line-height:1.5;white-space:normal;text-align:center;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .15s ease; }
 .tech-skill:hover .skill-tooltip,.tech-skill:focus .skill-tooltip { opacity:1;visibility:visible; }
+.tech-stack-icons:focus-within .tech-skill:not(:focus) .skill-tooltip { opacity:0;visibility:hidden; }
 .growth-timeline { list-style:none;padding:0;margin:12px 0 0 13px; } .growth-timeline li { position:relative;display:grid;grid-template-columns:75px minmax(0,1fr);gap:20px;padding:0 0 27px 25px;border-left:2px dashed color-mix(in srgb,var(--muted) 28%,transparent); } .growth-timeline li:last-child { padding-bottom:0; } .timeline-node { position:absolute;left:-15px;top:-2px;display:grid;place-items:center;width:28px;height:28px;border-radius:10px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));background:color-mix(in srgb,var(--accent) 7%,var(--surface));color:var(--accent);box-shadow:0 0 0 3px var(--surface); } time { font-size:12px;color:var(--muted);padding-top:2px; } .growth-timeline a,.milestone-title { font-size:15px;font-weight:550; } .growth-timeline a:hover { color:var(--accent); } .growth-timeline p { color:var(--muted);font-size:13px;margin-top:7px;line-height:1.8; }
 .contact-card h2 { margin-bottom:22px; } .contact-copy { display:flex;align-items:center;gap:10px; } .contact-icon { display:grid;place-items:center;flex-shrink:0;width:38px;height:38px;border-radius:10px;background:var(--soft);color:var(--accent); } .contact-copy>div { flex:1;min-width:0; } .contact-copy strong,.contact-copy span { display:block; } .contact-copy strong { font-size:13px; } .contact-copy div>span { color:var(--muted);font-size:12px; } .contact-copy :global(copy-button button) { padding:8px 9px; }
 .contact-email { padding:20px 0;border-bottom:1px solid var(--line); } .contact-email>div { display:flex;gap:8px;align-items:center;font-size:12px;margin-bottom:12px; } .contact-email a { overflow-wrap:anywhere; } .social-links { padding-top:10px; } .social-links a { display:flex;align-items:center;gap:11px;padding:12px 0;font-size:13px;color:var(--muted); } .social-links a>span:last-child { margin-left:auto; } .social-links a:hover { color:var(--accent); }
 .song-info { display:flex;align-items:center;gap:15px; } .record { display:grid;place-items:center;width:51px;height:51px;flex-shrink:0;border-radius:50%;background:repeating-radial-gradient(circle,#222c3c 0 3px,#354259 4px 5px);font-size:22px;color:var(--rose); } .song-info h3 { font-size:16px;font-weight:550; } .song-info p { color:var(--muted);font-size:11px;margin-top:6px; } .open-music { display:flex;justify-content:center;align-items:center;gap:9px;width:100%;padding:11px;margin-top:20px;color:var(--accent);background:var(--soft);border:1px solid var(--line);border-radius:10px;font-size:13px; } .external-song { display:block;color:var(--muted);font-size:11px;text-align:center;margin-top:14px; }
 @media(max-width:1000px) { .about-columns { grid-template-columns:minmax(0,1fr) 290px;gap:18px; } .about-card { padding:23px; } }
-@media(max-width:760px) { .about-page { padding-top:20px; } .about-columns { grid-template-columns:1fr; } .about-cover { min-height:225px; } .cover-copy { padding:25px; } h1 { font-size:32px; } .cover-profile { right:24px;bottom:20px; } .cover-profile :global(.profile-avatar) { width:52px;height:52px; } .about-sidebar { display:grid;grid-template-columns:1fr 1fr;gap:18px; } .about-card { padding:22px; } .section-heading { display:block; } .section-heading>span { display:block;margin:-10px 0 18px; } }
+@media(max-width:760px) { .about-page { padding-top:20px; } .about-columns { grid-template-columns:1fr; } .about-cover { min-height:225px; } .cover-copy { padding:25px;justify-content:flex-end; } h1 { font-size:32px;line-height:1.25; } .cover-profile { right:24px;bottom:20px; } .cover-profile :global(.profile-avatar) { width:52px;height:52px; } .about-sidebar { display:grid;grid-template-columns:1fr 1fr;gap:18px; } .about-card { padding:22px; } .section-heading { display:block; } .section-heading>span { display:block;margin:-10px 0 18px; } }
+@media(max-width:760px) { .cover-shade,:global(:root:not(.dark)) .cover-shade { background:linear-gradient(90deg,color-mix(in srgb,var(--surface) 82%,transparent),color-mix(in srgb,var(--surface) 12%,transparent) 50%,transparent 70%),linear-gradient(0deg,color-mix(in srgb,var(--surface) 94%,transparent),transparent 80%); } }
 @media(max-width:540px) { .about-sidebar { display:block; } .cover-profile strong { display:none; } .growth-timeline li { grid-template-columns:60px minmax(0,1fr);gap:14px; } }
+@media(prefers-reduced-motion:reduce) { .tech-skill,.tech-skill img { transition:none; } .tech-skill:hover img,.tech-skill:focus-visible img { transform:none; } }
 </style>

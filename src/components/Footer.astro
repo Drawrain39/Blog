@@ -1,12 +1,13 @@
 ---
 import { url } from "../utils/url-utils";
+import Brand from "./Brand.astro";
 const currentYear = new Date().getFullYear();
 ---
 
 <footer class="journal-footer" data-pagefind-ignore>
 	<div class="footer-top">
 		<div>
-			<a href={url("/")} class="footer-wordmark">Drawrain<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="m10 1 2.3 6.7L19 10l-6.7 2.3L10 19l-2.3-6.7L1 10l6.7-2.3L10 1Z"/></svg></a>
+			<a href={url("/")} class="footer-wordmark" aria-label="Drawrain 的博客首页"><Brand /></a>
 			<p>即使迷茫，也要前行。</p>
 		</div>
 		<a class="back-top" href="#top">回到顶部 <span aria-hidden="true">↑</span></a>
@@ -22,10 +23,10 @@ const currentYear = new Date().getFullYear();
 <style>
 	.journal-footer { margin-top: 56px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); padding: 28px 30px 22px; color: var(--muted); }
 	.footer-top { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-bottom: 24px; }
-	.footer-wordmark { display: inline-flex; align-items: center; gap: 9px; font-size: 23px; line-height: 1.2; font-weight: 800; font-style: italic; letter-spacing: -.5px; color: var(--ink); text-decoration: none; }
-	.footer-wordmark svg { color: var(--accent); }
+	.footer-wordmark { display: inline-flex; color: var(--ink); text-decoration: none; --brand-rain: var(--accent); --brand-star: var(--rose); }
+	.footer-wordmark :global(.brand) { width: 184px; height: auto; }
 	.footer-top p { margin: 10px 0 0; font-size: 12px; }
-	.back-top { color: var(--muted); display: flex; gap: 12px; align-items: center; font-size: 12px; text-decoration: none; border: 1px solid var(--line); border-radius: 12px; padding: 8px 13px; }
+	.back-top { color: var(--muted); display: flex; gap: 12px; align-items: center; flex-shrink: 0; white-space: nowrap; font-size: 12px; text-decoration: none; border: 1px solid var(--line); border-radius: 12px; padding: 8px 13px; }
 	.back-top span { font-size: 18px; color: var(--accent); }
 	.footer-bottom { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 11px; }
 	.footer-bottom p { margin: 0; }
@@ -35,6 +36,8 @@ const currentYear = new Date().getFullYear();
 	.footer-links a:hover, .back-top:hover { color: var(--accent); }
 	@media (max-width: 650px) {
 		.journal-footer { margin-top: 35px; padding: 23px 20px 19px; border-radius: 18px; }
+		.footer-top { flex-wrap: wrap; gap: 18px; }
+		.back-top { margin-left: auto; }
 		.footer-bottom { align-items: flex-start; flex-direction: column; gap: 16px; line-height: 1.8; }
 		.footer-bottom p { max-width: 250px; }
 		.footer-dot { margin: 0 4px; }

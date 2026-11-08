@@ -5,12 +5,16 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getSortedPostsList } from "../utils/content-utils";
+import { getImage } from "astro:assets";
+import cityDusk from "../assets/images/city-dusk.jpg";
 
 const sortedPostsList = await getSortedPostsList();
+const coverSizes = await Promise.all([640, 960, 1440, 1920].map(width => getImage({ src: cityDusk, width, format: "webp", quality: 82 })));
+const coverImage = { src: coverSizes[2].src, srcSet: coverSizes.map(image => `${image.src} ${image.attributes.width}w`).join(", "), width: cityDusk.width, height: cityDusk.height };
 ---
 
 <MainGridLayout title={i18n(I18nKey.archive)}>
-    <ArchivePanel sortedPosts={sortedPostsList} client:load></ArchivePanel>
+    <ArchivePanel sortedPosts={sortedPostsList} {coverImage} client:load></ArchivePanel>
     <ActivityCalendar />
 </MainGridLayout>
 

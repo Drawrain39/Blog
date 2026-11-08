@@ -3,9 +3,11 @@ import { profileConfig, siteConfig } from "@/config";
 import { Image } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import PersistentMusic from "@components/PersistentMusic.astro";
+import ClickSparkles from "@components/ClickSparkles.astro";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
 import backgroundArt from "../assets/images/re2.jpg";
+import daylightArt from "../assets/images/sky-reflection.jpg";
 import { url } from "@utils/url-utils";
 import "katex/dist/katex.css";
 import "../styles/variables.styl";
@@ -53,7 +55,7 @@ const ogImage = new URL(routeParts[0] === "posts" ? `/og/${routeParts.slice(1).j
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" href={url("/favicon.svg")} type="image/svg+xml" />
+    <link rel="icon" href={`${url("/favicon.svg")}?v=drawrain-1`} type="image/svg+xml" sizes="any" />
     <script is:inline data-astro-rerun>
       try {
         document.documentElement.classList.toggle("dark", localStorage.getItem("drawrain-theme-v2") !== "light");
@@ -63,10 +65,11 @@ const ogImage = new URL(routeParts[0] === "posts" ? `/og/${routeParts.slice(1).j
     <ClientRouter fallback="swap" />
   </head>
   <body id="top" class={bodyClass}>
-    <div class="site-backdrop" aria-hidden="true"><Image src={backgroundArt} width={1400} format="webp" quality={65} alt="" /></div>
+    <div class="site-backdrop" aria-hidden="true"><Image src={bodyClass.split(" ").includes("home-page") ? daylightArt : backgroundArt} width={1400} format="webp" quality={65} alt="" /></div>
     <a class="skip-link" href="#main-content">跳至正文</a>
     <slot />
     <PersistentMusic />
+    <ClickSparkles />
   </body>
 </html>
 

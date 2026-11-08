@@ -3,15 +3,15 @@ import type { GetStaticPaths } from "astro";
 import { Image } from "astro:assets";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import PostPage from "../components/PostPage.astro";
-import PostCover from "../components/PostCover.astro";
+import Brand from "../components/Brand.astro";
 import Pagination from "../components/control/Pagination.astro";
 import { getSortedPosts } from "../utils/content-utils";
 import { getCategoryUrl, getPostUrlBySlug, url } from "../utils/url-utils";
 import { PAGE_SIZE } from "../constants/constants";
 import { friendLinks } from "../constants/friends";
 import avatar from "../assets/images/avata.jpg";
-import nightArt from "../assets/images/re2.jpg";
-import dayArt from "../assets/images/re1.jpg";
+import dayArt from "../assets/images/sky-reflection.jpg";
+import profileArt from "../assets/images/re1.jpg";
 
 export const getStaticPaths = (async ({ paginate }) => paginate((await getSortedPosts()).filter(post => !post.data.hideInHome), { pageSize: PAGE_SIZE })) satisfies GetStaticPaths;
 const { page } = Astro.props;
@@ -27,27 +27,30 @@ const categories = allPosts.reduce((counts, post) => {
 const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
 ---
 <MainGridLayout homePage={true}>
-  <section slot="hero" class="home-scene" aria-labelledby="home-title" data-home-scene>
-    <Image src={nightArt} widths={[800,1280,1920]} sizes="100vw" format="webp" quality={85} loading="eager" fetchpriority="high" alt="蓝色夜空与烟火中的二次元少女，原博客背景插画" class="scene-image night-image" data-scene-image="night" />
-    <Image src={dayArt} widths={[800,1280,1920]} sizes="100vw" format="webp" quality={85} loading="lazy" alt="蓝色水面上，坐在花朵小船里的二次元少女" class="scene-image day-image" data-scene-image="day" hidden />
+  <section slot="hero" class="home-scene" aria-labelledby="home-title">
+    <div class="scene-art">
+      <Image src={dayArt} widths={[800,1280,1920]} sizes="100vw" format="webp" quality={85} loading="eager" fetchpriority="high" alt="晴空下的白发少女与水面倒映的云朵、相机和画具" class="scene-image" />
+    </div>
     <div class="scene-shade" aria-hidden="true"></div>
     <div class="scene-content site-container">
+      <div class="scene-copy">
       <div class="scene-greeting"><span class="little-star" aria-hidden="true">✧</span> 欢迎来到我的小站</div>
-      <h1 id="home-title">Drawrain<span class="name-dot">.</span><span class="name-note">の小站</span></h1>
+      <h1 id="home-title"><span class="sr-only">Drawrain</span><Brand variant="wordmark" class="scene-wordmark" /><span class="name-note">の小站</span></h1>
       <p class="scene-motto">Just keep drawing<br />without regrets.</p>
-      <p class="scene-description">Re / CTF / Agent(ing)<br /><span>想到什么写什么，不固定。</span></p>
+      <p class="scene-description">Reverse / CTF / AI<br /><span>想到什么写什么，不固定。</span></p>
       <a href="#posts" class="scene-down"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 4v15m-5-5 5 5 5-5" /></svg> 往下看看</a>
+      </div>
     </div>
-    <div class="scene-bottom site-container"><span class="scene-quote">“即使迷茫，也要前行。”</span><div class="scene-switcher" role="group" aria-label="切换首页插画"><button type="button" aria-label="切换为烟火插画" aria-pressed="true" data-scene="night"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18.8 15.4A8 8 0 0 1 8.6 5.2 8 8 0 1 0 18.8 15.4Z"/><path d="M17 3v4m-2-2h4m1 4v2m-1-1h2"/></svg></button><button type="button" aria-label="切换为晴空插画" aria-pressed="false" data-scene="day"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5"/></svg></button></div></div>
+    <div class="scene-bottom site-container"><span class="scene-quote">“即使迷茫，也要前行。”</span></div>
   </section>
 
   <div class="home-layout">
     <aside class="home-sidebar" aria-label="Drawrain 的个人空间">
       <section class="profile-panel">
-        <div class="profile-cover"><Image src={dayArt} width={500} format="webp" alt="" /></div>
+        <div class="profile-cover"><Image src={profileArt} width={500} format="webp" alt="" /></div>
         <a href={url("/about/")} class="profile-avatar" aria-label="关于 Drawrain"><Image src={avatar} width={100} height={100} format="webp" alt="Drawrain 的头像" /></a>
         <h2>Drawrain <span aria-hidden="true">✧</span></h2>
-        <p class="profile-bio">计科本科在读<br />Re / CTF / Agent(ing)</p>
+        <p class="profile-bio">计科本科在读<br />Reverse / CTF / AI</p>
         <div class="profile-tags"><a href={getCategoryUrl("CTF")}>CTF</a><a href={url("/archive/?tag=Reverse")}>Reverse</a><a href={getCategoryUrl("AI")}>AI Agent</a></div>
         <div class="profile-stats"><a href={url("/archive/")}><strong>{allPosts.length}</strong><span>文章</span></a><a href={url("/archive/")}><strong>{Object.keys(categories).length}</strong><span>分类</span></a><a href={url("/friends/")}><strong>{friendLinks.length}</strong><span>朋友</span></a></div>
         <div class="profile-links"><a href="https://github.com/Drawrain39" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m8 5-6 7 6 7m8-14 6 7-6 7m-3-16-2 18" /></svg>GitHub</a></div>
@@ -57,8 +60,16 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
     </aside>
 
     <section class="home-feed" id="posts" aria-labelledby="posts-title">
-      {page.currentPage === 1 && featuredPosts.length > 0 && <section class="featured-block" aria-labelledby="featured-title"><div class="featured-heading"><h2 id="featured-title">精选文章 <span aria-hidden="true">⌖</span></h2><a href={url("/archive/?category=CTF")}>比赛记录 →</a></div><div class="featured-grid">{featuredPosts.map(entry => <a class="featured-card" href={getPostUrlBySlug(entry.slug)}><div class="featured-cover"><PostCover entry={entry} /></div><div class="featured-card-copy"><span>{entry.data.category}</span><h3>{entry.data.title}</h3><time datetime={entry.data.published.toISOString()}>{entry.data.published.toISOString().slice(0,10)}</time></div></a>)}</div></section>}
-      <header class="feed-heading"><h2 id="posts-title">最近更新<span class="heading-star" aria-hidden="true">✦</span></h2><a href={url("/archive/")}>全部文章 <span aria-hidden="true">→</span></a></header>
+      {page.currentPage === 1 && featuredPosts.length > 0 && <section class="featured-block" aria-labelledby="featured-title">
+        <div class="featured-heading"><div class="heading-copy"><span class="section-eyebrow" aria-hidden="true">✦ FEATURED</span><h2 id="featured-title">精选文章 <span aria-hidden="true">⌖</span></h2></div><a href={url("/archive/?category=CTF")}>比赛记录 →</a></div>
+        <div class="featured-grid">{featuredPosts.map(entry => <a class="featured-card" href={getPostUrlBySlug(entry.slug)}><div class="featured-card-copy">
+          <div class="featured-card-meta"><span>{entry.data.category}</span><span class="featured-card-star" aria-hidden="true">✦</span></div>
+          <h3>{entry.data.title}</h3>
+          {entry.data.description && <p class="featured-description">{entry.data.description}</p>}
+          <div class="featured-card-footer"><time datetime={entry.data.published.toISOString()}>{entry.data.published.toISOString().slice(0,10)}</time><span aria-hidden="true">↗</span></div>
+        </div></a>)}</div>
+      </section>}
+      <header class="feed-heading"><div class="heading-copy"><span class="section-eyebrow" aria-hidden="true">✦ RECENT POSTS</span><h2 id="posts-title">最近更新<span class="heading-star" aria-hidden="true">✦</span></h2></div><a href={url("/archive/")}>全部文章 <span aria-hidden="true">→</span></a></header>
       <PostPage posts={posts} />
       {page.currentPage !== 1 && <Pagination page={page} class="legacy-pagination" style="" />}
       <p class="last-update">最近一篇记录于 <time datetime={lastUpdated}>{lastUpdated}</time></p>
@@ -67,42 +78,78 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
 </MainGridLayout>
 
 <script>
-  function initializeScene() {
-    const scene = document.querySelector<HTMLElement>("[data-home-scene]");
-    scene?.querySelectorAll<HTMLButtonElement>("[data-scene]").forEach(button => {
-      button.onclick = () => {
-        scene.querySelectorAll<HTMLImageElement>("[data-scene-image]").forEach(image => image.hidden = image.dataset.sceneImage !== button.dataset.scene);
-        scene.querySelectorAll<HTMLButtonElement>("[data-scene]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
-      };
+  let sceneController: AbortController | undefined;
+
+  function initializeParallax(scene: HTMLElement, signal: AbortSignal) {
+    const desktopMotion = matchMedia("(min-width: 1001px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)");
+    let frame = 0;
+    let visible = scene.getBoundingClientRect().bottom > 0;
+    const cancelFrame = () => { cancelAnimationFrame(frame); frame = 0; };
+    const paint = () => {
+      frame = 0;
+      if (!desktopMotion.matches || document.hidden || !visible) return;
+      const offset = Math.min(12, Math.max(0, -scene.getBoundingClientRect().top * .025));
+      scene.style.setProperty("--scene-drift", `${offset.toFixed(2)}px`);
+    };
+    const queue = () => {
+      if (!frame && desktopMotion.matches && visible && !document.hidden) frame = requestAnimationFrame(paint);
+    };
+    const resetOrQueue = () => {
+      if (!desktopMotion.matches) { cancelFrame(); scene.style.removeProperty("--scene-drift"); }
+      else queue();
+    };
+    const observer = new IntersectionObserver(entries => {
+      visible = entries[0]?.isIntersecting ?? false;
+      if (visible) queue(); else cancelFrame();
     });
+    observer.observe(scene);
+    window.addEventListener("scroll", queue, { passive: true, signal });
+    window.addEventListener("resize", resetOrQueue, { passive: true, signal });
+    desktopMotion.addEventListener("change", resetOrQueue, { signal });
+    document.addEventListener("visibilitychange", () => document.hidden ? cancelFrame() : queue(), { signal });
+    signal.addEventListener("abort", () => {
+      cancelFrame(); observer.disconnect(); scene.style.removeProperty("--scene-drift");
+    }, { once: true });
+    queue();
   }
+
+  function initializeScene() {
+    sceneController?.abort();
+    const scene = document.querySelector<HTMLElement>(".home-scene");
+    if (!scene) return;
+    sceneController = new AbortController();
+    const { signal } = sceneController;
+    initializeParallax(scene, signal);
+  }
+
   initializeScene();
   document.addEventListener("astro:page-load", initializeScene);
+  document.addEventListener("astro:before-swap", () => sceneController?.abort());
 </script>
 
 <style>
-  .home-scene { position: relative; height: 610px; color: #f7faff; overflow: hidden; background: var(--paper); isolation: isolate; }
-  .scene-image { position: absolute; width: 100%; height: 100%; object-fit: cover; object-position: 65% 32%; z-index: -3; filter: saturate(.92); mask-image: linear-gradient(to bottom,#000 60%,#000c 82%,transparent 100%); }
-  .day-image { object-position: center 48%; }
-  .scene-shade { position: absolute; inset: 0; z-index: -2; background: linear-gradient(90deg, #101a2ac4 0%, #17233866 35%, #17233808 70%), linear-gradient(0deg, var(--paper) 0%, #171c2708 35%, #111b2c22 100%); }
+  .home-scene { --scene-rain: #b8f3ed; --scene-star: #bef2e1; --scene-soft: #245a6966; position: relative; height: 610px; color: #f7faff; overflow: hidden; background: var(--paper); isolation: isolate; }
+  .scene-art { position: absolute; inset: 0; z-index: -3; background: #258bd5; -webkit-mask-image: linear-gradient(to bottom,#000 55%,#000e 70%,#0008 86%,transparent 100%); mask-image: linear-gradient(to bottom,#000 55%,#000e 70%,#0008 86%,transparent 100%); }
+  .scene-image { position: absolute; top: 76px; left: 0; width: 100%; height: calc(100% - 52px); object-fit: cover; object-position: center top; filter: saturate(.98); }
+  .scene-shade { position: absolute; inset: 0; z-index: -2; background: linear-gradient(90deg,transparent 24%,#082b4a12 48%,#102b4d80 78%,#0a294b8a),linear-gradient(0deg,var(--paper),#102b4d00 35%); -webkit-mask-image: linear-gradient(#000 65%,transparent 100%); mask-image: linear-gradient(#000 65%,transparent 100%); }
   .scene-content { padding-top: 169px; }
+  .scene-copy { max-width: 540px; width: 44%; margin-left: auto; text-shadow: 0 1px 8px #0c3b6799; }
   .scene-greeting { display: flex; align-items: center; gap: 9px; font-size: 13px; letter-spacing: .13em; color: #e1eaf4; }
-  .little-star { font-size: 22px; color: #ddbfce; }
-  h1 { font-family: var(--font-sans); font-size: clamp(56px,6.5vw,88px); font-weight: 750; font-style: italic; line-height: 1.2; letter-spacing: -.065em; margin: 13px 0 13px; text-shadow: 0 4px 16px #000000b3,0 1px 3px #0000004d; }
-  .name-dot { color: #99ecf0; }
-  .name-note { display: inline-block; font-size: 18px; font-style: normal; font-weight: 400; letter-spacing: .12em; margin-left: 18px; transform: rotate(-7deg) translateY(-4px); color: #d6bccf; }
+  .little-star { font-size: 22px; color: var(--scene-star); transition: color .2s; }
+  h1 { --brand-rain: var(--scene-rain); --brand-star: var(--scene-star); font-family: var(--font-sans); font-size: clamp(56px,6.5vw,88px); font-weight: 750; font-style: italic; line-height: 1.2; letter-spacing: -.065em; margin: 13px 0 13px; text-shadow: 0 4px 16px #000000b3,0 1px 3px #0000004d; }
+  h1 :global(.scene-wordmark) { display: inline-block; width: 4.8em; height: auto; vertical-align: middle; filter: drop-shadow(0 4px 8px #00000080); }
+  .name-note { display: inline-block; font-size: 18px; font-style: normal; font-weight: 400; letter-spacing: .12em; margin-left: 18px; transform: rotate(-7deg) translateY(-4px); color: var(--scene-star); transition: color .2s; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   .scene-motto { font-size: 18px; line-height: 1.7; font-weight: 350; letter-spacing: .04em; color: #f2f4ff; margin: 0 0 17px; }
   .scene-motto br { display: none; }
   .scene-description { font-size: 12px; line-height: 2.1; color: #d5dfef; margin: 0; }
   .scene-description > span { font-size: 13px; }
-  .scene-down { display: inline-flex; align-items: center; gap: 9px; margin-top: 23px; font-size: 12px; padding: 9px 16px 9px 12px; border: 1px solid #eff4ff44; border-radius: 30px; background: #1b2b4b55; backdrop-filter: blur(8px); transition: background .2s; }
-  .scene-down:hover { background: #7091bb44; }
+  .scene-down { display: inline-flex; align-items: center; gap: 9px; margin-top: 23px; font-size: 12px; padding: 9px 16px 9px 12px; border: 1px solid color-mix(in srgb, var(--scene-rain) 40%, transparent); border-radius: 30px; background: var(--scene-soft); backdrop-filter: blur(8px); transition: background .2s, border-color .2s; }
+  .scene-down svg { color: var(--scene-rain); transition: color .2s; }
+  .scene-down:hover { background: color-mix(in srgb, var(--scene-rain) 18%, var(--scene-soft)); border-color: color-mix(in srgb, var(--scene-rain) 65%, transparent); }
+  .scene-down:focus-visible { outline-color: var(--scene-rain); }
   .scene-bottom { position: absolute; left: 0; right: 0; bottom: 54px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
   .scene-quote { font-size: 11px; color: #c4d0e5; letter-spacing: .1em; }
-  .scene-switcher { display: flex; align-items: center; gap: 9px; }
-  .scene-switcher button { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 1px solid #d8e1ee38; border-radius: 50%; color: #c4cddd; background: #17213088; backdrop-filter: blur(10px); transition: color .2s, border-color .2s, background .2s; }
-  .scene-switcher button:hover { color: #eff2f8; border-color: #d8e1ee88; }
-  .scene-switcher button[aria-pressed="true"] { border-color: #d7b5c7a6; color: #ecd3df; background: #66506466; }
   .home-layout { position: relative; z-index: 2; display: grid; grid-template-columns: 248px minmax(0,1fr); gap: 28px; margin-top: -30px; }
   .home-sidebar { min-width: 0; position: sticky; top: 20px; align-self: start; max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; padding-right: 3px; padding-bottom: 3px; }
   .profile-panel { position: relative; text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; box-shadow: var(--panel-shadow); padding-bottom: 17px; transition: border-color .2s,box-shadow .2s; }
@@ -137,16 +184,36 @@ const lastUpdated = homePosts[0]?.data.published.toISOString().slice(0,10);
   .sidebar-topics > a:hover { color: var(--accent); }
   .sidebar-topics > a > span:last-child { font-size: 10px; border-radius: 6px; padding: 0 7px; background: var(--soft); }
   .home-feed { padding-top: 59px; min-width: 0; scroll-margin-top: 25px; }
+  .heading-copy { min-width: 0; }
+  .section-eyebrow { display: block; margin-bottom: 7px; color: var(--muted); font: 500 10px/1.4 var(--font-mono); letter-spacing: .16em; }
   .feed-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 23px; padding-inline: 2px; gap: 12px; }
   .feed-heading h2 { font-size: 25px; font-weight: 650; line-height: 1.3; margin: 0; }
   .heading-star { font-size: 14px; color: var(--accent); margin-left: 9px; vertical-align: middle; }
   .feed-heading > a { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--muted); }
   .feed-heading > a:hover { color: var(--accent); }
   .last-update { color: var(--muted); font-size: 11px; text-align: center; margin-top: 22px; }
-  :global(:root:not(.dark)) .scene-shade { background: linear-gradient(90deg,#101a2abb,#17233855 35%,#17233808 70%),linear-gradient(0deg,var(--paper) 0%,#171c2705 25%,#111b2c22 100%); }
-  :global(:root:not(.dark)) .scene-quote { color: #edf3ff; }
+  :global(:root:not(.dark)) .scene-quote { color: #3c526c; }
   @media (min-width: 1700px) { .home-scene { height: 680px; } .scene-content { padding-top: 195px; } }
-  @media (max-width: 1000px) { .home-layout { grid-template-columns: 220px minmax(0,1fr); gap: 22px; } h1 { font-size: 70px; } .name-note { display: block; margin: 4px 0 18px 5px; font-size: 15px; transform: rotate(-5deg); } .scene-content { padding-top: 151px; } .scene-motto { font-size: 16px; } }
-  @media (max-width: 760px) { .home-scene { height: 565px; } .scene-content { padding-top: 157px; } .scene-image { object-position: 62% 30%; } .scene-shade { background: linear-gradient(90deg,#101a2ac4,#17233855 65%,#17233822),linear-gradient(0deg,var(--paper) 0%,#171c2705 35%,#111b2c22 100%); } .name-note { display: inline-block; margin-left: 12px; font-size: 15px; } h1 { font-size: 62px; } .scene-motto { font-size: 15px; } .scene-bottom { bottom: 32px; } .scene-quote { display: none; } .scene-switcher { margin-left: auto; } .home-layout { grid-template-columns: minmax(0,1fr); margin-top: 0; } .home-sidebar { display: none; } .home-feed { padding-top: 27px; } .feed-heading h2 { font-size: 23px; } }
-  @media (max-width: 420px) { .home-scene { height: 530px; } .scene-content { padding-top: 153px; } h1 { font-size: 54px; } .name-note { font-size: 12px; margin-left: 10px; } .scene-greeting { font-size: 11px; } .scene-motto { font-size: 14px; letter-spacing: .025em; } .scene-motto br { display: block; } .scene-description { font-size: 11px; } .scene-description > span { font-size: 12px; } .scene-down { margin-top: 17px; padding: 6px 12px; } .scene-bottom { bottom: 25px; } .scene-switcher button { width: 36px; height: 36px; } }
+  @media (max-width: 1000px) { .home-layout { grid-template-columns: 220px minmax(0,1fr); gap: 22px; } h1 { font-size: clamp(50px,6vw,70px); } .scene-copy { width: 45%; } .name-note { display: block; margin: 4px 0 18px 5px; font-size: 15px; transform: rotate(-5deg); } .scene-content { padding-top: 151px; } .scene-motto { font-size: 16px; } }
+  @media (max-width: 760px) {
+    .home-scene { height: 565px; }
+    .scene-image { top: 78px; height: calc(100% - 125px); object-position: 18% top; -webkit-mask-image: linear-gradient(to bottom,transparent,#000 9%,#000 80%,transparent 100%); mask-image: linear-gradient(to bottom,transparent,#000 9%,#000 80%,transparent 100%); }
+    .scene-shade { background: linear-gradient(0deg,var(--paper),#102f52de 14%,#103b658a 37%,#123b5b00 63%); }
+    .scene-content { padding-top: 308px; }
+    .scene-greeting { line-height: 22px; }
+    .scene-copy { width: 100%; max-width: none; margin-left: 0; }
+    h1 { font-size: 54px; margin-block: 8px; }
+    .name-note { display: inline-block; margin-left: 12px; font-size: 15px; }
+    .scene-motto { font-size: 14px; margin-bottom: 10px; }
+    .scene-description { line-height: 1.8; }
+    .scene-down { margin-top: 12px; padding-block: 6px; }
+    .scene-bottom { display: none; }
+    .home-layout { grid-template-columns: minmax(0,1fr); margin-top: 0; }
+    .home-sidebar { display: none; }
+    .home-feed { padding-top: 27px; }
+    .feed-heading h2 { font-size: 23px; }
+  }
+  @media (max-width: 420px) { .home-scene { height: 530px; } .scene-content { padding-top: 280px; } h1 { font-size: clamp(44px,13.8vw,54px); } h1 :global(.scene-wordmark) { width: min(4.8em,calc(100vw - 118px)); } .name-note { font-size: 12px; margin-left: 10px; } .scene-greeting { font-size: 11px; } .scene-motto { letter-spacing: .025em; } .scene-description { font-size: 11px; } .scene-description > span { font-size: 12px; } .scene-down { padding-inline: 12px; } }
+  @media (min-width: 1001px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) { .scene-image { transform: translate3d(0,var(--scene-drift,0px),0); } }
+  @media (prefers-reduced-motion: reduce) { .scene-image,.profile-avatar:hover { transform: none; } .scene-down,.scene-down svg,.little-star,.name-note,.profile-panel,.sidebar-note,.sidebar-topics,.profile-avatar { transition: none; } }
 </style>

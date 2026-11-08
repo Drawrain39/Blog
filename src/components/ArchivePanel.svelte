@@ -1,11 +1,12 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import type { PostForList } from "../utils/content-utils";
-import { getPostUrlBySlug, url } from "../utils/url-utils";
+import { getPostUrlBySlug } from "../utils/url-utils";
 
 export let tags: string[] = [];
 export let categories: string[] = [];
 export let sortedPosts: PostForList[] = [];
+export let coverImage: { src: string; srcSet: string; width: number; height: number };
 
 let selectedTags: string[] = [...tags];
 let selectedCategories: string[] = [...categories];
@@ -68,9 +69,9 @@ onMount(() => {
 
 <div class="archive-page">
 	<header class="archive-cover">
-		<img class="cover-art" src={url("/images/re2.jpg")} alt="夜空烟花下的少女" />
+		<img class="cover-art" src={coverImage.src} srcset={coverImage.srcSet} sizes="(max-width: 760px) calc(100vw - 32px), (max-width: 1304px) calc(100vw - 64px), 1240px" width={coverImage.width} height={coverImage.height} alt="暮色中的城市天际线与回望的少女" loading="eager" decoding="async" />
 		<div class="cover-shade"></div>
-		<div class="cover-copy"><span class="page-location">首页 / 归档</span><h1>文章归档 <span aria-hidden="true">✧</span></h1><p>CTF 题解、学习笔记和日常记录</p></div>
+		<div class="cover-copy"><span class="page-location">首页 / 归档</span><span class="archive-label" aria-hidden="true">✦ ARCHIVES</span><h1>文章归档 <span aria-hidden="true">✧</span></h1><p>CTF 题解、学习笔记和日常记录</p></div>
 	</header>
 	<div class="archive-stats" aria-label="归档统计">
 		<div><svg class="stat-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" focusable="false"><path d="M17 7h22l11 11v38H17zM39 7v12h11M25 29h17M25 37h17M25 45h11" stroke-linejoin="round" stroke-linecap="round"/></svg><strong>{sortedPosts.length}</strong><span>篇文章</span></div>
@@ -102,13 +103,14 @@ onMount(() => {
 <style>
 	.archive-page { padding-top: 30px; }
 	.archive-cover { position: relative; min-height: 245px; overflow: hidden; border-radius: 24px; border: 1px solid var(--line); background: var(--surface); }
-	.cover-art { position: absolute; inset: 0; height: 100%; width: 100%; object-fit: cover; object-position: center 35%; }
-	.cover-shade { position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--surface) 95%, transparent), color-mix(in srgb, var(--surface) 20%, transparent) 95%), linear-gradient(0deg, var(--surface), transparent 85%); }
-	.cover-copy { position: relative; padding: 38px; }
-	.page-location { color: var(--muted); font-size: 11px; }
-	.cover-copy h1 { font-size: 38px; font-weight: 700; margin: 23px 0 10px; color: var(--ink); }
-	.cover-copy h1 > span { color: var(--accent); font-size: 25px; vertical-align: middle; }
-	.cover-copy p { color: var(--muted); font-size: 13px; }
+	.cover-art { position: absolute; inset: 0; height: 100%; width: 100%; object-fit: cover; object-position: center 19%; }
+	.cover-shade { position: absolute; inset: 0; background: linear-gradient(270deg,#152331d9,#15233166 42%,#15233100 72%),linear-gradient(0deg,#111c2d77,transparent 80%); }
+	.cover-copy { position: relative; width: 44%; margin-left: auto; padding: 30px 38px; color: #edf4fc; }
+	.page-location { color: #c6d8e6; font-size: 11px; }
+	.archive-label { display: block; margin-top: 20px; margin-bottom: 7px; color: #c6d8e6; font: 500 10px/1.4 var(--font-mono); letter-spacing: .16em; }
+	.cover-copy h1 { font-size: 38px; font-weight: 700; margin: 0 0 10px; color: #f4f8ff; text-shadow: 0 2px 12px #0c162c66; }
+	.cover-copy h1 > span { color: #b7d9ff; font-size: 25px; vertical-align: middle; }
+	.cover-copy p { color: #d3e0eb; font-size: 13px; }
 	.archive-stats { display: grid; grid-template-columns: repeat(3, 1fr) 1.3fr; gap: 15px; margin: 22px 0; }
 	.archive-stats > div { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; padding: 22px 15px; border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--line)); border-radius: 16px; background: linear-gradient(140deg, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--surface) 76%, transparent)); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 #ffffff08; transition: border-color .2s, box-shadow .2s; }
 	.archive-stats > div::before { content: ""; position: absolute; top: 0; left: 14px; right: 14px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 32%, transparent), transparent); pointer-events: none; }
@@ -157,5 +159,7 @@ onMount(() => {
 	.empty-archive p { font-size: 13px; color: var(--muted); }
 	.empty-archive button { color: var(--accent); font-size: 12px; margin-top: 1.5rem; padding: 8px 15px; background: var(--soft); border-radius: 9px; }
 	@media (max-width: 900px) { .archive-toolbar { flex-wrap: wrap; } .archive-search { flex-basis: 100%; } .entry-category { display: none; } .archive-stats .latest-stat strong { font-size: 20px; } }
+	@media (max-width: 760px) { .cover-copy { width: 52%; padding: 30px 24px; } .cover-copy h1 { font-size: 32px; } .cover-copy p { font-size: 12px; } .cover-art { object-position: 30% 15%; } }
 	@media (max-width: 600px) { .archive-page { padding-top: 20px; } .archive-cover { min-height: 225px; border-radius: 18px; } .cover-copy { padding: 25px; } .cover-copy h1 { font-size: 32px; } .archive-stats { grid-template-columns: 1fr 1fr; gap: 12px; margin: 17px 0; } .archive-stats > div { padding: 22px 12px; } .archive-stats strong { font-size: 32px; } .archive-stats .latest-stat strong { font-size: 22px; } .archive-panel { padding: 20px 16px; } .archive-filters { gap: 6px; } .archive-filters button { padding: 6px 8px; font-size: 11px; } .year-heading h2 { font-size: 21px; } .year-posts { padding-left: 15px; margin-left: 8px; } .archive-entry { gap: 12px; padding: 17px 0 17px 6px; } .archive-entry::before { left: -19px; } .entry-copy h3 { font-size: 13px; } .archive-entry time { font-size: 10px; flex-basis: 33px; } .entry-arrow { display: none; } }
+	@media (max-width: 600px) { .cover-copy { width: 100%; padding: 80px 25px 24px; } .page-location { display: none; } .archive-label { margin-top: 0; } .cover-shade { background: linear-gradient(0deg,#112236eb,#11223633 75%,transparent); } }
 </style>

@@ -1,0 +1,35 @@
+---
+import { BRAND_GEOMETRY, brandLockup, brandMark, brandWordmark } from "../utils/brand";
+
+interface Props {
+  variant?: "lockup" | "mark" | "wordmark";
+  class?: string;
+  label?: string;
+}
+
+const { variant = "lockup", class: className, label } = Astro.props;
+const geometry = BRAND_GEOMETRY[variant];
+const render = { lockup: brandLockup, mark: brandMark, wordmark: brandWordmark }[variant];
+const markup = render({
+  ink: "currentColor",
+  rain: "var(--brand-rain, var(--blue, currentColor))",
+  star: "var(--brand-star, var(--accent, currentColor))",
+});
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width={geometry.width}
+  height={geometry.height}
+  viewBox={geometry.viewBox}
+  class:list={["brand", className]}
+  aria-hidden={label ? undefined : "true"}
+  aria-label={label}
+  role={label ? "img" : undefined}
+  focusable="false"
+  set:html={markup}
+/>
+
+<style>
+  .brand { display: block; max-width: 100%; flex-shrink: 0; }
+</style>
