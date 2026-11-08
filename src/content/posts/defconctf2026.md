@@ -3,7 +3,7 @@ title: DEFCON CTF 2026
 featured: true
 featuredOrder: 1
 published: 2026-05-24
-description: Reverse方向个人题解
+description: 国际顶尖大比赛，放一下Reverse方向个人题解
 tags: [CTF, Writeup, Reverse]
 category: CTF
 series: CTF Writeup
