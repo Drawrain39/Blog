@@ -8,21 +8,21 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { profileConfig } from "../config";
 import { url } from "../utils/url-utils";
 import goldenBlooms from "../assets/images/golden-blooms.png";
-const milestones=[{date:"2025.09",title:"搭起自己的博客",text:"从 Astro 和 Markdown 开始，记录学习与折腾。",slug:"blog",icon:"fa6-solid:rocket"},{date:"2025.12",title:"第一次打国赛",text:"CISCN 长城杯 2026，留下第一份国赛记录。",slug:"ccb2025",icon:"fa6-solid:flag-checkered"},{date:"2026.04",title:"继续折腾 Agent",text:"整理 CC-Switch、Codex 和 Claude Code 的使用笔记。",slug:"learncodex",icon:"fa6-solid:robot"},{date:"2026.05",title:"记录 DEFCON CTF",text:"把比赛中 Reverse 方向的分析过程写下来。",slug:"defconctf2026",icon:"fa6-solid:code"}];
+const milestones=[{date:"2025.09",title:"搭起自己的博客",text:"初搭博客",slug:"blog",icon:"fa6-solid:rocket"},{date:"2025.12",title:"第一次打国赛",text:"CISCN 长城杯 2026",slug:"ccb2025",icon:"fa6-solid:flag-checkered"},{date:"2026.04",title:"开始考虑自己未来的方向",text:"整理了一下AI相关笔记",slug:"learncodex",icon:"fa6-solid:robot"},{date:"2026.05",title:"记录 DEFCON CTF",text:"只记录了Reverse方向",slug:"defconctf2026",icon:"fa6-solid:code"}];
 const availablePostSlugs = new Set((await getCollection("posts")).filter(post => !post.data.draft).map(post => post.slug));
 const skills = [
-  { name: "Python", icon: "python", detail: "脚本与日常工具", color: "#eac96d" },
-  { name: "C++", icon: "cpp", detail: "程序设计与数据结构", color: "#75b9ec" },
-  { name: "Rust", icon: "rust", detail: "系统编程", color: "#d69a7b" },
-  { name: "Linux", icon: "linux", detail: "开发环境", color: "#d2c6a2" },
-  { name: "Docker", icon: "docker", detail: "容器部署", color: "#70c6ec" },
-  { name: "VS Code", icon: "vscode", detail: "代码编辑", color: "#73b8ed" },
-  { name: "Vim", icon: "vim", detail: "终端编辑", color: "#8dcca2" },
+  { name: "Python", icon: "python", detail: "", color: "#eac96d" },
+  { name: "C++", icon: "cpp", detail: "", color: "#75b9ec" },
+  { name: "Rust", icon: "rust", detail: "", color: "#d69a7b" },
+  { name: "Linux", icon: "linux", detail: "", color: "#d2c6a2" },
+  { name: "Docker", icon: "docker", detail: "", color: "#70c6ec" },
+  { name: "VS Code", icon: "vscode", detail: "", color: "#73b8ed" },
+  { name: "Vim", icon: "vim", detail: "", color: "#8dcca2" },
 ];
 ---
 <MainGridLayout title="关于我" description="Drawrain 的个人介绍、技术栈、写作记录和联系方式。">
 <div class="about-page">
-<header class="about-cover"><Image src={goldenBlooms} widths={[640,960,1440,1920]} sizes="(max-width: 760px) calc(100vw - 32px), (max-width: 1304px) calc(100vw - 64px), 1240px" format="webp" quality={85} loading="eager" alt="金色花簇间，举着相机的少女" class="cover-art"/><div class="cover-shade"></div><div class="cover-copy"><span class="cover-eyebrow" aria-hidden="true">✦ PROFILE &amp; CONTACT</span><h1>关于我</h1><p>Re / CTF / Agent(ing)</p></div><a class="cover-profile" href="https://github.com/Drawrain39" target="_blank" rel="noopener noreferrer"><ImageWrapper src={profileConfig.avatar||"assets/images/avata.jpg"} alt="Drawrain 的头像" class="profile-avatar"/><strong>Drawrain</strong></a></header>
+<header class="about-cover"><Image src={goldenBlooms} widths={[640,960,1440,1920]} sizes="(max-width: 760px) calc(100vw - 32px), (max-width: 1304px) calc(100vw - 64px), 1240px" format="webp" quality={85} loading="eager" alt="金色花簇间，举着相机的少女" class="cover-art"/><div class="cover-shade"></div><div class="cover-copy"><span class="cover-eyebrow" aria-hidden="true">✦ PROFILE &amp; CONTACT</span><h1>关于我</h1><p>Re / CTF / AI</p></div><a class="cover-profile" href="https://github.com/Drawrain39" target="_blank" rel="noopener noreferrer"><ImageWrapper src={profileConfig.avatar||"assets/images/avata.jpg"} alt="Drawrain 的头像" class="profile-avatar"/><strong>Drawrain</strong></a></header>
 <div class="about-columns"><div class="about-main">
 <section class="about-card bio-card" aria-label="个人简介"><p>计科本科在读，Re / CTF / AI。</p><p>平时主要写比赛的 WP 和学习笔记，偶尔也会写点别的。想到什么写什么，不固定。</p><p>成分复杂，等待挖掘…</p><blockquote>即使迷茫，也要前行。</blockquote></section>
 <section class="about-card skill-section" aria-labelledby="tech-stack-title">
