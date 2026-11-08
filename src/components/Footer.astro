@@ -21,25 +21,26 @@ const currentYear = new Date().getFullYear();
 </footer>
 
 <style>
-	.journal-footer { margin-top: 56px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); padding: 28px 30px 22px; color: var(--muted); }
+	.journal-footer { margin-top:48px;border-top:1px solid var(--line);padding:30px 0 24px;color:var(--muted); }
 	.footer-top { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-bottom: 24px; }
 	.footer-wordmark { display: inline-flex; color: var(--ink); text-decoration: none; --brand-rain: var(--accent); --brand-star: var(--rose); }
-	.footer-wordmark :global(.brand) { width: 184px; height: auto; }
+	.footer-wordmark :global(.brand) { width:168px;height:auto; }
 	.footer-top p { margin: 10px 0 0; font-size: 12px; }
-	.back-top { color: var(--muted); display: flex; gap: 12px; align-items: center; flex-shrink: 0; white-space: nowrap; font-size: 12px; text-decoration: none; border: 1px solid var(--line); border-radius: 12px; padding: 8px 13px; }
+	.back-top { color:var(--muted);display:flex;gap:12px;align-items:center;flex-shrink:0;white-space:nowrap;font-size:12px;text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:8px 13px;background:var(--surface);transition:color .2s,border-color .2s; }
 	.back-top span { font-size: 18px; color: var(--accent); }
-	.footer-bottom { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 11px; }
+	.footer-bottom { display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:16px;border-top:1px solid var(--line);font-size:12px; }
 	.footer-bottom p { margin: 0; }
 	.footer-dot { margin: 0 8px; }
 	.footer-links { display: flex; gap: 25px; flex-shrink: 0; }
 	.footer-links a { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; }
-	.footer-links a:hover, .back-top:hover { color: var(--accent); }
+	.footer-links a:hover,.footer-links a:focus-visible,.back-top:hover,.back-top:focus-visible { color:var(--accent); }
+	.back-top:hover,.back-top:focus-visible { border-color:color-mix(in srgb,var(--accent) 35%,var(--line)); }
 	@media (max-width: 650px) {
-		.journal-footer { margin-top: 35px; padding: 23px 20px 19px; border-radius: 18px; }
+		.journal-footer { margin-top:32px;padding:25px 0 20px; }
 		.footer-top { flex-wrap: wrap; gap: 18px; }
 		.back-top { margin-left: auto; }
 		.footer-bottom { align-items: flex-start; flex-direction: column; gap: 16px; line-height: 1.8; }
-		.footer-bottom p { max-width: 250px; }
+		.footer-bottom p { max-width:280px; }
 		.footer-dot { margin: 0 4px; }
 	}
 </style>

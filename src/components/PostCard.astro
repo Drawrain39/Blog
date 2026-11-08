@@ -17,35 +17,35 @@ const postUrl = getPostUrlBySlug(entry.slug);
   </div>
 </article>
 <style>
-  .anime-post { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--panel-shadow); transition: transform .2s, border-color .2s, box-shadow .2s; }
-  .anime-post:focus-within { border-color: color-mix(in srgb,var(--accent) 48%,var(--line)); box-shadow:var(--panel-shadow),0 0 12px color-mix(in srgb,var(--accent) 9%,transparent); }
-  @media (hover: hover) and (pointer: fine) { .anime-post:hover { transform: translateY(-2px); border-color: color-mix(in srgb,var(--accent) 36%,var(--line)); box-shadow:var(--panel-shadow),0 0 12px color-mix(in srgb,var(--accent) 7%,transparent); } }
-  .post-copy { min-width: 0; padding: 24px 28px 22px; display: flex; flex-direction: column; }
+  .anime-post { background: var(--surface); border: 1px solid transparent; border-radius: 24px; box-shadow: var(--panel-shadow); transition: transform .2s, border-color .2s, box-shadow .2s; }
+  .anime-post:focus-within { border-color: color-mix(in srgb,var(--accent) 30%,var(--line)); box-shadow: var(--panel-shadow-hover); }
+  @media (hover: hover) and (pointer: fine) { .anime-post:hover { transform: translateY(-2px); border-color: color-mix(in srgb,var(--accent) 20%,var(--line)); box-shadow: var(--panel-shadow-hover); } }
+  .post-copy { min-width: 0; padding: 26px; display: flex; flex-direction: column; }
   .post-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 13px; color: var(--muted); font-size: 11px; }
-  .category-pill { padding: 2px 10px; font-size: 10px; border-radius: 7px; background: color-mix(in srgb,var(--accent) 11%,transparent); color: var(--accent); line-height: 1.8; }
-  .category-pill:hover { background: color-mix(in srgb,var(--accent) 22%,transparent); }
+  .category-pill { padding: 2px 10px; font-size: 11px; border-radius: 8px; background: var(--soft); color: var(--accent); line-height: 1.8; }
+  .category-pill:hover { background: color-mix(in srgb,var(--accent) 14%,var(--soft)); }
   .post-meta time { font-size: 11px; }
   .draft-badge { color: var(--accent); font-size: 10px; }
-  h3 { font-size: 21px; font-weight: 600; line-height: 1.55; margin: 13px 0 9px; letter-spacing: -.02em; overflow-wrap: anywhere; }
+  h3 { font-size: 22px; font-weight: 650; line-height: 1.5; margin: 13px 0 10px; letter-spacing: -.02em; overflow-wrap: anywhere; }
   h3 a { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   h3 a:hover { color: var(--accent); }
   .post-title-text { background: linear-gradient(color-mix(in srgb,var(--accent) 65%,transparent),color-mix(in srgb,var(--accent) 65%,transparent)) 0 calc(100% - 1px)/0 1px no-repeat; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size .25s ease; }
   .anime-post:focus-within .post-title-text { background-size: 100% 1px; }
   @media (hover: hover) and (pointer: fine) { .anime-post:hover .post-title-text { background-size: 100% 1px; } }
-  .post-description { color: var(--muted); font-size: 13px; line-height: 1.85; margin: 0 0 17px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .post-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 12px; margin-top: auto; font-size: 10px; color: var(--muted); }
+  .post-description { color: var(--muted); font-size: 14px; line-height: 1.8; margin: 0 0 17px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .post-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 12px; margin-top: auto; font-size: 11px; color: var(--muted); }
   .post-tags { display: flex; flex-wrap: wrap; gap: 6px 10px; min-width: 0; overflow-wrap: anywhere; }
   .post-tags a { transition: color .2s; }
   .post-tags a:hover,.post-tags a:focus-visible { color: var(--accent); }
   .reading-time { white-space: nowrap; }
-  .post-arrow { display: grid; place-items: center; color: var(--blue); margin-left: auto; width: 26px; height: 26px; border-radius: 50%; background: var(--soft); }
+  .post-arrow { display: grid; place-items: center; color: var(--blue); margin-left: auto; width: 28px; height: 28px; border-radius: 10px; background: var(--soft); }
   .post-arrow { transition: color .2s,background .2s; }
   .post-arrow svg { transition: transform .22s ease; }
   .anime-post:focus-within .post-arrow { color: var(--accent); background: color-mix(in srgb,var(--accent) 13%,var(--soft)); }
   .anime-post:focus-within .post-arrow svg { transform: translateX(3px); }
   @media (hover: hover) and (pointer: fine) { .anime-post:hover .post-arrow { color: var(--accent); background: color-mix(in srgb,var(--accent) 13%,var(--soft)); } .anime-post:hover .post-arrow svg { transform: translateX(3px); } }
-  @media (max-width: 1000px) { .post-copy { padding: 23px 24px 21px; } h3 { font-size: 20px; } }
-  @media (max-width: 760px) { .post-copy { padding: 20px; } }
-  @media (max-width: 480px) { .anime-post { border-radius: 14px; } h3 { font-size: 19px; margin: 12px 0 8px; } .post-description { margin-bottom: 15px; } .post-meta { gap: 7px 10px; } .category-pill { padding: 2px 8px; } .post-tags { gap: 6px 8px; } .post-arrow { width: 26px; height: 26px; } }
+  @media (max-width: 1000px) { .post-copy { padding: 24px; } h3 { font-size: 21px; } }
+  @media (max-width: 760px) { .post-copy { padding: 22px; } }
+  @media (max-width: 480px) { .anime-post { border-radius: 22px; } h3 { font-size: 20px; margin: 12px 0 8px; } .post-description { margin-bottom: 15px; } .post-meta { gap: 7px 10px; } .category-pill { padding: 2px 8px; } .post-tags { gap: 6px 8px; } }
   @media (prefers-reduced-motion: reduce) { .anime-post,.post-arrow,.post-arrow svg,.post-title-text { transform: none !important; transition: none; } }
 </style>

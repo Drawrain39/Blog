@@ -61,14 +61,16 @@ const posts = (await getSortedPosts()).filter((post) => !post.data.draft).map((p
 		const themeButton = document.getElementById("journal-theme-switch");
 		const mobileMenu = document.getElementById("journal-mobile-menu") as HTMLDetailsElement | null;
 		function updateThemeButton() {
-			const label = document.documentElement.classList.contains("dark") ? "切换到浅色模式" : "切换到深色模式";
+			const dark = document.documentElement.classList.contains("dark");
+			const label = dark ? "切换到浅色模式" : "切换到深色模式";
+			document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#17232d" : "#f3f7fb");
 			themeButton?.setAttribute("aria-label", label);
 			themeButton?.setAttribute("title", label);
 		}
 		updateThemeButton();
 		themeButton?.addEventListener("click", () => {
 			const dark = document.documentElement.classList.toggle("dark");
-			try { localStorage.setItem("drawrain-theme-v2", dark ? "dark" : "light"); } catch { /* Storage can be disabled by the browser. */ }
+			try { localStorage.setItem("drawrain-theme-v3", dark ? "dark" : "light"); } catch { /* Storage can be disabled by the browser. */ }
 			updateThemeButton();
 			document.dispatchEvent(new Event("drawrain:theme-change"));
 		}, { signal });
@@ -85,23 +87,23 @@ const posts = (await getSortedPosts()).filter((post) => !post.data.draft).map((p
 </script>
 
 <style>
-	.journal-header { position: relative; z-index: 50; background: color-mix(in srgb, var(--paper) 80%, transparent); border-bottom: 1px solid var(--line); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-	.header-inner { max-width: 1240px; width: calc(100% - 64px); margin: 0 auto; min-height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+	.journal-header { position: relative; z-index: 50; width:100%;margin:0 0 28px;border:0;border-bottom:1px solid var(--line);background:var(--surface); }
+	.header-inner { width:min(1180px,calc(100% - 48px));margin-inline:auto;padding:10px 0;min-height:84px;display:flex;align-items:center;justify-content:space-between;gap:24px; }
 	.wordmark { display: flex; align-items: center; color: var(--ink); text-decoration: none; flex-shrink: 0; --brand-rain: var(--accent); --brand-star: var(--rose); }
 	.brand-copy { display: flex; flex-direction: column; gap: 1px; }
-	.brand-copy :global(.header-brand) { width: 204px; height: auto; }
+	.brand-copy :global(.header-brand) { width: 192px; height: auto; }
 	.brand-copy :global(.header-brand-compact) { display: none; height: auto; }
 	.wordmark :global(.header-brand > g:first-child > path), .wordmark :global(.header-brand > g:last-child > path:last-child), .wordmark :global(.header-brand-compact > path:last-child) { transform-box:fill-box;transform-origin:center;transition:transform .28s ease,filter .28s ease; }
 	.wordmark:is(:hover,:focus-visible) :global(.header-brand > g:first-child > path:first-child) { transform:translateY(-1.5px) scale(1.03); }
 	.wordmark:is(:hover,:focus-visible) :global(.header-brand > g:first-child > path:last-child), .wordmark:is(:hover,:focus-visible) :global(.header-brand > g:last-child > path:last-child), .wordmark:is(:hover,:focus-visible) :global(.header-brand-compact > path:last-child) { transform:rotate(18deg) scale(1.2);filter:drop-shadow(0 0 2px var(--brand-star)); }
 	.brand-caption { padding-left: 44px; font-size: 9px; color: var(--muted); line-height: 1.4; }
-	.desktop-navigation { display: flex; align-items: center; gap: 10px; margin-left: auto; margin-right: 35px; }
+	.desktop-navigation { display: flex; align-items: center; gap: 6px; margin-left: auto; margin-right: 12px; }
 	.desktop-navigation a { position:relative;padding: 9px 17px; font-size: 14px; font-weight: 600; border-radius: 11px; color: var(--muted); text-decoration: none; transition: color .2s, background .2s,transform .2s; }
 	.desktop-navigation a::after { content:"";position:absolute;left:17px;right:17px;bottom:6px;height:1px;border-radius:1px;background:var(--accent);transform:scaleX(0);transform-origin:left center;transition:transform .24s ease; }
 	.desktop-navigation a:hover,.desktop-navigation a:focus-visible { color: var(--ink); background: var(--soft); }
 	.desktop-navigation a:is(:hover,:focus-visible)::after { transform:scaleX(1); }
 	.desktop-navigation a:active { transform:translateY(1px); }
-	.desktop-navigation a[aria-current="page"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+	.desktop-navigation a[aria-current="page"] { color: var(--accent); background:var(--soft); }
 	.header-actions { display: flex; align-items: center; gap: 9px; }
 	.icon-button { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; border-radius: 11px; transition: color .2s, background .2s,transform .2s; }
 	.icon-button:hover,.icon-button:focus-visible { color: var(--accent); background: var(--soft); }
@@ -114,8 +116,17 @@ const posts = (await getSortedPosts()).filter((post) => !post.data.draft).map((p
 	:global(.dark) .moon-icon { display: none; }
 	:global(.dark) .sun-icon { display: block; }
 	.mobile-menu { display: none; }
-	:global(.home-page) .journal-header { position: absolute; inset: 0 0 auto; width: 100%; background: linear-gradient(180deg, #111722b8, #11172255); border-bottom-color: #e5edff14; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); --paper: #171c27; --surface: #202736; --ink: #e4e9f2; --muted: #bac5d5; --accent: #b8f3ed; --line: #b4c0d51f; --soft: #293244; }
-	:global(.home-page) .wordmark { --brand-rain: #b8f3ed; --brand-star: #bef2e1; }
+	:global(.home-page) .journal-header { position:absolute;inset:0 0 auto;width:100%;max-width:none;margin:0;border:0;border-bottom:1px solid #ffffff1a;border-radius:0;background:linear-gradient(90deg,#174d75b3,#163d5dd1);box-shadow:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px); }
+	:global(.home-page) .header-inner { width:min(1180px,calc(100% - 48px));min-height:84px;margin-inline:auto;padding:10px 0; }
+	:global(.home-page) .wordmark { color:#f2faff;--brand-rain:#b4ebef;--brand-star:#d1f0df; }
+	:global(.home-page) .brand-caption { color:#d4e8f3; }
+	:global(.home-page) .desktop-navigation a,:global(.home-page) .icon-button { color:#e0eff9; }
+	:global(.home-page) .desktop-navigation a:is(:hover,:focus-visible,[aria-current="page"]),:global(.home-page) .icon-button:is(:hover,:focus-visible) { color:#f5ffff;background:#d4efff1f; }
+	:global(.home-page) .desktop-navigation a::after { background:#b4ebef; }
+	:global(.home-page) .action-divider { background:#ffffff26; }
+	:global(.home-page) .header-actions :global(.search-trigger) { color:#e0eff9;background:#10365459;border-color:#d4efff33; }
+	:global(.home-page) .header-actions :global(.search-trigger:hover) { color:#fff;border-color:#d4efff99; }
+	:global(.home-page) .header-actions :global(.search-trigger kbd) { color:#d4e8f3; }
 	@media (max-width: 1000px) {
 		.desktop-navigation { gap: 4px; margin-right: 12px; }
 		.desktop-navigation a { padding-right: 12px; padding-left: 12px; }
@@ -124,7 +135,8 @@ const posts = (await getSortedPosts()).filter((post) => !post.data.draft).map((p
 		.brand-caption { font-size: 8px; }
 	}
 	@media (max-width: 760px) {
-		.header-inner { width: calc(100% - 32px); min-height: 72px; gap: 12px; }
+		.journal-header { margin-bottom:20px; }
+		.header-inner { width:calc(100% - 32px);min-height:74px;padding:10px 0;gap:12px; }
 		.brand-copy :global(.header-brand) { width: 185px; }
 		.brand-caption { font-size: 8px; }
 		.desktop-navigation, .github-link, .action-divider { display: none; }
@@ -132,15 +144,17 @@ const posts = (await getSortedPosts()).filter((post) => !post.data.draft).map((p
 		.mobile-menu { display: block; }
 		.mobile-menu summary { list-style: none; }
 		.mobile-menu summary::-webkit-details-marker { display: none; }
-		.mobile-menu nav { position: absolute; top: calc(100% + 8px); left: 16px; right: 16px; padding: 10px; border-radius: 18px; background: color-mix(in srgb, var(--surface) 96%, transparent); border: 1px solid var(--line); box-shadow: 0 16px 40px #00000038; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+		.mobile-menu nav { position: absolute; top: calc(100% + 8px); left:16px;right:16px;padding:10px;border-radius:20px;background:var(--surface);border:1px solid var(--line);box-shadow:0 12px 32px color-mix(in srgb,var(--ink) 10%,transparent); }
 		.mobile-menu nav a { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-radius: 10px; color: var(--ink); text-decoration: none; font-size: 14px; }
 		.mobile-menu nav a:hover { background: var(--soft); }
 		.mobile-menu nav a[aria-current="page"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
 		.mobile-menu nav a > span:last-child { color: var(--muted); }
 		.mobile-menu nav a > span:last-child { transition:transform .2s ease; }
 		.mobile-menu nav a:is(:hover,:focus-visible) > span:last-child { transform:translate(2px,-2px); }
+		:global(.home-page) .header-inner { width:calc(100% - 32px);min-height:74px;padding:10px 0; }
+		:global(.home-page) .mobile-menu nav { left:16px;right:16px; }
 	}
-	@media (max-width: 420px) { .brand-caption { display: none; } .brand-copy :global(.header-brand) { display: none; } .brand-copy :global(.header-brand-compact) { display: block; width: clamp(116px,38vw,156px); } }
+	@media (max-width: 420px) { .header-inner { gap:6px; } .header-actions { gap:0; } .icon-button { width:32px;height:34px; } .header-actions :global(.search-trigger) { width:32px;height:34px; } .brand-caption { display: none; } .brand-copy :global(.header-brand) { display: none; } .brand-copy :global(.header-brand-compact) { display: block; width:clamp(108px,32vw,134px); } }
 	@media(prefers-reduced-motion:reduce) {
 		.desktop-navigation a,.desktop-navigation a::after,.icon-button,.icon-button > svg,.mobile-menu nav a > span:last-child { transition:none; }
 		.desktop-navigation a:active,.icon-button:is(:hover,:focus-visible,:active),.icon-button:is(:hover,:focus-visible,:active) > svg,.mobile-menu nav a:is(:hover,:focus-visible) > span:last-child { transform:none; }

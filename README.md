@@ -1,100 +1,127 @@
-# 🍥Fuwari  
+# Drawrain's Blog
 
-![Node.js >= 20](https://img.shields.io/badge/node.js-%3E%3D20-brightgreen) 
-![pnpm >= 9](https://img.shields.io/badge/pnpm-%3E%3D9-blue) 
-[![DeepWiki](https://img.shields.io/badge/DeepWiki-saicaca%2Ffuwari-blue.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyCAYAAAAnWDnqAAAAAXNSR0IArs4c6QAAA05JREFUaEPtmUtyEzEQhtWTQyQLHNak2AB7ZnyXZMEjXMGeK/AIi+QuHrMnbChYY7MIh8g01fJoopFb0uhhEqqcbWTp06/uv1saEDv4O3n3dV60RfP947Mm9/SQc0ICFQgzfc4CYZoTPAswgSJCCUJUnAAoRHOAUOcATwbmVLWdGoH//PB8mnKqScAhsD0kYP3j/Yt5LPQe2KvcXmGvRHcDnpxfL2zOYJ1mFwrryWTz0advv1Ut4CJgf5uhDuDj5eUcAUoahrdY/56ebRWeraTjMt/00Sh3UDtjgHtQNHwcRGOC98BJEAEymycmYcWwOprTgcB6VZ5JK5TAJ+fXGLBm3FDAmn6oPPjR4rKCAoJCal2eAiQp2x0vxTPB3ALO2CRkwmDy5WohzBDwSEFKRwPbknEggCPB/imwrycgxX2NzoMCHhPkDwqYMr9tRcP5qNrMZHkVnOjRMWwLCcr8ohBVb1OMjxLwGCvjTikrsBOiA6fNyCrm8V1rP93iVPpwaE+gO0SsWmPiXB+jikdf6SizrT5qKasx5j8ABbHpFTx+vFXp9EnYQmLx02h1QTTrl6eDqxLnGjporxl3NL3agEvXdT0WmEost648sQOYAeJS9Q7bfUVoMGnjo4AZdUMQku50McDcMWcBPvr0SzbTAFDfvJqwLzgxwATnCgnp4wDl6Aa+Ax283gghmj+vj7feE2KBBRMW3FzOpLOADl0Isb5587h/U4gGvkt5v60Z1VLG8BhYjbzRwyQZemwAd6cCR5/XFWLYZRIMpX39AR0tjaGGiGzLVyhse5C9RKC6ai42ppWPKiBagOvaYk8lO7DajerabOZP46Lby5wKjw1HCRx7p9sVMOWGzb/vA1hwiWc6jm3MvQDTogQkiqIhJV0nBQBTU+3okKCFDy9WwferkHjtxib7t3xIUQtHxnIwtx4mpg26/HfwVNVDb4oI9RHmx5WGelRVlrtiw43zboCLaxv46AZeB3IlTkwouebTr1y2NjSpHz68WNFjHvupy3q8TFn3Hos2IAk4Ju5dCo8B3wP7VPr/FGaKiG+T+v+TQqIrOqMTL1VdWV1DdmcbO8KXBz6esmYWYKPwDL5b5FA1a0hwapHiom0r/cKaoqr+27/XcrS5UwSMbQAAAABJRU5ErkJggg==)](https://deepwiki.com/saicaca/fuwari)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsaicaca%2Ffuwari.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsaicaca%2Ffuwari?ref=badge_shield&issueType=license)
+记录 Reverse、CTF、AI，以及学习中遇到的一些事情。
 
-A static blog template built with [Astro](https://astro.build).
+[访问博客](https://drawrain.me/) · [文章归档](https://drawrain.me/archive/) · [关于我](https://drawrain.me/about/)
 
-[**🖥️ Live Demo (Vercel)**](https://fuwari.vercel.app)
+![Drawrain 博客首页：全幅晴空插画与浅色文章卡片](docs/images/home.webp)
 
-![Preview Image](https://raw.githubusercontent.com/saicaca/resource/main/fuwari/home.png)
+从 [Fuwari](https://github.com/saicaca/fuwari) 起步，保留 Astro 的静态内容架构，重新设计了页面、排版和交互。现在使用浅色雾蓝与白色卡片，搭配自己的雨滴字标和二次元插画，也保留了暗色模式。
 
-🌏 README in
-[**中文**](https://github.com/saicaca/fuwari/blob/main/docs/README.zh-CN.md) /
-[**日本語**](https://github.com/saicaca/fuwari/blob/main/docs/README.ja.md) /
-[**한국어**](https://github.com/saicaca/fuwari/blob/main/docs/README.ko.md) /
-[**Español**](https://github.com/saicaca/fuwari/blob/main/docs/README.es.md) /
-[**ไทย**](https://github.com/saicaca/fuwari/blob/main/docs/README.th.md) /
-[**Tiếng Việt**](https://github.com/saicaca/fuwari/blob/main/docs/README.vi.md) /
-[**Bahasa Indonesia**](https://github.com/saicaca/fuwari/blob/main/docs/README.id.md) (Provided by the community and may not always be up-to-date)
+## 当前功能
 
-## ✨ Features
+- 首页精选、分类筛选和加载更多；文章以文字卡片展示。
+- 独立归档、分类与标签筛选，以及按发文日期生成的写作日历。
+- 文章目录与当前章节高亮、阅读进度、代码复制、行号、语言标记、公式和图片放大。
+- 文章系列与相邻文章导航。
+- `Ctrl / Cmd + K` 快捷搜索；生产构建使用 Pagefind 正文索引。
+- 全站音乐播放器，站内切换页面时保留播放状态。
+- 关于页的技术栈、时间线与联系方式；友链预览和一键复制站点信息。
+- 共享矢量字标、浏览器图标、构建时生成的分享卡片、Sitemap 和文章结构化数据。
+- 首次进入首页的短开场、可暂停的背景点缀，以及适配减少动态效果偏好的微交互。
 
-- [x] Built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com)
-- [x] Smooth animations and page transitions
-- [x] Light / dark mode
-- [x] Customizable theme colors & banner
-- [x] Responsive design
-- [x] Search functionality with [Pagefind](https://pagefind.app/)
-- [x] [Markdown extended features](https://github.com/saicaca/fuwari?tab=readme-ov-file#-markdown-extended-syntax)
-- [x] Table of contents
-- [x] RSS feed
+## 本地运行
 
-## 🚀 Getting Started
+使用 Node.js 22+ 和 pnpm 9.14.4。当前本地校验环境为 Node.js 24.11.0。
 
-1. Create your blog repository:
-    - [Generate a new repository](https://github.com/saicaca/fuwari/generate) from this template or fork this repository.
-    - Or run one of the following commands:
-       ```sh
-       npm create fuwari@latest
-       yarn create fuwari
-       pnpm create fuwari@latest
-       bun create fuwari@latest
-       deno run -A npm:create-fuwari@latest
-       ```
-2. To edit your blog locally, clone your repository, run `pnpm install` to install dependencies.
-    - Install [pnpm](https://pnpm.io) `npm install -g pnpm` if you haven't.
-3. Edit the config file `src/config.ts` to customize your blog.
-4. Run `pnpm new-post <filename>` to create a new post and edit it in `src/content/posts/`.
-5. Deploy your blog to Vercel, Netlify, GitHub Pages, etc. following [the guides](https://docs.astro.build/en/guides/deploy/). You need to edit the site configuration in `astro.config.mjs` before deployment.
+```sh
+git clone https://github.com/Drawrain39/Blog.git
+cd Blog
+pnpm install --frozen-lockfile
+pnpm dev
+```
 
-## 📝 Frontmatter of Posts
+开发地址默认为 `http://localhost:4321/`，端口占用时以终端输出为准。
+
+| 命令 | 用途 |
+| --- | --- |
+| `pnpm dev` | 启动开发服务器 |
+| `pnpm check` | 检查 Astro、Svelte 和 TypeScript |
+| `pnpm build` | 生成静态页面、图片、分享卡片和搜索索引到 `dist/` |
+| `pnpm preview` | 预览已有的生产构建 |
+| `pnpm new-post my-post` | 新建 `src/content/posts/my-post.md` |
+
+主要技术：Astro 5、Svelte 5、TypeScript、Tailwind CSS 3、Expressive Code、Pagefind、Sharp。
+
+## 写文章
+
+```sh
+pnpm new-post my-post
+```
+
+编辑生成的 Markdown 文件。常用 Frontmatter 示例：
 
 ```yaml
 ---
-title: My First Blog Post
-published: 2023-09-09
-description: This is the first post of my new Astro blog.
-image: ./cover.jpg
-tags: [Foo, Bar]
-category: Front-end
+title: 一次 Reverse 题目的分析记录
+published: 2026-11-08
+description: 从入口函数到校验逻辑，记录分析过程。
+category: CTF
+tags: [Reverse, Writeup]
 draft: false
-lang: jp      # Set only if the post's language differs from the site's language in `config.ts`
+featured: true
+featuredOrder: 1
+hideInHome: false
 ---
 ```
 
-## 🧩 Markdown Extended Syntax
+| 字段 | 作用 |
+| --- | --- |
+| `title`、`published` | 必填的文章标题和发布日期 |
+| `updated` | 可选的更新日期 |
+| `draft` | 草稿；开发时可预览，生产构建中不发布 |
+| `featured`、`featuredOrder` | 首页最多展示三篇精选，按排序值升序排列 |
+| `hideInHome` | 不展示在首页，仍保留在归档与文章页 |
+| `description` | 摘要；未填写时列表使用正文摘要 |
+| `category`、`tags` | 分类和标签 |
+| `series`、`seriesOrder` | 同名系列及系列内的顺序 |
+| `image` | 可选的文章内页封面；首页卡片不显示封面 |
+| `lang` | 覆盖站点默认语言 |
 
-In addition to Astro's default support for [GitHub Flavored Markdown](https://github.github.com/gfm/), several extra Markdown features are included:
+完整字段定义见 [src/content/config.ts](src/content/config.ts)。正文支持 Markdown、KaTeX 公式、提示块和增强代码块。
 
-- Admonitions ([Preview and Usage](https://fuwari.vercel.app/posts/markdown-extended/#admonitions))
-- GitHub repository cards ([Preview and Usage](https://fuwari.vercel.app/posts/markdown-extended/#github-repository-cards))
-- Enhanced code blocks with Expressive Code ([Preview](https://fuwari.vercel.app/posts/expressive-code/) / [Docs](https://expressive-code.com/))
+## 调整外观和内容
 
-## ⚡ Commands
+当前页面有独立的组件与样式入口。部分 Fuwari 配置保留用于兼容，修改界面时应以实际渲染组件为准。
 
-All commands are run from the root of the project, from a terminal:
+| 想改什么 | 修改位置 |
+| --- | --- |
+| 首页壁纸、文案、个人侧栏 | [src/pages/[...page].astro](src/pages/%5B...page%5D.astro) |
+| 全站配色、字体、尺寸和精选样式 | [src/styles/theme.css](src/styles/theme.css) |
+| 导航、主题按钮与页脚 | [Navbar.astro](src/components/Navbar.astro)、[Footer.astro](src/components/Footer.astro) |
+| 作者、头像、目录、代码主题与音乐 | [src/config.ts](src/config.ts) |
+| 关于页的简介、技术栈、时间线与联系方式 | [src/pages/about.astro](src/pages/about.astro) |
+| 友链列表 | [src/constants/friends.ts](src/constants/friends.ts) |
+| 友链申请与本站复制信息 | [src/pages/friends.astro](src/pages/friends.astro) |
+| 文章阅读排版 | [editorial-article.css](src/styles/editorial-article.css)、[文章页](src/pages/posts/%5B...slug%5D.astro) |
+| 雨滴字标和浏览器图标 | [brand.ts](src/utils/brand.ts)、[Brand.astro](src/components/Brand.astro)、[favicon.svg.ts](src/pages/favicon.svg.ts) |
+| 短开场与音乐播放器 | [OpeningSplash.astro](src/components/OpeningSplash.astro)、[PersistentMusic.astro](src/components/PersistentMusic.astro) |
+| 页面标题、SEO 与分享图引用 | [src/layouts/Layout.astro](src/layouts/Layout.astro) |
+| 分享卡片生成 | [src/pages/og/[...slug].png.ts](src/pages/og/%5B...slug%5D.png.ts) |
+| 正式域名与构建设置 | [astro.config.mjs](astro.config.mjs) |
 
-| Command                    | Action                                              |
-|:---------------------------|:----------------------------------------------------|
-| `pnpm install`             | Installs dependencies                               |
-| `pnpm dev`                 | Starts local dev server at `localhost:4321`         |
-| `pnpm build`               | Build your production site to `./dist/`             |
-| `pnpm preview`             | Preview your build locally, before deploying        |
-| `pnpm check`               | Run checks for errors in your code                  |
-| `pnpm format`              | Format your code using Biome                        |
-| `pnpm new-post <filename>` | Create a new post                                   |
-| `pnpm astro ...`           | Run CLI commands like `astro add`, `astro check`    |
-| `pnpm astro --help`        | Get help using the Astro CLI                        |
+图片放在 `src/assets/images/`，通过 Astro 图片组件生成响应式 WebP。首页按实际裁切尺寸选择图片，最大保留原图的 1920px 宽度。
 
-## ✏️ Contributing
+### 搜索
 
-Check out the [Contributing Guide](https://github.com/saicaca/fuwari/blob/main/CONTRIBUTING.md) for details on how to contribute to this project.
+开发模式按标题、摘要、分类和标签匹配。`pnpm build` 会额外生成 Pagefind 正文索引；使用 `pnpm preview` 检查完整搜索效果。索引规则见 [pagefind.yml](pagefind.yml)。
 
-## 📄 License
+### 音乐
 
-This project is licensed under the MIT License.
+歌曲信息和默认音源在 `src/config.ts` 的 `musicConfig` 中。音源可通过构建环境变量 `PUBLIC_MUSIC_URL` 覆盖，修改后重新构建。播放器需要手动点击播放。
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsaicaca%2Ffuwari.svg?type=large&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsaicaca%2Ffuwari?ref=badge_large&issueType=license)
+## 构建与部署
+
+```sh
+pnpm check
+pnpm build
+pnpm preview
+```
+
+部署时使用构建命令 `pnpm build`，发布目录为 `dist/`，包含 `pagefind/` 搜索索引和 `og/` 分享图片。项目使用静态输出，可交给支持静态网站的托管平台。
+
+正式域名目前为 `https://drawrain.me/`。更换域名时，更新 `astro.config.mjs` 的 `site`，并同步检查友链页中用于复制的站点信息。
+
+## 来源与许可
+
+项目基于 [saicaca/Fuwari](https://github.com/saicaca/fuwari) 二次开发，保留上游 MIT 版权声明。代码许可证见 [LICENSE](LICENSE)。

@@ -101,8 +101,8 @@ onMount(() => {
 </div>
 
 <style>
-	.archive-page { padding-top: 30px; }
-	.archive-cover { position: relative; min-height: 245px; overflow: hidden; border-radius: 24px; border: 1px solid var(--line); background: var(--surface); }
+	.archive-page { padding-top: 8px; }
+	.archive-cover { position: relative; min-height: 245px; overflow: hidden; border-radius: 24px; background: var(--surface); box-shadow: var(--panel-shadow); }
 	.cover-art { position: absolute; inset: 0; height: 100%; width: 100%; object-fit: cover; object-position: center 19%; }
 	.cover-shade { position: absolute; inset: 0; background: linear-gradient(270deg,#152331d9,#15233166 42%,#15233100 72%),linear-gradient(0deg,#111c2d77,transparent 80%); }
 	.cover-copy { position: relative; width: 44%; margin-left: auto; padding: 30px 38px; color: #edf4fc; }
@@ -112,16 +112,16 @@ onMount(() => {
 	.cover-copy h1 > span { color: #b7d9ff; font-size: 25px; vertical-align: middle; }
 	.cover-copy p { color: #d3e0eb; font-size: 13px; }
 	.archive-stats { display: grid; grid-template-columns: repeat(3, 1fr) 1.3fr; gap: 15px; margin: 22px 0; }
-	.archive-stats > div { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; padding: 22px 15px; border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--line)); border-radius: 16px; background: linear-gradient(140deg, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--surface) 76%, transparent)); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 #ffffff08; transition: border-color .2s, box-shadow .2s; }
+	.archive-stats > div { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; padding: 22px 15px; border: 1px solid transparent; border-radius: 22px; background: var(--surface); box-shadow: var(--panel-shadow); transition: border-color .2s, box-shadow .2s; }
 	.archive-stats > div::before { content: ""; position: absolute; top: 0; left: 14px; right: 14px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 32%, transparent), transparent); pointer-events: none; }
 	.archive-stats > div::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: radial-gradient(ellipse at 85% 0, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%); opacity: 0; transition: opacity .2s; pointer-events: none; }
-	.archive-stats .stat-icon { position: absolute; right: -10px; bottom: -11px; z-index: -1; width: 84px; height: 84px; color: var(--accent); opacity: .12; pointer-events: none; }
+	.archive-stats .stat-icon { position: absolute; right: -10px; bottom: -11px; z-index: -1; width: 72px; height: 72px; color: var(--accent); opacity: .09; pointer-events: none; }
 	.archive-stats strong { position: relative; color: var(--accent); font-size: clamp(30px, 3vw, 38px); line-height: 1.2; font-weight: 800; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
 	.archive-stats span { position: relative; font-size: 12px; color: var(--muted); margin-top: 10px; }
 	@media (hover: hover) and (pointer: fine) { .archive-stats > div:hover { border-color: color-mix(in srgb, var(--accent) 36%, var(--line)); box-shadow: inset 0 1px 0 #ffffff0a, 0 5px 22px color-mix(in srgb, var(--accent) 7%, transparent); } .archive-stats > div:hover::after { opacity: 1; } }
 	@media (prefers-reduced-motion: reduce) { .archive-stats > div, .archive-stats > div::after { transition: none; } }
 	.archive-stats .latest-stat strong { font-size: clamp(20px, 2.1vw, 26px); font-weight: 750; letter-spacing: -.025em; }
-	.archive-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px; }
+	.archive-panel { background: var(--surface); border-radius: 24px; padding: 28px; box-shadow: var(--panel-shadow); }
 	.archive-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 	.archive-filters { display: flex; flex-wrap: wrap; gap: 7px; }
 	.archive-filters button { padding: 6px 11px; border-radius: 9px; border: 1px solid transparent; font-size: 12px; transition: background .2s, color .2s; color: var(--muted); background: var(--soft); }
@@ -160,6 +160,6 @@ onMount(() => {
 	.empty-archive button { color: var(--accent); font-size: 12px; margin-top: 1.5rem; padding: 8px 15px; background: var(--soft); border-radius: 9px; }
 	@media (max-width: 900px) { .archive-toolbar { flex-wrap: wrap; } .archive-search { flex-basis: 100%; } .entry-category { display: none; } .archive-stats .latest-stat strong { font-size: 20px; } }
 	@media (max-width: 760px) { .cover-copy { width: 52%; padding: 30px 24px; } .cover-copy h1 { font-size: 32px; } .cover-copy p { font-size: 12px; } .cover-art { object-position: 30% 15%; } }
-	@media (max-width: 600px) { .archive-page { padding-top: 20px; } .archive-cover { min-height: 225px; border-radius: 18px; } .cover-copy { padding: 25px; } .cover-copy h1 { font-size: 32px; } .archive-stats { grid-template-columns: 1fr 1fr; gap: 12px; margin: 17px 0; } .archive-stats > div { padding: 22px 12px; } .archive-stats strong { font-size: 32px; } .archive-stats .latest-stat strong { font-size: 22px; } .archive-panel { padding: 20px 16px; } .archive-filters { gap: 6px; } .archive-filters button { padding: 6px 8px; font-size: 11px; } .year-heading h2 { font-size: 21px; } .year-posts { padding-left: 15px; margin-left: 8px; } .archive-entry { gap: 12px; padding: 17px 0 17px 6px; } .archive-entry::before { left: -19px; } .entry-copy h3 { font-size: 13px; } .archive-entry time { font-size: 10px; flex-basis: 33px; } .entry-arrow { display: none; } }
+	@media (max-width: 600px) { .archive-page { padding-top: 8px; } .archive-cover { min-height: 225px; border-radius: 18px; } .cover-copy { padding: 25px; } .cover-copy h1 { font-size: 32px; } .archive-stats { grid-template-columns: 1fr 1fr; gap: 12px; margin: 17px 0; } .archive-stats > div { padding: 22px 12px; } .archive-stats strong { font-size: 32px; } .archive-stats .latest-stat strong { font-size: 22px; } .archive-panel { padding: 20px 16px; } .archive-filters { gap: 6px; } .archive-filters button { padding: 6px 8px; font-size: 11px; } .year-heading h2 { font-size: 21px; } .year-posts { padding-left: 15px; margin-left: 8px; } .archive-entry { gap: 12px; padding: 17px 0 17px 6px; } .archive-entry::before { left: -19px; } .entry-copy h3 { font-size: 13px; } .archive-entry time { font-size: 10px; flex-basis: 33px; } .entry-arrow { display: none; } }
 	@media (max-width: 600px) { .cover-copy { width: 100%; padding: 80px 25px 24px; } .page-location { display: none; } .archive-label { margin-top: 0; } .cover-shade { background: linear-gradient(0deg,#112236eb,#11223633 75%,transparent); } }
 </style>

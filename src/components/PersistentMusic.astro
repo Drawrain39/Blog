@@ -141,16 +141,16 @@ import { musicConfig } from "../config";
 	drawrain-music { position: fixed; right: 24px; bottom: 24px; z-index: 90; display: block; font-family: var(--font-sans); color: var(--ink); }
 	audio, [hidden] { display: none !important; }
 	button { cursor: pointer; font: inherit; }
-	.music-launcher { position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 15px; color: var(--accent); background: var(--surface); box-shadow: 0 6px 22px #080d1733; }
+	.music-launcher { position:relative;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--line);border-radius:14px;color:var(--accent);background:var(--surface);box-shadow:0 6px 20px color-mix(in srgb,var(--ink) 10%,transparent); }
 	.music-launcher:hover { background: var(--soft); }
 	.music-launcher { transition: background .2s, border-color .2s, box-shadow .2s; }
-	.music-launcher:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); box-shadow: 0 6px 22px #080d1733, 0 0 14px color-mix(in srgb, var(--accent) 8%, transparent); }
+	.music-launcher:hover,.music-launcher:focus-visible { border-color:color-mix(in srgb,var(--accent) 35%,var(--line));box-shadow:0 6px 22px color-mix(in srgb,var(--ink) 12%,transparent); }
 	.music-launcher:is(:hover,:focus-visible) > svg { animation:note-greeting .46s ease-in-out both;transform-origin:50% 70%; }
 	@keyframes note-greeting { 0%,100% { transform:rotate(0); } 30% { transform:rotate(-9deg); } 65% { transform:rotate(6deg); } 85% { transform:rotate(-2deg); } }
 	.playing-dot { display: none; position: absolute; right: 7px; top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
 	[data-playing] .playing-dot { display: block; }
-	.music-panel { width: 320px; max-width: calc(100vw - 32px); border: 1px solid var(--line); border-radius: 20px; background: var(--surface); padding: 17px 20px 16px; box-shadow: 0 10px 45px #080d173b; }
-	@supports (backdrop-filter: blur(16px)) { .music-launcher, .music-panel { background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); } .music-launcher:hover { background: color-mix(in srgb, var(--soft) 92%, transparent); } }
+	.music-panel { width:320px;max-width:calc(100vw - 32px);border:1px solid var(--line);border-radius:20px;background:var(--surface);padding:18px 20px;box-shadow:0 14px 44px color-mix(in srgb,var(--ink) 12%,transparent); }
+	@supports (backdrop-filter:blur(16px)) { .music-launcher,.music-panel { background:color-mix(in srgb,var(--surface) 95%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px); } .music-launcher:hover,.music-launcher:focus-visible { background:color-mix(in srgb,var(--soft) 96%,transparent); } }
 	.music-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 13px; color: var(--muted); font-size: 11px; }
 	.small-button { display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 6px; color: var(--muted); background: transparent; padding: 4px; }
 	.small-button:hover { color: var(--accent); background: var(--soft); }

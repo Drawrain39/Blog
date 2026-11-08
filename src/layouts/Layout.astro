@@ -4,6 +4,7 @@ import { Image } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import PersistentMusic from "@components/PersistentMusic.astro";
 import ClickSparkles from "@components/ClickSparkles.astro";
+import OpeningSplash from "@components/OpeningSplash.astro";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
 import backgroundArt from "../assets/images/re2.jpg";
@@ -42,7 +43,7 @@ const ogImage = new URL(routeParts[0] === "posts" ? `/og/${routeParts.slice(1).j
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
     <meta name="author" content={profileConfig.name} />
-    <meta name="theme-color" content="#171c27" />
+    <meta name="theme-color" content="#f3f7fb" />
     <meta property="og:site_name" content="Drawrain" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDescription} />
@@ -58,13 +59,16 @@ const ogImage = new URL(routeParts[0] === "posts" ? `/og/${routeParts.slice(1).j
     <link rel="icon" href={`${url("/favicon.svg")}?v=drawrain-1`} type="image/svg+xml" sizes="any" />
     <script is:inline data-astro-rerun>
       try {
-        document.documentElement.classList.toggle("dark", localStorage.getItem("drawrain-theme-v2") !== "light");
-      } catch { document.documentElement.classList.add("dark"); }
+        const dark = localStorage.getItem("drawrain-theme-v3") === "dark";
+        document.documentElement.classList.toggle("dark", dark);
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#17232d" : "#f3f7fb");
+      } catch { document.documentElement.classList.remove("dark"); }
     </script>
     <slot name="head" />
     <ClientRouter fallback="swap" />
   </head>
   <body id="top" class={bodyClass}>
+    {bodyClass.split(" ").includes("home-page") && <OpeningSplash />}
     <div class="site-backdrop" aria-hidden="true"><Image src={bodyClass.split(" ").includes("home-page") ? daylightArt : backgroundArt} width={1400} format="webp" quality={65} alt="" /></div>
     <a class="skip-link" href="#main-content">跳至正文</a>
     <slot />

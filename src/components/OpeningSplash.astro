@@ -1,0 +1,61 @@
+---
+import Brand from "./Brand.astro";
+---
+
+<div id="opening-splash" class="opening-splash" aria-hidden="true" hidden>
+  <div class="opening-signature"><Brand class="opening-brand" /></div>
+</div>
+
+<script is:inline>
+  (() => {
+    const splash = document.getElementById("opening-splash");
+    if (!splash) return;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const navigation = performance.getEntriesByType("navigation")[0];
+    if (document.readyState !== "loading" || document.hidden || motion.matches || location.hash || navigation?.type === "back_forward") {
+      splash.remove();
+      return;
+    }
+    try {
+      if (sessionStorage.getItem("drawrain-opening-v1")) { splash.remove(); return; }
+      sessionStorage.setItem("drawrain-opening-v1", "seen");
+    } catch { splash.remove(); return; }
+
+    const controller = new AbortController();
+    const { signal } = controller;
+    let fallback;
+    const finish = () => {
+      window.clearTimeout(fallback);
+      controller.abort();
+      splash.remove();
+    };
+    splash.addEventListener("animationend", event => {
+      if (event.target === splash) finish();
+    }, { signal });
+    for (const eventName of ["pointerdown", "keydown", "wheel", "touchstart"]) {
+      document.addEventListener(eventName, finish, { capture: true, passive: true, signal });
+    }
+    document.addEventListener("visibilitychange", () => { if (document.hidden) finish(); }, { signal });
+    document.addEventListener("astro:before-preparation", finish, { signal });
+    document.addEventListener("astro:before-swap", finish, { signal });
+    window.addEventListener("pagehide", finish, { signal });
+    window.addEventListener("pageshow", event => { if (event.persisted) finish(); }, { signal });
+    motion.addEventListener("change", () => { if (motion.matches) finish(); }, { signal });
+    fallback = window.setTimeout(finish, 700);
+    splash.hidden = false;
+  })();
+</script>
+
+<style>
+  .opening-splash { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; overflow: hidden; pointer-events: none; background: #f0faf7; color: #365b69; --brand-rain: #68b8bc; --brand-star: #82bba7; animation: opening-away 560ms ease-out both; }
+  .opening-splash[hidden] { display: none; }
+  :global(.dark) .opening-splash { background: #182a33; color: #e5f4ef; --brand-rain: #a3dfdc; --brand-star: #b5ddc9; }
+  .opening-signature { position: relative; animation: opening-arrive 260ms cubic-bezier(.2,.7,.2,1) both; }
+  .opening-signature::before { content: ""; position: absolute; width: 64px; height: 64px; left: -14px; top: 50%; margin-top: -32px; border: 1px solid var(--brand-rain); border-radius: 50%; pointer-events: none; animation: opening-ripple 500ms ease-out both; }
+  .opening-signature :global(.opening-brand) { width: 228px; height: auto; }
+  @keyframes opening-arrive { from { opacity: .35; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes opening-ripple { from { opacity: .35; transform: scale(.65); } to { opacity: 0; transform: scale(1.25); } }
+  @keyframes opening-away { 0%,60% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+  @media (max-width: 420px) { .opening-signature :global(.opening-brand) { width: 204px; } .opening-signature::before { left: -17px; } }
+  @media (prefers-reduced-motion: reduce) { .opening-splash { display: none !important; animation: none; } .opening-signature,.opening-signature::before { animation: none; } }
+</style>
